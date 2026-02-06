@@ -116,22 +116,62 @@ const PartnersList = () => {
 
     setCreating(true);
 
-    // Create user via edge function (to be implemented)
-    // For now, show a message that this needs to be done in the backend
-    toast({
-      title: 'Partner Creation',
-      description: 'Partner account creation requires admin setup. Please contact system administrator.',
-    });
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: 'Error',
+          description: 'You must be logged in to create partners',
+          variant: 'destructive',
+        });
+        return;
+      }
 
-    setCreating(false);
-    setDialogOpen(false);
-    setFormData({
-      email: '',
-      password: '',
-      organizationName: '',
-      fullName: '',
-      phone: '',
-    });
+      const response = await supabase.functions.invoke('create-partner', {
+        body: {
+          email: formData.email,
+          password: formData.password,
+          organizationName: formData.organizationName,
+          fullName: formData.fullName,
+          phone: formData.phone || undefined,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to create partner');
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      toast({
+        title: 'Partner Created',
+        description: `Successfully created account for ${formData.organizationName}`,
+      });
+
+      setDialogOpen(false);
+      setFormData({
+        email: '',
+        password: '',
+        organizationName: '',
+        fullName: '',
+        phone: '',
+      });
+      
+      // Refresh the partners list
+      fetchPartners();
+    } catch (error: any) {
+      console.error('Error creating partner:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create partner account',
+        variant: 'destructive',
+      });
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (

@@ -179,6 +179,7 @@ export type Database = {
           contact_phone: string | null
           created_at: string
           id: string
+          is_active: boolean
           organization_name: string
           updated_at: string
           user_id: string
@@ -188,6 +189,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           id?: string
+          is_active?: boolean
           organization_name: string
           updated_at?: string
           user_id: string
@@ -197,6 +199,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           id?: string
+          is_active?: boolean
           organization_name?: string
           updated_at?: string
           user_id?: string

@@ -1,0 +1,193 @@
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LayoutDashboard, Users, FileText, Bell, Eye } from 'lucide-react';
+import type { Database } from '@/integrations/supabase/types';
+
+type DonorStatus = Database['public']['Enums']['donor_status'];
+
+interface DonorWithPartner {
+  id: string;
+  donor_code: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  tissue_type: string | null;
+  status: DonorStatus;
+  submitted_at: string | null;
+  created_at: string;
+  partners: {
+    organization_name: string;
+  } | null;
+}
+
+const statusColors: Record<DonorStatus, string> = {
+  draft: 'bg-muted text-muted-foreground',
+  submitted: 'bg-blue-100 text-blue-800',
+  under_review: 'bg-yellow-100 text-yellow-800',
+  approved: 'bg-green-100 text-green-800',
+  rejected: 'bg-red-100 text-red-800',
+};
+
+const statusLabels: Record<DonorStatus, string> = {
+  draft: 'Draft',
+  submitted: 'Submitted',
+  under_review: 'Under Review',
+  approved: 'Approved',
+  rejected: 'Rejected',
+};
+
+const navItems = [
+  { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
+  { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
+  { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
+  { label: 'Notifications', href: '/admin/notifications', icon: <Bell className="h-4 w-4" /> },
+];
+
+const AdminDonorsList = () => {
+  const [donors, setDonors] = useState<DonorWithPartner[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>('pending');
+
+  useEffect(() => {
+    fetchDonors();
+  }, [statusFilter]);
+
+  const fetchDonors = async () => {
+    setLoading(true);
+
+    let query = supabase
+      .from('donors')
+      .select(`
+        id,
+        donor_code,
+        first_name,
+        last_name,
+        tissue_type,
+        status,
+        submitted_at,
+        created_at,
+        partners (
+          organization_name
+        )
+      `)
+      .order('submitted_at', { ascending: true, nullsFirst: false });
+
+    if (statusFilter === 'pending') {
+      query = query.in('status', ['submitted', 'under_review']);
+    } else if (statusFilter !== 'all') {
+      query = query.eq('status', statusFilter as DonorStatus);
+    }
+
+    const { data, error } = await query;
+
+    if (!error && data) {
+      setDonors(data as DonorWithPartner[]);
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <DashboardLayout navItems={navItems} title="Admin Panel">
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold">All Donors</h1>
+          <p className="text-muted-foreground">Review and manage donor submissions</p>
+        </div>
+
+        {/* Filters */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="w-48">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending Review</SelectItem>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="submitted">Submitted</SelectItem>
+                    <SelectItem value="under_review">Under Review</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Donors Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Donors</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            ) : donors.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No donors found
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Donor Code</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Partner</TableHead>
+                    <TableHead>Tissue Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Submitted</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {donors.map((donor) => (
+                    <TableRow key={donor.id}>
+                      <TableCell className="font-mono">{donor.donor_code}</TableCell>
+                      <TableCell>
+                        {donor.first_name && donor.last_name
+                          ? `${donor.first_name} ${donor.last_name}`
+                          : '—'}
+                      </TableCell>
+                      <TableCell>{donor.partners?.organization_name || '—'}</TableCell>
+                      <TableCell className="capitalize">{donor.tissue_type || '—'}</TableCell>
+                      <TableCell>
+                        <Badge className={statusColors[donor.status]}>
+                          {statusLabels[donor.status]}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {donor.submitted_at
+                          ? new Date(donor.submitted_at).toLocaleDateString()
+                          : '—'}
+                      </TableCell>
+                      <TableCell>
+                        <Link to={`/admin/donors/${donor.id}`}>
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default AdminDonorsList;

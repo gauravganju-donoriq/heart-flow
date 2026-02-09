@@ -63,6 +63,7 @@ interface DonorInfo {
   death_timezone: string | null;
   external_donor_id: string | null;
   partner_name: string | null;
+  din?: string | null;
 }
 
 interface Props {
@@ -254,7 +255,7 @@ const TissueRecoveryForm = ({ donorId, donorInfo, readOnly = false }: Props) => 
           <Field label="Time of Death" value={donorInfo?.time_of_death} />
           <Field label="Death Type" value={deathTypeLabel} />
           <Field label="Time Zone" value={donorInfo?.death_timezone} />
-          <Field label="LeMaitre Donor #" value={readOnly ? (recovery.lemaitre_donor_number || '—') : undefined} />
+          <Field label="DIN (Donor Identification Number)" value={donorInfo?.din || recovery.lemaitre_donor_number || '—'} />
         </dl>
         <p className="text-xs text-muted-foreground mt-4 italic">
           * Brain death is not acceptable. Utilize Cross Clamp or Asystolic Date/Time. Warm Ischemic Time shall not exceed accepted parameters.
@@ -334,7 +335,7 @@ const TissueRecoveryForm = ({ donorId, donorInfo, readOnly = false }: Props) => 
                     <Field label="Heart Request Form 7117F" value={recovery.heart_request_form_completed ? 'Completed' : 'Not completed'} />
                   )}
                   <Field label="Form Completed By" value={recovery.form_completed_by} />
-                  <Field label="LeMaitre Donor #" value={recovery.lemaitre_donor_number} />
+                  <Field label="DIN (Donor Identification Number)" value={donorInfo?.din || recovery.lemaitre_donor_number} />
                 </dl>
               </CardContent>
             </Card>
@@ -488,12 +489,12 @@ const TissueRecoveryForm = ({ donorId, donorInfo, readOnly = false }: Props) => 
               />
             </div>
             <div>
-              <Label className="text-[13px] text-muted-foreground">LeMaitre Donor #</Label>
+              <Label className="text-[13px] text-muted-foreground">DIN (Donor Identification Number)</Label>
               <Input
-                className="h-9 text-[13px]"
-                value={recovery.lemaitre_donor_number}
-                onChange={e => setRecovery(p => ({ ...p, lemaitre_donor_number: e.target.value }))}
-                placeholder="Assigned by LeMaitre"
+                className="h-9 text-[13px] bg-muted"
+                value={donorInfo?.din || recovery.lemaitre_donor_number}
+                readOnly
+                placeholder="Auto-generated on submission"
               />
             </div>
           </div>

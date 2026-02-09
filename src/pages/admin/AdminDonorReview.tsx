@@ -143,6 +143,7 @@ const AdminDonorReview = () => {
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-lg font-semibold font-mono">{donor.donor_code}</h1>
+                {(donor as any).din && <span className="text-sm text-muted-foreground font-mono">{(donor as any).din}</span>}
                 <Badge className={`rounded-md ${statusStyles[donor.status]}`}>{statusLabels[donor.status]}</Badge>
                 {d.intake_method === 'phone' && (
                   <Badge variant="outline" className="gap-1"><Phone className="h-3 w-3" />Phone Intake</Badge>
@@ -174,6 +175,17 @@ const AdminDonorReview = () => {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-5 mt-5">
+            <Card>
+              <CardHeader><p className="text-sm font-medium">Identifiers</p></CardHeader>
+              <CardContent>
+                <dl className="grid gap-4 md:grid-cols-3">
+                  <Field label="External Donor ID" value={d.external_donor_id} />
+                  <Field label="DIN (Donor Identification Number)" value={d.din} />
+                  <Field label="System Code" value={donor.donor_code} />
+                </dl>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader><p className="text-sm font-medium">Call Information</p></CardHeader>
               <CardContent>
@@ -287,6 +299,7 @@ const AdminDonorReview = () => {
                   death_timezone: d.death_timezone,
                   external_donor_id: d.external_donor_id,
                   partner_name: donor.partners?.organization_name || null,
+                  din: d.din,
                 }}
               />
             </TabsContent>

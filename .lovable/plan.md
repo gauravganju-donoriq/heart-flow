@@ -1,123 +1,109 @@
 
 
-# Align Phone Intake with LeMaitre's 25 Screening Questions
+# Follow-Up Call: Donor Identification and Update Flow
 
-## The Gap
+## Problem
 
-The current `donors` table and forms only cover a fraction of LeMaitre's required screening questions. Here is the full mapping:
+Currently, every phone call creates a brand new donor record. When a partner calls back to update an existing donor (e.g., add courier info, update medical history), the system has no way to link that call to the existing donor -- it just creates a duplicate.
 
-| # | Screening Question | Current DB Field | Status |
-|---|-------------------|-----------------|--------|
-| 1 | Type of Call | -- | MISSING |
-| 2 | Caller's Name | -- (partner user) | MISSING (distinct from donor name) |
-| 3 | Recovery Group | partner_id (via slug) | EXISTS |
-| 4 | Age | -- (only DOB exists) | MISSING |
-| 5 | Sex at Birth | gender | EXISTS |
-| 6 | DOD - Date of Death | death_date | EXISTS (date only) |
-| 7 | Time of Death | -- | MISSING |
-| 8 | Type of Death | -- | MISSING |
-| 9 | Time Zone | -- | MISSING |
-| 10 | COD - Cause of Death | cause_of_death | EXISTS |
-| 11 | Clinical Course | -- | MISSING |
-| 12 | HT (Inches) | -- | MISSING |
-| 13 | WT (Kgs) | -- | MISSING |
-| 14 | Medical History | medical_history_reviewed (boolean only) | NEEDS EXPANSION |
-| 15 | High Risk / Additional Notes | -- | MISSING |
-| 16 | Donor Accepted/Deferred | -- | MISSING |
-| 17 | HV - Heart Valves | -- | MISSING |
-| 18 | Heart Valve Pathology Request | -- | MISSING |
-| 19 | AI - Aorto Iliac | -- | MISSING |
-| 20 | FM - Femoral En Bloc | -- | MISSING |
-| 21 | SV - Saphenous Vein | -- | MISSING |
-| 22 | Autopsy? | -- | MISSING |
-| 23 | Donor ID / Donor Number | donor_code | EXISTS (auto-generated) |
-| 24 | Prescreen / Update on pre-existing donor | -- | MISSING |
-| 25 | Courier Update | -- | MISSING |
+## Identification Strategy
 
-**17 fields are missing or incomplete.**
+We'll use a **two-key match**: `partner_code` + `external_donor_id` (the partner's own donor number, Q23). This is the most natural identifier because:
 
-## What Changes
+- Partners always know their own donor ID
+- Combined with the partner code, it's guaranteed unique
+- The system `donor_code` (DN-XXXXXXXX) is auto-generated and partners may not remember it
 
-### 1. Database Migration -- Add New Columns to `donors`
+As a fallback, we'll also try matching by `donor_code` if the caller provides it instead.
 
-Add the following columns to the `donors` table (all nullable text/boolean to stay flexible):
+## Flow for Follow-Up Calls
 
-- `call_type` (text) -- e.g. "initial screening", "update", "prescreen"
-- `caller_name` (text) -- name of the person calling (not the donor)
-- `donor_age` (integer) -- age at death
-- `time_of_death` (text) -- e.g. "14:30" or "2:30 PM"
-- `death_type` (text) -- e.g. "cardiac", "brain death", "DCD"
-- `death_timezone` (text) -- e.g. "EST", "CST", "PST"
-- `clinical_course` (text) -- free text clinical narrative
-- `height_inches` (numeric) -- height in inches
-- `weight_kgs` (numeric) -- weight in kilograms
-- `medical_history` (text) -- free text medical history (replaces boolean-only approach)
-- `high_risk_notes` (text) -- high risk / additional / relevant notes
-- `donor_accepted` (text) -- "accepted", "deferred", or notes
-- `hv_heart_valves` (boolean) -- Heart Valves accepted?
-- `hv_pathology_request` (text) -- pathology request details if heart accepted
-- `ai_aorto_iliac` (boolean) -- Aorto Iliac accepted?
-- `fm_femoral` (boolean) -- Femoral En Bloc accepted?
-- `sv_saphenous_vein` (boolean) -- Saphenous Vein accepted?
-- `has_autopsy` (boolean) -- is autopsy being performed?
-- `external_donor_id` (text) -- the partner's own donor ID/number
-- `is_prescreen_update` (boolean) -- is this a prescreen or update on existing donor?
-- `courier_update` (text) -- courier/logistics notes
-
-### 2. Update Retell AI Agent Prompt (setup-retell edge function)
-
-Replace the current 10-question prompt with a comprehensive prompt that asks all 25 questions in order:
-
-```
-You are a professional tissue recovery intake agent for LeMaitre Vascular.
-Your job is to collect initial screening information from tissue recovery
-partners over the phone. Ask the following questions in order:
-
-1. "What type of call is this?" (initial screening, prescreen update, etc.)
-2. "May I have your name please?" (caller's name)
-3. "Which recovery group are you calling from?" (their partner code)
-4. "What is the donor's age?"
-5. "What was the donor's sex at birth?"
-6. "What is the date of death?"
-7. "What was the time of death?"
-8. "What type of death was this?" (cardiac, brain death, DCD, etc.)
-9. "What time zone?"
-10. "What was the cause of death?"
-11. "Can you describe the clinical course?"
-12. "What is the donor's height in inches?"
-13. "What is the donor's weight in kilograms?"
-14. "Any relevant medical history?"
-15. "Are there any high-risk factors or additional relevant notes?"
-16. "Is the donor accepted or deferred?"
-[If accepted, ask about tissue types:]
-17. "Are heart valves being recovered?"
-18. [If yes] "Any heart valve pathology requests?"
-19. "Is Aorto Iliac being recovered?"
-20. "Is Femoral En Bloc being recovered?"
-21. "Is Saphenous Vein being recovered?"
-22. [If any tissue accepted] "Is this donor having any type of autopsy?"
-23. "Do you have a donor ID or donor number?"
-24. "Is this a prescreen or an update on a pre-existing donor?"
-25. "Any courier updates?"
+```text
+Caller dials in
+  |
+  v
+Q1: "What type of call is this?"
+  |
+  +--> "initial screening" --> Full 25 questions --> CREATE new donor
+  |
+  +--> "prescreen update" / "courier update" / "update"
+        |
+        v
+      "Do you have the donor ID or donor number?"
+        |
+        v
+      "Which recovery group?" (partner code)
+        |
+        v
+      Webhook receives transcript
+        |
+        v
+      AI extracts: is_update=true, external_donor_id, partner_code
+        |
+        v
+      Lookup donor by (partner_id + external_donor_id) OR donor_code
+        |
+        +--> FOUND + status is "draft" --> UPDATE donor fields (merge, don't overwrite nulls)
+        |
+        +--> FOUND + status is NOT "draft" --> CREATE new donor, flag as linked update
+        |
+        +--> NOT FOUND --> CREATE new donor (treat as new screening)
 ```
 
-### 3. Update Webhook AI Extraction (retell-webhook edge function)
+## Changes Required
 
-Update the tool-calling schema to extract all 25 fields from the transcript instead of the current 9 fields.
+### 1. Update AI Agent Prompt (setup-retell)
 
-### 4. Update Donor Forms (AdminDonorForm.tsx and DonorForm.tsx)
+Modify the conversational flow so the agent:
+- When Q1 answer is "update" / "prescreen update" / "courier update", immediately asks for the donor ID (Q23) and partner code (Q3) first
+- Then asks only the fields the caller wants to update (rather than all 25 questions again)
+- At the end, confirms what was updated
 
-Add new form sections:
-- **Call Information**: call type, caller name, prescreen/update flag
-- **Demographics**: add age, height, weight fields
-- **Death Details**: add time of death, death type, time zone
-- **Clinical**: clinical course, medical history (text), high risk notes
-- **Tissue Recovery**: heart valves (+ pathology request), aorto iliac, femoral, saphenous vein, autopsy
-- **Logistics**: external donor ID, donor accepted/deferred, courier update
+### 2. Update AI Extraction Schema (retell-webhook)
 
-### 5. Update Donor Review Pages
+Add a new extraction field:
+- `is_update` (boolean) -- explicitly extracted: did the caller say this is an update to an existing donor?
 
-Show all new fields in `AdminDonorReview.tsx` and `DonorDetail.tsx`.
+### 3. Update Webhook Logic (retell-webhook)
+
+Replace the current "always insert" logic with:
+
+```
+IF is_update AND (external_donor_id OR donor_code provided):
+  1. Look up partner by partner_code
+  2. Search donors table for match:
+     - First try: partner_id + external_donor_id
+     - Fallback: donor_code (if provided)
+  3. IF match found AND status = 'draft':
+     - MERGE extracted fields into existing record (only update non-null extracted values)
+     - Save transcript linked to existing donor
+     - Notify partner: "Donor XYZ updated from phone call"
+  4. IF match found AND status != 'draft':
+     - Cannot edit (already submitted/reviewed)
+     - Create new donor record anyway, marked as linked
+     - Notify partner: "Update received but donor already submitted. New record created."
+  5. IF no match:
+     - Create new donor (treat as initial screening)
+     - Notify partner: "Donor ID not found. New record created."
+ELSE:
+  - Create new donor (current behavior)
+```
+
+### 4. Loopholes Blocked
+
+| Loophole | How It's Blocked |
+|----------|-----------------|
+| Caller says "update" but gives no donor ID | System creates a new donor and notifies the partner |
+| Caller gives wrong partner code | Partner lookup fails, returns 404 -- no data leakage |
+| Caller gives donor ID belonging to a different partner | Query filters by `partner_id`, so no cross-partner access |
+| Donor already submitted/approved | System refuses to modify, creates a new linked record instead |
+| Null fields in update overwriting real data | Merge logic only updates fields where extracted value is non-null |
+| Duplicate external_donor_id within same partner | First match is used; uniqueness constraint added to DB |
+
+### 5. Database Changes
+
+- Add a **unique constraint** on `(partner_id, external_donor_id)` where `external_donor_id IS NOT NULL` to prevent duplicates
+- Add a `linked_donor_id` column (uuid, nullable, FK to donors.id) for cases where an update call creates a new record because the original was already submitted
 
 ## Technical Details
 
@@ -125,19 +111,13 @@ Show all new fields in `AdminDonorReview.tsx` and `DonorDetail.tsx`.
 
 | File | Change |
 |------|--------|
-| **DB Migration** | Add 21 new columns to `donors` table |
-| `supabase/functions/setup-retell/index.ts` | Update LLM prompt with all 25 questions |
-| `supabase/functions/retell-webhook/index.ts` | Update AI extraction schema for all 25 fields |
-| `src/pages/admin/AdminDonorForm.tsx` | Add all new form fields |
-| `src/pages/partner/DonorForm.tsx` | Add all new form fields |
-| `src/pages/admin/AdminDonorReview.tsx` | Display all new fields |
-| `src/pages/partner/DonorDetail.tsx` | Display all new fields |
+| **DB Migration** | Add unique partial index on `(partner_id, external_donor_id)`, add `linked_donor_id` column |
+| `supabase/functions/setup-retell/index.ts` | Update agent prompt with update-aware conversational flow |
+| `supabase/functions/retell-webhook/index.ts` | Add donor lookup + merge logic, add `is_update` extraction field |
 
 ### Implementation Sequence
 
-1. Run the database migration to add all 21 new columns
-2. Update `setup-retell` edge function with the full 25-question agent prompt
-3. Update `retell-webhook` edge function with complete extraction schema
-4. Update both donor forms with new field sections
-5. Update donor detail/review pages to display all fields
+1. Database migration (unique index + linked_donor_id column)
+2. Update setup-retell prompt for update-aware flow
+3. Rewrite retell-webhook with lookup/merge/create branching logic
 

@@ -1,61 +1,76 @@
 
 
-# Test the AI Screening System End-to-End
+# UI Style Guide Playbook
 
 ## Overview
 
-Clear all existing donor data, insert 5 realistic test cases (3 eligible, 2 non-eligible), run the AI screening agent on each, and verify the results match expectations.
+Create a dedicated `/admin/style-guide` page that serves as a living reference for the DonorIQ design system. This page will document and visually demonstrate every design token and component pattern used across the platform. Once confirmed, we will then apply any refinements consistently across all existing pages.
+
+## What the Style Guide Page Will Include
+
+### Section 1: Color Palette
+- Display all CSS custom property colors as visual swatches with their HSL values and semantic names
+- Groups: Primary, Secondary, Muted, Accent, Destructive, Background/Foreground, Border/Input
+- Status colors used in badges: blue (submitted), yellow (under review), green (approved), red (rejected)
+- AI screening colors: green (accept), red (reject), amber (needs review)
+
+### Section 2: Typography
+- Font family (currently system default -- we can define one if you prefer)
+- Heading hierarchy: h1 through h4 with sizes, weights, and line-heights
+- Body text, small text, muted text, and mono text (used for donor codes)
+- Current patterns found in the app:
+  - Page titles: `text-2xl font-bold`
+  - Page subtitles: `text-muted-foreground`
+  - Card titles: `text-2xl font-semibold`
+  - Table text: default `text-sm`
+
+### Section 3: Buttons
+- All 6 variants rendered side by side: default, destructive, outline, secondary, ghost, link
+- All 4 sizes: default, sm, lg, icon
+- Disabled states
+
+### Section 4: Form Elements
+- Input, Label, Select, Checkbox, Switch, Textarea
+- Error states and validation messaging
+
+### Section 5: Cards
+- Standard card with header, description, content, and footer
+- Stat cards (as used on the dashboard)
+
+### Section 6: Badges and Status Indicators
+- Badge variants: default, secondary, destructive, outline
+- Status badges with custom colors (draft, submitted, under review, approved, rejected)
+- AI screening badges (accept, reject, needs review, not screened)
+
+### Section 7: Tables
+- Standard table layout with header, rows, and actions
+- Sortable/filterable patterns
+
+### Section 8: Spacing and Layout
+- Border radius values (lg, md, sm)
+- Common spacing patterns (gap-4, space-y-6, p-6, etc.)
+- Grid layouts used (md:grid-cols-4 for stats, etc.)
 
 ---
 
-## Step 1: Clear Existing Data
+## Implementation
 
-Delete all related records first (to avoid foreign key issues), then delete all donors:
+### Step 1: Create the Style Guide Page
+- New file: `src/pages/admin/StyleGuide.tsx`
+- Self-contained page that renders all the sections above using actual components (Button, Badge, Card, Input, Table, etc.)
+- Wrapped in the existing `DashboardLayout` for consistency
 
-- 3 screening results
-- 4 donors (Jon Doe, Sara Ann, Michael, and one unnamed draft)
-- No documents, shipments, or tissue recoveries to worry about
+### Step 2: Add Route
+- Add `/admin/style-guide` route in `src/App.tsx` behind admin auth
 
----
+### Step 3: Add Nav Link
+- Add a "Style Guide" nav item to the admin sidebar (using a Palette icon)
 
-## Step 2: Insert 5 Realistic Donor Cases
+### Step 4: Review and Refine
+- Once the page is live, review it together to confirm the design tokens
+- Identify any inconsistencies or desired changes (e.g., switching to a specific font, adjusting the primary color)
 
-All donors will be linked to the existing partner **DonorIQ** and set to `submitted` status with fully populated fields.
-
-### 3 Eligible Cases (should get "accept")
-
-| # | Name | Age | Gender | Cause of Death | Medical History | Why Eligible |
-|---|------|-----|--------|----------------|-----------------|--------------|
-| 1 | **Robert Williams** | 58 | Male | Acute myocardial infarction | Hypertension controlled with medication. No cancer, no infectious disease. Non-smoker. | Clean medical history, common cardiac death, consent obtained, all data complete |
-| 2 | **Margaret Chen** | 45 | Female | Motor vehicle accident (blunt force trauma) | No significant medical history. No medications. Annual physical normal. | Traumatic death (low disease risk), young, no medical issues, fully documented |
-| 3 | **James Patterson** | 67 | Male | Ischemic stroke | Type 2 diabetes managed with metformin. Mild osteoarthritis. No cancer, no infections. | Manageable chronic conditions, clear cause of death, complete data |
-
-### 2 Non-Eligible Cases (should get "reject" or "needs_review")
-
-| # | Name | Age | Gender | Cause of Death | Medical History | Why Non-Eligible |
-|---|------|-----|--------|----------------|-----------------|------------------|
-| 4 | **David Morrison** | 52 | Male | Liver failure secondary to Hepatitis C | Chronic Hepatitis C diagnosed 2019. IV drug use history 2015-2018. | Active Hepatitis C (infectious disease exclusion) + IV drug use (high-risk behavior) |
-| 5 | **Patricia Gomez** | 71 | Female | Unknown -- found deceased at home | No medical records available. No next of kin located. No consent obtained. | Unknown cause of death + no medical history + no consent + multiple missing critical fields |
-
----
-
-## Step 3: Run AI Screening on All 5
-
-Call the `screen-donor` edge function for each donor and collect results.
-
----
-
-## Step 4: Verify Results
-
-Check `screening_results` table to confirm:
-- Cases 1-3 received **"accept"** (or at minimum "needs_review" with high confidence)
-- Case 4 received **"reject"** (Hepatitis C + IV drug use)
-- Case 5 received **"reject"** or **"needs_review"** (too much missing data, no consent, unknown COD)
-
----
-
-## Technical Details
-
-- All data operations use the service role via SQL insert tool (since RLS restricts normal inserts)
-- AI screening calls go through the deployed `screen-donor` edge function using the current admin session
-- Results are verified by querying `screening_results` and checking verdict + concerns
+### Step 5: Apply Across the Platform
+- Update `src/index.css` with any refined design tokens
+- Update `tailwind.config.ts` if new values are needed
+- Sweep through all pages to normalize any one-off styles to match the confirmed playbook

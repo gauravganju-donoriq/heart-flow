@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { ResponsiveTabsList, type TabItem } from '@/components/ui/responsive-tabs';
 import { useToast } from '@/hooks/use-toast';
-import { LayoutDashboard, FileText, Bell, ArrowLeft, Edit, Send, Phone } from 'lucide-react';
+import { LayoutDashboard, FileText, ArrowLeft, Edit, Send, Phone } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -37,7 +37,6 @@ const statusLabels: Record<DonorStatus, string> = {
 const navItems = [
   { label: 'Dashboard', href: '/partner', icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: 'Donors', href: '/partner/donors', icon: <FileText className="h-4 w-4" /> },
-  { label: 'Notifications', href: '/partner/notifications', icon: <Bell className="h-4 w-4" /> },
 ];
 
 const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (

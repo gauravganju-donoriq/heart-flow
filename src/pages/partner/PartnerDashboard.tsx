@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LayoutDashboard, FileText, Bell, Plus } from 'lucide-react';
+import { LayoutDashboard, FileText, Plus } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -28,7 +28,6 @@ const statusLabels: Record<DonorStatus, string> = {
 const navItems = [
   { label: 'Dashboard', href: '/partner', icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: 'Donors', href: '/partner/donors', icon: <FileText className="h-4 w-4" /> },
-  { label: 'Notifications', href: '/partner/notifications', icon: <Bell className="h-4 w-4" /> },
 ];
 
 const PartnerDashboard = () => {

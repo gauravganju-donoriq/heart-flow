@@ -15,12 +15,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { LayoutDashboard, FileText, Bell, ArrowLeft, Save, Send } from 'lucide-react';
+import { LayoutDashboard, FileText, ArrowLeft, Save, Send } from 'lucide-react';
 
 const navItems = [
   { label: 'Dashboard', href: '/partner', icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: 'Donors', href: '/partner/donors', icon: <FileText className="h-4 w-4" /> },
-  { label: 'Notifications', href: '/partner/notifications', icon: <Bell className="h-4 w-4" /> },
 ];
 
 const DonorForm = () => {

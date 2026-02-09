@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { ResponsiveTabsList, type TabItem } from '@/components/ui/responsive-tabs';
 import { useToast } from '@/hooks/use-toast';
-import { LayoutDashboard, Users, FileText, Bell, ArrowLeft, Check, X, Clock, Phone, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, ScrollText, ArrowLeft, Check, X, Clock, Phone, Shield } from 'lucide-react';
 import AIScreeningPanel from '@/components/admin/AIScreeningPanel';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -47,7 +47,7 @@ const navItems = [
   { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
   { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
   { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
-  { label: 'Notifications', href: '/admin/notifications', icon: <Bell className="h-4 w-4" /> },
+  { label: 'Audit Log', href: '/admin/audit-log', icon: <ScrollText className="h-4 w-4" /> },
 ];
 
 const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (

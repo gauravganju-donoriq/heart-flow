@@ -53,10 +53,12 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
         <div className="flex flex-col h-full">
           {/* Logo & Portal */}
           <div className="flex items-center justify-between h-14 px-5 border-b">
-            <div className="flex items-center gap-2">
-              <img src={lemaitreLogo} alt="LeMaitre" className="h-5 w-auto" />
-              <span className="text-base font-bold tracking-tight text-foreground">Atlas</span>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+            <div className="flex flex-col gap-0.5">
+              <div className="flex items-center gap-2">
+                <img src={lemaitreLogo} alt="LeMaitre" className="h-5 w-auto" />
+                <span className="text-base font-bold tracking-tight text-foreground">Atlas</span>
+              </div>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                 {navItems.some(item => item.href.startsWith('/admin')) ? 'Admin' : 'Partner'}
               </span>
             </div>

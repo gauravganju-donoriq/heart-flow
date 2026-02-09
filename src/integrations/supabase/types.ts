@@ -67,6 +67,7 @@ export type Database = {
       }
       document_requirements: {
         Row: {
+          category: string
           created_at: string
           created_by: string
           description: string | null
@@ -78,6 +79,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category?: string
           created_at?: string
           created_by: string
           description?: string | null
@@ -89,6 +91,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category?: string
           created_at?: string
           created_by?: string
           description?: string | null

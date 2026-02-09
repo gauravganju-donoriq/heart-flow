@@ -1,0 +1,1 @@
+ALTER TABLE document_requirements ADD COLUMN category TEXT NOT NULL DEFAULT 'other';

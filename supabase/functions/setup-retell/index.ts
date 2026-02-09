@@ -120,7 +120,7 @@ If the caller says this is an update:
       enable_backchannel: true,
       backchannel_frequency: 0.8,
       backchannel_words: ["yeah", "I see", "okay", "got it", "mhmm"],
-      ambient_sound: "office",
+      ambient_sound: "call-center",
       ambient_sound_volume: 0.3,
       boosted_keywords: [
         "LeMaitre", "aorto iliac", "saphenous vein", "femoral", "heart valves",

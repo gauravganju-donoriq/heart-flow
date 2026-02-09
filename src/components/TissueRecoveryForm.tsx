@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { ClipboardList, Plus, Trash2, Save, Download } from 'lucide-react';
+import { Plus, Trash2, Save, Download } from 'lucide-react';
 import { generate7033fPdf } from '@/lib/generate7033fPdf';
 
 const VASCULAR_TISSUE_OPTIONS = [
@@ -72,6 +71,13 @@ interface Props {
   readOnly?: boolean;
 }
 
+const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
+  <div>
+    <dt className="text-[13px] text-muted-foreground">{label}</dt>
+    <dd className="text-[13px]">{value || '—'}</dd>
+  </div>
+);
+
 const TissueRecoveryForm = ({ donorId, donorInfo, readOnly = false }: Props) => {
   const { toast } = useToast();
   const [recovery, setRecovery] = useState<RecoveryData>(emptyRecovery);
@@ -80,9 +86,7 @@ const TissueRecoveryForm = ({ donorId, donorInfo, readOnly = false }: Props) => 
   const [saving, setSaving] = useState(false);
   const [exists, setExists] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, [donorId]);
+  useEffect(() => { fetchData(); }, [donorId]);
 
   const fetchData = async () => {
     const { data: rec } = await supabase
@@ -124,12 +128,7 @@ const TissueRecoveryForm = ({ donorId, donorInfo, readOnly = false }: Props) => 
   };
 
   const addTissueRow = (category: 'vascular' | 'cardiac') => {
-    setTissues(prev => [...prev, {
-      tissue_category: category,
-      tissue_type: '',
-      timestamp_value: '',
-      recovery_technician: '',
-    }]);
+    setTissues(prev => [...prev, { tissue_category: category, tissue_type: '', timestamp_value: '', recovery_technician: '' }]);
   };
 
   const removeTissueRow = (index: number) => {
@@ -180,7 +179,6 @@ const TissueRecoveryForm = ({ donorId, donorInfo, readOnly = false }: Props) => 
         setExists(true);
       }
 
-      // Delete existing tissues and re-insert
       await supabase.from('recovered_tissues').delete().eq('tissue_recovery_id', recoveryId!);
 
       if (tissues.length > 0) {
@@ -226,234 +224,206 @@ const TissueRecoveryForm = ({ donorId, donorInfo, readOnly = false }: Props) => 
   const vascularTissues = tissues.filter(t => t.tissue_category === 'vascular');
   const cardiacTissues = tissues.filter(t => t.tissue_category === 'cardiac');
 
-  // Read-only display mode
-  if (readOnly) {
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <ClipboardList className="h-5 w-5 text-primary" />
-                <CardTitle>7033F — Tissue Recovery Form</CardTitle>
-              </div>
-              <CardDescription>LeMaitre Cardiovascular recovery details</CardDescription>
-            </div>
-            {exists && (
-              <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
-                <Download className="h-4 w-4 mr-1" />Download PDF
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {!exists ? (
-            <p className="text-sm text-muted-foreground">No tissue recovery form has been submitted yet.</p>
-          ) : (
-            <>
-              {/* Vascular tissues */}
-              {vascularTissues.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-sm mb-2">Vascular Tissues</h4>
-                  <div className="border rounded-md overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead className="bg-muted">
-                        <tr>
-                          <th className="text-left p-2">Tissue Type</th>
-                          <th className="text-left p-2">Wet Ice Date/Time</th>
-                          <th className="text-left p-2">Recovery Technician</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {vascularTissues.map((t, i) => (
-                          <tr key={i} className="border-t">
-                            <td className="p-2">{t.tissue_type}</td>
-                            <td className="p-2">{t.timestamp_value ? new Date(t.timestamp_value).toLocaleString() : '—'}</td>
-                            <td className="p-2">{t.recovery_technician || '—'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
+  const deathTypeLabel = donorInfo?.death_type === 'Cardiac' ? 'Asystole' : donorInfo?.death_type === 'Neurological' ? 'Cross Clamp' : donorInfo?.death_type || '—';
 
-              {/* Cardiac tissues */}
-              {cardiacTissues.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-sm mb-2">Cardiac Tissues</h4>
-                  <div className="border rounded-md overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead className="bg-muted">
-                        <tr>
-                          <th className="text-left p-2">Tissue Type</th>
-                          <th className="text-left p-2">Cold Solution Date/Time</th>
-                          <th className="text-left p-2">Recovery Technician</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {cardiacTissues.map((t, i) => (
-                          <tr key={i} className="border-t">
-                            <td className="p-2">{t.tissue_type}</td>
-                            <td className="p-2">{t.timestamp_value ? new Date(t.timestamp_value).toLocaleString() : '—'}</td>
-                            <td className="p-2">{t.recovery_technician || '—'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              <dl className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <dt className="text-sm text-muted-foreground">Consent/Authorization Delivery</dt>
-                  <dd className="font-medium">{recovery.consent_delivery_method || '—'}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-muted-foreground">Packaging Deviation</dt>
-                  <dd className="font-medium">{recovery.packaging_deviation ? 'Yes' : 'No'}</dd>
-                </div>
-                {recovery.packaging_deviation && (
-                  <div className="md:col-span-2">
-                    <dt className="text-sm text-muted-foreground">Packaging Notes</dt>
-                    <dd className="font-medium whitespace-pre-wrap">{recovery.packaging_notes || '—'}</dd>
-                  </div>
-                )}
-                <div>
-                  <dt className="text-sm text-muted-foreground">Heart Request Needed</dt>
-                  <dd className="font-medium">{recovery.heart_request_needed ? 'Yes' : 'No'}</dd>
-                </div>
-                {recovery.heart_request_needed && (
-                  <div>
-                    <dt className="text-sm text-muted-foreground">Heart Request Form 7117F Completed</dt>
-                    <dd className="font-medium">{recovery.heart_request_form_completed ? 'Yes' : 'No'}</dd>
-                  </div>
-                )}
-                <div>
-                  <dt className="text-sm text-muted-foreground">Form Completed By</dt>
-                  <dd className="font-medium">{recovery.form_completed_by || '—'}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-muted-foreground">LeMaitre Donor #</dt>
-                  <dd className="font-medium">{recovery.lemaitre_donor_number || '—'}</dd>
-                </div>
-              </dl>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Editable form mode
-  return (
+  /* ─── Donor Header (mirrors PDF top section) ─── */
+  const DonorHeader = () => (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5 text-primary" />
-            <div>
-              <CardTitle>7033F — Tissue Recovery Form</CardTitle>
-              <CardDescription>LeMaitre Cardiovascular — complete after tissue recovery</CardDescription>
-            </div>
-          </div>
+          <p className="text-sm font-medium">7033F — Tissue Recovery Form</p>
           <div className="flex items-center gap-2">
             {exists && (
-              <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
-                <Download className="h-4 w-4 mr-1" />PDF
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-100">Saved</span>
+            )}
+            {exists && (
+              <Button variant="outline" size="sm" onClick={handleDownloadPdf} className="h-8 text-[13px]">
+                <Download className="h-3.5 w-3.5 mr-1.5" />PDF
               </Button>
             )}
-            {exists && <Badge variant="outline" className="text-green-700 border-green-300">Saved</Badge>}
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-8">
-        {/* Vascular Tissue Section */}
-        <div className="space-y-3">
+      <CardContent>
+        <dl className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Field label="Recovery Agency" value={donorInfo?.partner_name} />
+          <Field label="Recovery Agency Donor ID" value={donorInfo?.external_donor_id} />
+          <Field label="Donor Age" value={donorInfo?.donor_age} />
+          <Field label="Sex at Birth" value={donorInfo?.gender} />
+          <Field label="Date of Death" value={donorInfo?.death_date ? new Date(donorInfo.death_date).toLocaleDateString() : null} />
+          <Field label="Time of Death" value={donorInfo?.time_of_death} />
+          <Field label="Death Type" value={deathTypeLabel} />
+          <Field label="Time Zone" value={donorInfo?.death_timezone} />
+          <Field label="LeMaitre Donor #" value={readOnly ? (recovery.lemaitre_donor_number || '—') : undefined} />
+        </dl>
+        <p className="text-xs text-muted-foreground mt-4 italic">
+          * Brain death is not acceptable. Utilize Cross Clamp or Asystolic Date/Time. Warm Ischemic Time shall not exceed accepted parameters.
+        </p>
+      </CardContent>
+    </Card>
+  );
+
+  /* ─── Tissue Table (read-only) ─── */
+  const TissueTable = ({ title, columnLabel, rows }: { title: string; columnLabel: string; rows: TissueRow[] }) => {
+    if (rows.length === 0) return null;
+    return (
+      <Card>
+        <CardHeader><p className="text-sm font-medium">{title}</p></CardHeader>
+        <CardContent>
+          <div className="border border-border rounded-lg overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left text-xs uppercase tracking-wider text-muted-foreground/70 px-4 py-2.5">Tissue Type</th>
+                  <th className="text-left text-xs uppercase tracking-wider text-muted-foreground/70 px-4 py-2.5">{columnLabel}</th>
+                  <th className="text-left text-xs uppercase tracking-wider text-muted-foreground/70 px-4 py-2.5">Recovery Technician</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((t, i) => (
+                  <tr key={i} className="border-t border-border">
+                    <td className="text-[13px] px-4 py-3">{t.tissue_type}</td>
+                    <td className="text-[13px] px-4 py-3">{t.timestamp_value ? new Date(t.timestamp_value).toLocaleString() : '—'}</td>
+                    <td className="text-[13px] px-4 py-3">{t.recovery_technician || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  /* ─── READ-ONLY MODE ─── */
+  if (readOnly) {
+    return (
+      <div className="space-y-5">
+        <DonorHeader />
+
+        {!exists ? (
+          <Card>
+            <CardContent className="py-8">
+              <p className="text-[13px] text-muted-foreground text-center">No tissue recovery form has been submitted yet.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <TissueTable title="Vascular Tissues — Wet Ice" columnLabel="Wet Ice Date & Time" rows={vascularTissues} />
+            <TissueTable title="Cardiac Tissues — Cold Solution" columnLabel="Cold Solution Date & Time" rows={cardiacTissues} />
+
+            <Card>
+              <CardHeader><p className="text-sm font-medium">Consent & Logistics</p></CardHeader>
+              <CardContent>
+                <dl className="grid gap-4 md:grid-cols-2">
+                  <Field label="Consent/Authorization Delivery" value={
+                    recovery.consent_delivery_method === 'portal' ? 'Uploaded in LeMaitre Partner Portal'
+                    : recovery.consent_delivery_method === 'in_shipper' ? 'In tissue shipper'
+                    : recovery.consent_delivery_method === 'emailed' ? 'Emailed to TissueIn@lemaitre.com'
+                    : recovery.consent_delivery_method
+                  } />
+                  <Field label="Packaging Deviation" value={recovery.packaging_deviation ? 'Yes' : 'No'} />
+                  {recovery.packaging_deviation && (
+                    <div className="md:col-span-2">
+                      <dt className="text-[13px] text-muted-foreground">Packaging Notes</dt>
+                      <dd className="text-[13px] whitespace-pre-wrap">{recovery.packaging_notes || '—'}</dd>
+                    </div>
+                  )}
+                  <Field label="Heart Request Needed" value={recovery.heart_request_needed ? 'Yes — report, slides, and/or return tissue' : 'No requests, LeMaitre hold'} />
+                  {recovery.heart_request_needed && (
+                    <Field label="Heart Request Form 7117F" value={recovery.heart_request_form_completed ? 'Completed' : 'Not completed'} />
+                  )}
+                  <Field label="Form Completed By" value={recovery.form_completed_by} />
+                  <Field label="LeMaitre Donor #" value={recovery.lemaitre_donor_number} />
+                </dl>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  /* ─── EDITABLE MODE ─── */
+  const TissueEditRow = ({ t, i, options, timestampLabel }: { t: TissueRow; i: number; options: string[]; timestampLabel: string }) => (
+    <div className="grid grid-cols-12 gap-2 items-end border border-border rounded-lg p-3 bg-muted/30">
+      <div className="col-span-4">
+        <Label className="text-xs text-muted-foreground">Tissue Type</Label>
+        <Select value={t.tissue_type} onValueChange={v => updateTissueRow(i, 'tissue_type', v)}>
+          <SelectTrigger className="h-9 text-[13px]"><SelectValue placeholder="Select..." /></SelectTrigger>
+          <SelectContent>
+            {options.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="col-span-4">
+        <Label className="text-xs text-muted-foreground">{timestampLabel}</Label>
+        <Input type="datetime-local" className="h-9 text-[13px]" value={t.timestamp_value} onChange={e => updateTissueRow(i, 'timestamp_value', e.target.value)} />
+      </div>
+      <div className="col-span-3">
+        <Label className="text-xs text-muted-foreground">Recovery Technician</Label>
+        <Input className="h-9 text-[13px]" value={t.recovery_technician} onChange={e => updateTissueRow(i, 'recovery_technician', e.target.value)} placeholder="Name" />
+      </div>
+      <div className="col-span-1 flex justify-center">
+        <Button type="button" variant="ghost" size="icon" onClick={() => removeTissueRow(i)} className="text-destructive h-9 w-9">
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-5">
+      <DonorHeader />
+
+      {/* Vascular Tissues */}
+      <Card>
+        <CardHeader>
           <div className="flex items-center justify-between">
-            <h4 className="font-semibold">Vascular Tissues — Wet Ice</h4>
-            <Button type="button" variant="outline" size="sm" onClick={() => addTissueRow('vascular')}>
-              <Plus className="h-3 w-3 mr-1" />Add Row
+            <p className="text-sm font-medium">Vascular Tissues — Wet Ice</p>
+            <Button type="button" variant="outline" size="sm" onClick={() => addTissueRow('vascular')} className="h-8 text-[13px]">
+              <Plus className="h-3 w-3 mr-1" />Add
             </Button>
           </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
           {tissues.map((t, i) => t.tissue_category === 'vascular' && (
-            <div key={i} className="grid grid-cols-12 gap-2 items-end border rounded-md p-3 bg-muted/30">
-              <div className="col-span-4">
-                <Label className="text-xs">Tissue Type</Label>
-                <Select value={t.tissue_type} onValueChange={v => updateTissueRow(i, 'tissue_type', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                  <SelectContent>
-                    {VASCULAR_TISSUE_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-4">
-                <Label className="text-xs">Wet Ice Date/Time</Label>
-                <Input type="datetime-local" value={t.timestamp_value} onChange={e => updateTissueRow(i, 'timestamp_value', e.target.value)} />
-              </div>
-              <div className="col-span-3">
-                <Label className="text-xs">Recovery Technician</Label>
-                <Input value={t.recovery_technician} onChange={e => updateTissueRow(i, 'recovery_technician', e.target.value)} placeholder="Name" />
-              </div>
-              <div className="col-span-1 flex justify-center">
-                <Button type="button" variant="ghost" size="icon" onClick={() => removeTissueRow(i)} className="text-destructive">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <TissueEditRow key={i} t={t} i={i} options={VASCULAR_TISSUE_OPTIONS} timestampLabel="Wet Ice Date/Time" />
           ))}
           {vascularTissues.length === 0 && (
-            <p className="text-sm text-muted-foreground italic">No vascular tissues added yet.</p>
+            <p className="text-[13px] text-muted-foreground">No vascular tissues added yet.</p>
           )}
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Cardiac Tissue Section */}
-        <div className="space-y-3">
+      {/* Cardiac Tissues */}
+      <Card>
+        <CardHeader>
           <div className="flex items-center justify-between">
-            <h4 className="font-semibold">Cardiac Tissues — Cold Solution</h4>
-            <Button type="button" variant="outline" size="sm" onClick={() => addTissueRow('cardiac')}>
-              <Plus className="h-3 w-3 mr-1" />Add Row
+            <p className="text-sm font-medium">Cardiac Tissues — Cold Solution</p>
+            <Button type="button" variant="outline" size="sm" onClick={() => addTissueRow('cardiac')} className="h-8 text-[13px]">
+              <Plus className="h-3 w-3 mr-1" />Add
             </Button>
           </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
           {tissues.map((t, i) => t.tissue_category === 'cardiac' && (
-            <div key={i} className="grid grid-cols-12 gap-2 items-end border rounded-md p-3 bg-muted/30">
-              <div className="col-span-4">
-                <Label className="text-xs">Tissue Type</Label>
-                <Select value={t.tissue_type} onValueChange={v => updateTissueRow(i, 'tissue_type', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                  <SelectContent>
-                    {CARDIAC_TISSUE_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-4">
-                <Label className="text-xs">Cold Solution Date/Time</Label>
-                <Input type="datetime-local" value={t.timestamp_value} onChange={e => updateTissueRow(i, 'timestamp_value', e.target.value)} />
-              </div>
-              <div className="col-span-3">
-                <Label className="text-xs">Recovery Technician</Label>
-                <Input value={t.recovery_technician} onChange={e => updateTissueRow(i, 'recovery_technician', e.target.value)} placeholder="Name" />
-              </div>
-              <div className="col-span-1 flex justify-center">
-                <Button type="button" variant="ghost" size="icon" onClick={() => removeTissueRow(i)} className="text-destructive">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <TissueEditRow key={i} t={t} i={i} options={CARDIAC_TISSUE_OPTIONS} timestampLabel="Cold Solution Date/Time" />
           ))}
           {cardiacTissues.length === 0 && (
-            <p className="text-sm text-muted-foreground italic">No cardiac tissues added yet.</p>
+            <p className="text-[13px] text-muted-foreground">No cardiac tissues added yet.</p>
           )}
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Consent Delivery */}
-        <div className="space-y-3">
-          <h4 className="font-semibold">Donor Consent/Authorization</h4>
+      {/* Consent Delivery */}
+      <Card>
+        <CardHeader><p className="text-sm font-medium">Donor Consent/Authorization</p></CardHeader>
+        <CardContent>
           <div className="max-w-sm">
-            <Label>Delivery Method</Label>
+            <Label className="text-[13px] text-muted-foreground">Delivery Method</Label>
             <Select value={recovery.consent_delivery_method} onValueChange={v => setRecovery(p => ({ ...p, consent_delivery_method: v }))}>
-              <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+              <SelectTrigger className="h-9 text-[13px]"><SelectValue placeholder="Select..." /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="portal">Uploaded in LeMaitre Partner Portal</SelectItem>
                 <SelectItem value="in_shipper">In tissue shipper</SelectItem>
@@ -461,65 +431,81 @@ const TissueRecoveryForm = ({ donorId, donorInfo, readOnly = false }: Props) => 
               </SelectContent>
             </Select>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Packaging */}
-        <div className="space-y-3">
-          <h4 className="font-semibold">Packaging & Shipping</h4>
+      {/* Packaging */}
+      <Card>
+        <CardHeader><p className="text-sm font-medium">Packaging & Shipping</p></CardHeader>
+        <CardContent className="space-y-3">
           <div className="flex items-center gap-3">
             <Switch checked={recovery.packaging_deviation} onCheckedChange={v => setRecovery(p => ({ ...p, packaging_deviation: v }))} />
-            <Label>Any notes or deviations about packaging or shipping?</Label>
+            <Label className="text-[13px]">Any notes or deviations about packaging or shipping?</Label>
           </div>
           {recovery.packaging_deviation && (
             <Textarea
+              className="text-[13px]"
               placeholder="Explain deviations..."
               value={recovery.packaging_notes}
               onChange={e => setRecovery(p => ({ ...p, packaging_notes: e.target.value }))}
               rows={3}
             />
           )}
-        </div>
+          <p className="text-xs text-muted-foreground italic">All blood tubes shall be shipped directly to testing lab — do not send to LeMaitre.</p>
+        </CardContent>
+      </Card>
 
-        {/* Heart Request */}
-        <div className="space-y-3">
-          <h4 className="font-semibold">Heart Valve Donors</h4>
+      {/* Heart Request */}
+      <Card>
+        <CardHeader><p className="text-sm font-medium">Heart Valve Donors</p></CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">All Heart for Valve Donors — Any heart requests on this donor? (report, slides, and/or return tissue)</p>
           <div className="flex items-center gap-3">
             <Switch checked={recovery.heart_request_needed} onCheckedChange={v => setRecovery(p => ({ ...p, heart_request_needed: v }))} />
-            <Label>Any heart requests on this donor? (report, slides, and/or return tissue)</Label>
+            <Label className="text-[13px]">{recovery.heart_request_needed ? 'Yes, requests needed' : 'No requests, LeMaitre hold'}</Label>
           </div>
           {recovery.heart_request_needed && (
             <div className="flex items-center gap-3 pl-6">
               <Switch checked={recovery.heart_request_form_completed} onCheckedChange={v => setRecovery(p => ({ ...p, heart_request_form_completed: v }))} />
-              <Label>Heart Request Form 7117F completed</Label>
+              <Label className="text-[13px]">MUST complete Heart Request Form 7117F</Label>
             </div>
           )}
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Form Completed By & LeMaitre Donor # */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <Label>Form Completed By</Label>
-            <Input
-              value={recovery.form_completed_by}
-              onChange={e => setRecovery(p => ({ ...p, form_completed_by: e.target.value }))}
-              placeholder="Name of person completing form"
-            />
+      {/* Form Footer */}
+      <Card>
+        <CardHeader><p className="text-sm font-medium">Form Details</p></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label className="text-[13px] text-muted-foreground">Form Completed By</Label>
+              <Input
+                className="h-9 text-[13px]"
+                value={recovery.form_completed_by}
+                onChange={e => setRecovery(p => ({ ...p, form_completed_by: e.target.value }))}
+                placeholder="Name of person completing form"
+              />
+            </div>
+            <div>
+              <Label className="text-[13px] text-muted-foreground">LeMaitre Donor #</Label>
+              <Input
+                className="h-9 text-[13px]"
+                value={recovery.lemaitre_donor_number}
+                onChange={e => setRecovery(p => ({ ...p, lemaitre_donor_number: e.target.value }))}
+                placeholder="Assigned by LeMaitre"
+              />
+            </div>
           </div>
-          <div>
-            <Label>LeMaitre Donor #</Label>
-            <Input
-              value={recovery.lemaitre_donor_number}
-              onChange={e => setRecovery(p => ({ ...p, lemaitre_donor_number: e.target.value }))}
-              placeholder="Assigned by LeMaitre"
-            />
+          <div className="flex items-center justify-between pt-2">
+            <p className="text-xs text-muted-foreground">FORM # 7033F_vs11</p>
+            <Button onClick={handleSave} disabled={saving} className="h-9 text-[13px]">
+              <Save className="h-3.5 w-3.5 mr-1.5" />{saving ? 'Saving...' : 'Save Recovery Form'}
+            </Button>
           </div>
-        </div>
-
-        <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
-          <Save className="h-4 w-4 mr-2" />{saving ? 'Saving...' : 'Save Recovery Form'}
-        </Button>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

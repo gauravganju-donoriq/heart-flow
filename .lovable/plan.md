@@ -1,42 +1,96 @@
 
 
-# Unified Login Page with Role-Based Routing
+# Admin Donor Creation + Document Uploads
 
 ## Overview
 
-Redesign the `/auth` login page so both admins and partners can log in from a single page. After entering credentials, the system automatically detects the user's role and redirects them to the correct dashboard. Partners also keep their custom branded URLs (`/login/:slug`) as an alternative entry point.
+Two features to implement:
+1. **Admins can create/manage donors** -- A dedicated admin donor form page, reusing the same form structure as partners but with a partner selector (since admins aren't linked to a single partner).
+2. **Document uploads on donor detail pages** -- The `DocumentUpload` component already exists and is shown on the partner `DonorDetail` page and admin `AdminDonorReview` page. We just need to ensure partners can upload documents at any status (not just draft), and that the storage bucket + RLS policies work correctly.
 
 ## What Changes
 
-### Login Page (`/auth`) Redesign
+### 1. Admin Donor Form
 
-The current page already handles role-based redirect after login -- it checks the user's role and sends them to `/admin` or `/partner`. The main improvement is making the UI clearly communicate that **both** admins and partners can sign in here:
+Create a new page `src/pages/admin/AdminDonorForm.tsx` that:
+- Reuses the same form fields as the partner form (Demographics, Tissue, Compliance)
+- Adds a **Partner selector** dropdown at the top so the admin picks which partner this donor belongs to
+- Supports both create and edit modes (`/admin/donors/new` and `/admin/donors/:id/edit`)
+- Uses admin nav items instead of partner nav items
+- On save, navigates to `/admin/donors/:id` (the admin review page)
 
-- Update the page title/description to say something like "LeMaitre Portal" with "Sign in as an Admin or Recovery Partner"
-- Add two visual tabs or a toggle: **Admin** and **Partner** -- these are purely cosmetic/informational (the actual routing is determined by the user's role in the database, not by which tab they pick)
-- Alternatively, keep a single form but with clearer messaging that this is a universal login
+**Database changes needed:**
+- Add an RLS policy so admins can INSERT donors (currently only partners can)
+- The admin sets `partner_id` from the dropdown rather than from `AuthContext.partnerId`
 
-**Recommended approach**: Keep a single login form (no tabs needed) since the backend already determines the role. Just update the copy to make it clear both user types can log in here. This avoids confusion where someone picks "Admin" tab but has a partner account.
+### 2. Document Uploads
 
-### Post-Login Flow
+The `DocumentUpload` component and `documents` table already exist. Current state:
+- Partners can upload documents for their donors (RLS INSERT policy exists)
+- Admins can view all documents (RLS SELECT policy exists)
+- Documents are stored in the `donor-documents` storage bucket
 
-This already works correctly:
-1. User enters email + password
-2. `signIn` authenticates via the backend
-3. `AuthContext` fetches the user's role from `user_roles` table
-4. `Auth.tsx` redirects: admin -> `/admin`, partner -> `/partner`
+What needs to change:
+- **Allow admins to upload documents too** -- Add an RLS INSERT policy for admins on the `documents` table
+- **Add storage policies** -- The `donor-documents` bucket needs RLS policies on `storage.objects` so uploads and downloads actually work
+- **Update partner DonorDetail** -- Allow document uploads at all statuses, not just draft (partners may need to send documents after submission)
+- **Update admin AdminDonorReview** -- Enable uploads (set `canUpload={true}`) so admins can also attach documents
 
-No backend changes needed -- the routing logic is already in place.
+### 3. Routes
+
+Add new routes in `App.tsx`:
+- `/admin/donors/new` -- Admin donor creation form
+- `/admin/donors/:id/edit` -- Admin donor edit form
+
+Add an "Add Donor" button on the admin donors list page.
+
+---
 
 ## Technical Details
 
-### File Changes
+### Database Migration
 
-**1. `src/pages/Auth.tsx`** -- Update UI copy and styling:
-- Change title from "LeMaitre Partner Portal" to "LeMaitre Portal"
-- Change description to "Sign in to access your admin or partner account"
-- Add a small note below the form: "Partners can also use their custom login URL"
-- Keep the existing form and redirect logic untouched
+```sql
+-- Allow admins to insert donors
+CREATE POLICY "Admins can insert donors"
+  ON public.donors FOR INSERT
+  WITH CHECK (has_role(auth.uid(), 'admin'));
 
-That's it -- the core functionality already works. This is primarily a UI/copy update to make it obvious that both roles can log in from this single page.
+-- Allow admins to upload documents
+CREATE POLICY "Admins can upload documents"
+  ON public.documents FOR INSERT
+  WITH CHECK (
+    has_role(auth.uid(), 'admin')
+    AND uploaded_by = auth.uid()
+  );
+
+-- Storage policies for donor-documents bucket
+CREATE POLICY "Authenticated users can upload to donor-documents"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (bucket_id = 'donor-documents');
+
+CREATE POLICY "Authenticated users can read from donor-documents"
+  ON storage.objects FOR SELECT
+  TO authenticated
+  USING (bucket_id = 'donor-documents');
+```
+
+### Files to Create/Modify
+
+1. **New**: `src/pages/admin/AdminDonorForm.tsx` -- Admin donor form with partner selector dropdown
+2. **Modify**: `src/App.tsx` -- Add routes for `/admin/donors/new` and `/admin/donors/:id/edit`
+3. **Modify**: `src/pages/admin/AdminDonorsList.tsx` -- Add "Add Donor" button linking to `/admin/donors/new`
+4. **Modify**: `src/pages/admin/AdminDonorReview.tsx` -- Change `canUpload={false}` to `canUpload={true}` for DocumentUpload
+5. **Modify**: `src/pages/partner/DonorDetail.tsx` -- Change `canUpload={isDraft}` to `canUpload={true}` so partners can upload docs at any status
+6. **New migration** -- SQL above for RLS policies
+
+### AdminDonorForm Component Design
+
+- Fetches all active partners via `supabase.from('partners').select('id, organization_name').eq('is_active', true)`
+- Shows a Select dropdown for partner selection (required field)
+- Same form fields as `DonorForm.tsx`: Demographics, Tissue Condition, Compliance cards
+- Save and Submit buttons work the same way, using the selected `partner_id`
+- Uses admin nav items and "Admin Panel" layout title
+- On edit mode, fetches existing donor and pre-selects the partner (read-only since changing partner on an existing donor doesn't make sense)
 

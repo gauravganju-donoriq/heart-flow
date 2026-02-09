@@ -43,6 +43,7 @@ const App = () => (
             <Route path="/" element={<Navigate to="/auth" replace />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/login/:slug" element={<PartnerLogin />} />
+            <Route path="/style-guide" element={<StyleGuide />} />
 
             {/* Partner routes */}
             <Route
@@ -156,14 +157,6 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminNotifications />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/style-guide"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <StyleGuide />
                 </ProtectedRoute>
               }
             />

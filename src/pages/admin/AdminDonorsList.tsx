@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { LayoutDashboard, Users, FileText, Bell, Plus, Phone, Shield, CheckCircle, XCircle, AlertTriangle, Minus, Palette } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Bell, Plus, Phone, Shield, CheckCircle, XCircle, AlertTriangle, Minus } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type DonorStatus = Database['public']['Enums']['donor_status'];
@@ -52,7 +52,6 @@ const navItems = [
   { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
   { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
   { label: 'Notifications', href: '/admin/notifications', icon: <Bell className="h-4 w-4" /> },
-  { label: 'Style Guide', href: '/admin/style-guide', icon: <Palette className="h-4 w-4" /> },
 ];
 
 const ScreeningBadge = ({ results }: { results: DonorWithPartner['screening_results'] }) => {

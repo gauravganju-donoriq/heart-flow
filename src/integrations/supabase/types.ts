@@ -769,27 +769,33 @@ export type Database = {
       }
       shipments: {
         Row: {
+          carrier: string | null
           created_at: string
           created_by: string
           donor_id: string
           id: string
           notes: string | null
+          status: string
           tracking_number: string
         }
         Insert: {
+          carrier?: string | null
           created_at?: string
           created_by: string
           donor_id: string
           id?: string
           notes?: string | null
+          status?: string
           tracking_number: string
         }
         Update: {
+          carrier?: string | null
           created_at?: string
           created_by?: string
           donor_id?: string
           id?: string
           notes?: string | null
+          status?: string
           tracking_number?: string
         }
         Relationships: [

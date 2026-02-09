@@ -1,10 +1,10 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { LogOut, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { LogOut, Menu, X, Phone } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -16,13 +16,23 @@ interface DashboardLayoutProps {
   children: ReactNode;
   navItems: NavItem[];
   title: string;
-  sidebarFooterExtra?: ReactNode;
 }
 
-const DashboardLayout = ({ children, navItems, title, sidebarFooterExtra }: DashboardLayoutProps) => {
-  const { user, signOut } = useAuth();
+const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) => {
+  const { user, role, signOut } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [intakePhone, setIntakePhone] = useState<string | null>(null);
+
+  const isPartner = role === 'partner' || navItems.some(item => !item.href.startsWith('/admin'));
+
+  useEffect(() => {
+    if (isPartner) {
+      supabase.functions.invoke('get-intake-phone').then(({ data }) => {
+        if (data?.phone_number) setIntakePhone(data.phone_number);
+      }).catch(() => {});
+    }
+  }, [isPartner]);
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -78,10 +88,16 @@ const DashboardLayout = ({ children, navItems, title, sidebarFooterExtra }: Dash
             ))}
           </nav>
 
-          {/* Extra sidebar content */}
-          {sidebarFooterExtra && (
+          {/* Phone intake */}
+          {intakePhone && (
             <div className="px-3 pb-2">
-              {sidebarFooterExtra}
+              <div className="border border-border rounded-lg px-3 py-2.5">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Phone className="h-3 w-3 text-muted-foreground" />
+                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Intake Line</p>
+                </div>
+                <p className="text-[13px] font-mono font-semibold tracking-wide">{intakePhone}</p>
+              </div>
             </div>
           )}
 

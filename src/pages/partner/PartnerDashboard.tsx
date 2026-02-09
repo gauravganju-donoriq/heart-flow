@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LayoutDashboard, FileText, Bell, Plus, Phone } from 'lucide-react';
+import { LayoutDashboard, FileText, Bell, Plus } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -36,20 +36,11 @@ const PartnerDashboard = () => {
   const navigate = useNavigate();
   const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
-  const [intakePhone, setIntakePhone] = useState<string | null>(null);
   const [stats, setStats] = useState({ total: 0, draft: 0, submitted: 0, approved: 0, rejected: 0 });
 
   useEffect(() => {
     if (partnerId) { fetchDonors(); }
-    fetchIntakePhone();
   }, [partnerId]);
-
-  const fetchIntakePhone = async () => {
-    try {
-      const { data } = await supabase.functions.invoke('get-intake-phone');
-      if (data?.phone_number) setIntakePhone(data.phone_number);
-    } catch { }
-  };
 
   const fetchDonors = async () => {
     if (!partnerId) return;
@@ -66,18 +57,8 @@ const PartnerDashboard = () => {
     setLoading(false);
   };
 
-  const phoneWidget = intakePhone ? (
-    <div className="border border-border rounded-lg px-3 py-2.5">
-      <div className="flex items-center gap-1.5 mb-1">
-        <Phone className="h-3 w-3 text-muted-foreground" />
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Intake Line</p>
-      </div>
-      <p className="text-[13px] font-mono font-semibold tracking-wide">{intakePhone}</p>
-    </div>
-  ) : null;
-
   return (
-    <DashboardLayout navItems={navItems} title="Atlas" sidebarFooterExtra={phoneWidget}>
+    <DashboardLayout navItems={navItems} title="Atlas">
       <div className="space-y-5">
         {/* Header */}
         <div className="flex items-center justify-end">

@@ -39,9 +39,14 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex flex-col h-full">
-          {/* Logo */}
+          {/* Logo & Portal */}
           <div className="flex items-center justify-between h-14 px-5 border-b">
-            <span className="text-[13px] font-semibold tracking-tight text-foreground">{title}</span>
+            <div className="flex items-center gap-2.5">
+              <span className="text-base font-bold tracking-tight text-foreground">{title}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                {navItems.some(item => item.href.startsWith('/admin')) ? 'Admin' : 'Partner'}
+              </span>
+            </div>
             <Button
               variant="ghost"
               size="icon"

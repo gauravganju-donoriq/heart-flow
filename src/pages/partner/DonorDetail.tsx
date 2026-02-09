@@ -121,6 +121,9 @@ const DonorDetail = () => {
           <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-0">
             <TabsTrigger value="overview" className={tabTriggerClass}>Overview</TabsTrigger>
             <TabsTrigger value="clinical" className={tabTriggerClass}>Clinical</TabsTrigger>
+            {donor.status === 'approved' && (
+              <TabsTrigger value="recovery" className={tabTriggerClass}>Recovery</TabsTrigger>
+            )}
             <TabsTrigger value="logistics" className={tabTriggerClass}>Logistics</TabsTrigger>
             <TabsTrigger value="documents" className={tabTriggerClass}>Documents</TabsTrigger>
           </TabsList>
@@ -214,10 +217,6 @@ const DonorDetail = () => {
               </CardContent>
             </Card>
 
-            {donor.status === 'approved' && (
-              <TissueRecoveryForm donorId={donor.id} donorInfo={{ donor_code: donor.donor_code, donor_age: d.donor_age, gender: donor.gender, death_date: donor.death_date, time_of_death: d.time_of_death, death_type: d.death_type, death_timezone: d.death_timezone, external_donor_id: d.external_donor_id, partner_name: null }} />
-            )}
-
             <Card>
               <CardHeader><p className="text-sm font-medium">Compliance</p></CardHeader>
               <CardContent>
@@ -228,6 +227,13 @@ const DonorDetail = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Recovery Tab */}
+          {donor.status === 'approved' && (
+            <TabsContent value="recovery" className="space-y-5 mt-5">
+              <TissueRecoveryForm donorId={donor.id} donorInfo={{ donor_code: donor.donor_code, donor_age: d.donor_age, gender: donor.gender, death_date: donor.death_date, time_of_death: d.time_of_death, death_type: d.death_type, death_timezone: d.death_timezone, external_donor_id: d.external_donor_id, partner_name: null }} />
+            </TabsContent>
+          )}
 
           {/* Logistics Tab */}
           <TabsContent value="logistics" className="space-y-5 mt-5">

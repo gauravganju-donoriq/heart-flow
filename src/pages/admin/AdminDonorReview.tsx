@@ -161,6 +161,9 @@ const AdminDonorReview = () => {
           <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-0">
             <TabsTrigger value="overview" className={tabTriggerClass}>Overview</TabsTrigger>
             <TabsTrigger value="clinical" className={tabTriggerClass}>Clinical</TabsTrigger>
+            {donor.status === 'approved' && (
+              <TabsTrigger value="recovery" className={tabTriggerClass}>Recovery</TabsTrigger>
+            )}
             <TabsTrigger value="logistics" className={tabTriggerClass}>Logistics</TabsTrigger>
             <TabsTrigger value="documents" className={tabTriggerClass}>Documents</TabsTrigger>
             <TabsTrigger value="screening" className={tabTriggerClass}>AI Screening</TabsTrigger>
@@ -256,9 +259,22 @@ const AdminDonorReview = () => {
                   <BoolField label="Autopsy (Q22)" value={d.has_autopsy} />
                 </dl>
               </CardContent>
-            </Card>
+          </Card>
 
-            {donor.status === 'approved' && (
+            <Card>
+              <CardHeader><p className="text-sm font-medium">Compliance</p></CardHeader>
+              <CardContent>
+                <dl className="grid gap-4 md:grid-cols-2">
+                  <BoolField label="Consent Obtained" value={donor.consent_obtained} />
+                  <BoolField label="Medical History Reviewed" value={donor.medical_history_reviewed} />
+                </dl>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Recovery Tab */}
+          {donor.status === 'approved' && (
+            <TabsContent value="recovery" className="space-y-5 mt-5">
               <TissueRecoveryForm
                 donorId={donor.id}
                 donorInfo={{
@@ -273,18 +289,10 @@ const AdminDonorReview = () => {
                   partner_name: donor.partners?.organization_name || null,
                 }}
               />
-            )}
+            </TabsContent>
+          )}
 
-            <Card>
-              <CardHeader><p className="text-sm font-medium">Compliance</p></CardHeader>
-              <CardContent>
-                <dl className="grid gap-4 md:grid-cols-2">
-                  <BoolField label="Consent Obtained" value={donor.consent_obtained} />
-                  <BoolField label="Medical History Reviewed" value={donor.medical_history_reviewed} />
-                </dl>
-              </CardContent>
-            </Card>
-          </TabsContent>
+          {/* Compliance (in Clinical tab was here but got displaced — re-add above) */}
 
           {/* Logistics Tab */}
           <TabsContent value="logistics" className="space-y-5 mt-5">

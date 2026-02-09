@@ -52,7 +52,7 @@ const DonorsList = () => {
   };
 
   return (
-    <DashboardLayout navItems={navItems} title="DonorIQ">
+    <DashboardLayout navItems={navItems} title="Atlas">
       <div className="space-y-5">
         {/* Filter + Add */}
         <div className="flex items-center justify-between">

@@ -144,7 +144,7 @@ const AdminDonorsList = () => {
   };
 
   return (
-    <DashboardLayout navItems={navItems} title="DonorIQ">
+    <DashboardLayout navItems={navItems} title="Atlas">
       <div className="space-y-5 max-w-6xl">
         {/* Toolbar */}
         <div className="flex items-center justify-between">

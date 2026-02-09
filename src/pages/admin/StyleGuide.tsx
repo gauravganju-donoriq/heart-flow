@@ -37,7 +37,7 @@ const StyleGuide = () => {
     <div className="min-h-screen bg-background p-6 lg:p-10">
       <div className="space-y-10 max-w-5xl mx-auto">
         <div>
-          <h1 className="text-lg font-semibold">DonorIQ — Style Guide</h1>
+          <h1 className="text-lg font-semibold">Atlas — Style Guide</h1>
           <p className="text-[13px] text-muted-foreground">Living reference for the design system.</p>
         </div>
 

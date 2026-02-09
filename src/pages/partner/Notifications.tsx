@@ -63,7 +63,7 @@ const Notifications = () => {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <DashboardLayout navItems={navItems} title="DonorIQ">
+    <DashboardLayout navItems={navItems} title="Atlas">
       <div className="space-y-5">
         <div className="flex items-center justify-between">
           <p className="text-[13px] text-muted-foreground">{unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}</p>

@@ -220,7 +220,7 @@ const DonorForm = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="DonorIQ">
+      <DashboardLayout navItems={navItems} title="Atlas">
         <div className="flex items-center justify-center py-12">
           <div className="text-muted-foreground">Loading...</div>
         </div>
@@ -229,7 +229,7 @@ const DonorForm = () => {
   }
 
   return (
-    <DashboardLayout navItems={navItems} title="DonorIQ">
+    <DashboardLayout navItems={navItems} title="Atlas">
       <div className="space-y-5 max-w-3xl">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/partner/donors')}>

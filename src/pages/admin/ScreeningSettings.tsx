@@ -156,7 +156,7 @@ const ScreeningSettings = () => {
   const filtered = activeTab === 'all' ? guidelines : guidelines.filter(g => g.category === activeTab);
 
   return (
-    <DashboardLayout navItems={navItems} title="DonorIQ">
+    <DashboardLayout navItems={navItems} title="Atlas">
       <div className="space-y-5 max-w-4xl">
         <Tabs defaultValue="guidelines" className="w-full">
           <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-0 mb-5">

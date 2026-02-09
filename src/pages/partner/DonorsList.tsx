@@ -89,7 +89,7 @@ const DonorsList = () => {
                 <TableRow>
                   <TableHead>Donor Code</TableHead>
                   <TableHead>Name</TableHead>
-                  <TableHead>Tissue Type</TableHead>
+                  <TableHead>Source</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Submitted</TableHead>
                   <TableHead>Created</TableHead>
@@ -99,14 +99,19 @@ const DonorsList = () => {
               <TableBody>
                 {donors.map((donor) => (
                   <TableRow key={donor.id} className="cursor-pointer hover:bg-muted/30" onClick={() => navigate(`/partner/donors/${donor.id}`)}>
-                    <TableCell className="font-mono text-[13px] py-3.5">
-                      <span className="flex items-center gap-1.5">
-                        {donor.donor_code}
-                        {donor.intake_method === 'phone' && <Phone className="h-3.5 w-3.5 text-muted-foreground" />}
-                      </span>
-                    </TableCell>
+                    <TableCell className="font-mono text-[13px] py-3.5">{donor.donor_code}</TableCell>
                     <TableCell className="text-[13px] py-3.5">{donor.first_name && donor.last_name ? `${donor.first_name} ${donor.last_name}` : '—'}</TableCell>
-                    <TableCell className="text-[13px] text-muted-foreground py-3.5">{donor.tissue_type || '—'}</TableCell>
+                    <TableCell className="py-3.5">
+                      {donor.intake_method === 'phone' ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border bg-violet-50 text-violet-600 border-violet-100">
+                          <Phone className="h-3 w-3" />Phone
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border bg-gray-50 text-gray-500 border-gray-200">
+                          Manual
+                        </span>
+                      )}
+                    </TableCell>
                     <TableCell className="py-3.5"><Badge className={`rounded-md ${statusStyles[donor.status]}`}>{statusLabels[donor.status]}</Badge></TableCell>
                     <TableCell className="text-[13px] py-3.5">{donor.submitted_at ? new Date(donor.submitted_at).toLocaleDateString() : '—'}</TableCell>
                     <TableCell className="text-[13px] py-3.5">{new Date(donor.created_at).toLocaleDateString()}</TableCell>

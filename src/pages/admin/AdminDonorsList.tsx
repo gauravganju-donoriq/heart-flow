@@ -185,7 +185,7 @@ const AdminDonorsList = () => {
                   <TableHead>Code</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Partner</TableHead>
-                  <TableHead>Type</TableHead>
+                  <TableHead>Source</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>AI</TableHead>
                   <TableHead>Submitted</TableHead>
@@ -199,12 +199,7 @@ const AdminDonorsList = () => {
                     onClick={() => navigate(`/admin/donors/${donor.id}`)}
                   >
                     <TableCell className="font-mono text-[13px] py-3.5">
-                      <span className="flex items-center gap-1.5">
-                        {donor.donor_code || '—'}
-                        {donor.intake_method === 'phone' && (
-                          <Phone className="h-3 w-3 text-muted-foreground" />
-                        )}
-                      </span>
+                      {donor.donor_code || '—'}
                     </TableCell>
                     <TableCell className="text-[13px] py-3.5">
                       {donor.first_name && donor.last_name
@@ -214,8 +209,16 @@ const AdminDonorsList = () => {
                     <TableCell className="text-[13px] text-muted-foreground py-3.5">
                       {donor.partners?.organization_name || '—'}
                     </TableCell>
-                    <TableCell className="text-[13px] capitalize py-3.5">
-                      {donor.tissue_type || '—'}
+                    <TableCell className="py-3.5">
+                      {donor.intake_method === 'phone' ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border bg-violet-50 text-violet-600 border-violet-100">
+                          <Phone className="h-3 w-3" />Phone
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border bg-gray-50 text-gray-500 border-gray-200">
+                          Manual
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="py-3.5">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${statusStyles[donor.status]}`}>

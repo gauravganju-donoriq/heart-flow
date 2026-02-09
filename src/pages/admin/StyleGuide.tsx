@@ -1,4 +1,3 @@
-import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,19 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
-import {
-  LayoutDashboard, Users, FileText, Bell, Shield, Palette,
-  Plus, CheckCircle2, XCircle, AlertTriangle, HelpCircle
-} from 'lucide-react';
-
-const navItems = [
-  { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
-  { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
-  { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
-  { label: 'Notifications', href: '/admin/notifications', icon: <Bell className="h-4 w-4" /> },
-  { label: 'Style Guide', href: '/admin/style-guide', icon: <Palette className="h-4 w-4" /> },
-];
+import { Plus, CheckCircle2, XCircle, AlertTriangle, HelpCircle } from 'lucide-react';
 
 const ColorSwatch = ({ name, cssVar, value }: { name: string; cssVar: string; value: string }) => (
   <div className="flex items-center gap-3">
@@ -47,8 +34,12 @@ const SectionHeader = ({ title, description }: { title: string; description: str
 
 const StyleGuide = () => {
   return (
-    <DashboardLayout navItems={navItems} title="DonorIQ">
-      <div className="space-y-10 max-w-5xl">
+    <div className="min-h-screen bg-background p-6 lg:p-10">
+      <div className="space-y-10 max-w-5xl mx-auto">
+        <div>
+          <h1 className="text-lg font-semibold">DonorIQ — Style Guide</h1>
+          <p className="text-[13px] text-muted-foreground">Living reference for the design system.</p>
+        </div>
 
         {/* ─── Colors ─── */}
         <section>
@@ -245,7 +236,7 @@ const StyleGuide = () => {
           </div>
         </section>
 
-        {/* ─── Spacing & Layout ─── */}
+        {/* ─── Spacing ─── */}
         <section>
           <SectionHeader title="Spacing & Layout" description="Border radius, spacing constants, grid patterns." />
           <div className="border rounded-lg p-6 space-y-4">
@@ -267,9 +258,8 @@ const StyleGuide = () => {
             </div>
           </div>
         </section>
-
       </div>
-    </DashboardLayout>
+    </div>
   );
 };
 

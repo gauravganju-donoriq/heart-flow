@@ -383,6 +383,71 @@ export type Database = {
           },
         ]
       }
+      plasma_dilution_worksheets: {
+        Row: {
+          blood_products: Json
+          blood_volume: number | null
+          bsa_value: number | null
+          colloids: Json
+          created_at: string
+          crystalloids: Json
+          death_type: string | null
+          donor_id: string
+          id: string
+          is_sample_acceptable: boolean | null
+          plasma_volume: number | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          sample_datetime: string | null
+          sample_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          blood_products?: Json
+          blood_volume?: number | null
+          bsa_value?: number | null
+          colloids?: Json
+          created_at?: string
+          crystalloids?: Json
+          death_type?: string | null
+          donor_id: string
+          id?: string
+          is_sample_acceptable?: boolean | null
+          plasma_volume?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sample_datetime?: string | null
+          sample_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          blood_products?: Json
+          blood_volume?: number | null
+          bsa_value?: number | null
+          colloids?: Json
+          created_at?: string
+          crystalloids?: Json
+          death_type?: string | null
+          donor_id?: string
+          id?: string
+          is_sample_acceptable?: boolean | null
+          plasma_volume?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sample_datetime?: string | null
+          sample_type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plasma_dilution_worksheets_donor_id_fkey"
+            columns: ["donor_id"]
+            isOneToOne: true
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string

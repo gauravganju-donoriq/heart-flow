@@ -12,7 +12,8 @@ import HeartRequestForm from '@/components/HeartRequestForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { ResponsiveTabsList, type TabItem } from '@/components/ui/responsive-tabs';
 import { useToast } from '@/hooks/use-toast';
 import { LayoutDashboard, FileText, Bell, ArrowLeft, Edit, Send, Phone } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
@@ -58,6 +59,7 @@ const DonorDetail = () => {
   const { toast } = useToast();
   const [donor, setDonor] = useState<Donor | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => { fetchDonor(); }, [id]);
 
@@ -119,19 +121,19 @@ const DonorDetail = () => {
         )}
 
         {/* Tabbed Content */}
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-0">
-            <TabsTrigger value="overview" className={tabTriggerClass}>Overview</TabsTrigger>
-            <TabsTrigger value="clinical" className={tabTriggerClass}>Clinical</TabsTrigger>
-            {donor.status === 'approved' && (
-              <TabsTrigger value="recovery" className={tabTriggerClass}>Recovery (7033F)</TabsTrigger>
-            )}
-            {donor.status === 'approved' && d.hv_heart_valves && (
-              <TabsTrigger value="heart_request" className={tabTriggerClass}>Heart Request (7117F)</TabsTrigger>
-            )}
-            <TabsTrigger value="logistics" className={tabTriggerClass}>Logistics</TabsTrigger>
-            <TabsTrigger value="documents" className={tabTriggerClass}>Documents</TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <ResponsiveTabsList
+            tabs={[
+              { value: 'overview', label: 'Overview' },
+              { value: 'clinical', label: 'Clinical' },
+              ...(donor.status === 'approved' ? [{ value: 'recovery', label: 'Recovery (7033F)' }] : []),
+              ...(donor.status === 'approved' && d.hv_heart_valves ? [{ value: 'heart_request', label: 'Heart Request (7117F)' }] : []),
+              { value: 'logistics', label: 'Logistics' },
+              { value: 'documents', label: 'Documents' },
+            ]}
+            activeValue={activeTab}
+            onValueChange={setActiveTab}
+          />
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-5 mt-5">

@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { LayoutDashboard, FileText, Bell, Plus, Phone } from 'lucide-react';
@@ -66,8 +66,18 @@ const PartnerDashboard = () => {
     setLoading(false);
   };
 
+  const phoneWidget = intakePhone ? (
+    <div className="border border-border rounded-lg px-3 py-2.5">
+      <div className="flex items-center gap-1.5 mb-1">
+        <Phone className="h-3 w-3 text-muted-foreground" />
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Intake Line</p>
+      </div>
+      <p className="text-[13px] font-mono font-semibold tracking-wide">{intakePhone}</p>
+    </div>
+  ) : null;
+
   return (
-    <DashboardLayout navItems={navItems} title="Atlas">
+    <DashboardLayout navItems={navItems} title="Atlas" sidebarFooterExtra={phoneWidget}>
       <div className="space-y-5">
         {/* Header */}
         <div className="flex items-center justify-end">
@@ -83,22 +93,6 @@ const PartnerDashboard = () => {
           <Card><CardHeader className="pb-2"><p className="text-[13px] text-muted-foreground">Pending Review</p><p className="text-2xl font-semibold">{stats.submitted}</p></CardHeader></Card>
           <Card><CardHeader className="pb-2"><p className="text-[13px] text-muted-foreground">Approved</p><p className="text-2xl font-semibold text-emerald-600">{stats.approved}</p></CardHeader></Card>
         </div>
-
-        {/* Phone Intake */}
-        {intakePhone && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-primary" />
-                <p className="text-sm font-medium">Phone Intake Line</p>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-mono font-semibold tracking-wide">{intakePhone}</p>
-              <p className="text-[13px] text-muted-foreground mt-2">Call to submit or update donor information by phone. Our AI agent will walk you through the screening questions.</p>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Recent Donors */}
         <div className="space-y-3">

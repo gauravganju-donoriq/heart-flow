@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Phone, CheckCircle, Loader2 } from 'lucide-react';
+import { Phone, CheckCircle, Loader2, RefreshCw } from 'lucide-react';
 
 const RetellSetup = () => {
   const { toast } = useToast();
@@ -15,6 +15,7 @@ const RetellSetup = () => {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [setting, setSetting] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     checkStatus();
@@ -105,6 +106,44 @@ const RetellSetup = () => {
               The AI phone intake agent is active. Partners can call to submit or update donor
               information. The phone number is displayed on each partner's dashboard.
             </p>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                setUpdating(true);
+                try {
+                  const { data, error } = await supabase.functions.invoke('setup-retell', {
+                    body: { action: 'update' },
+                  });
+                  if (error) throw error;
+                  toast({
+                    title: 'Agent Updated',
+                    description: 'Prompt and voice settings have been optimized.',
+                  });
+                } catch (err) {
+                  console.error('Update failed:', err);
+                  toast({
+                    variant: 'destructive',
+                    title: 'Update Failed',
+                    description: err instanceof Error ? err.message : 'Failed to update agent',
+                  });
+                } finally {
+                  setUpdating(false);
+                }
+              }}
+              disabled={updating}
+            >
+              {updating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Update Agent Settings
+                </>
+              )}
+            </Button>
           </div>
         ) : (
           <div className="space-y-4">

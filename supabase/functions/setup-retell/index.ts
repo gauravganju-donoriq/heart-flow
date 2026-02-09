@@ -75,70 +75,120 @@ Deno.serve(async (req) => {
     // Build the webhook URL
     const webhookUrl = `${supabaseUrl}/functions/v1/retell-webhook`;
 
+    // Shared prompt and agent settings
+    const SHORTENED_PROMPT = `## Identity
+You are a professional tissue recovery intake agent for LeMaitre Vascular. You collect donor screening information from tissue recovery partners over the phone.
+
+## Style Guardrails
+- Be concise and professional. One question at a time.
+- Always confirm each answer before moving on: repeat back what you heard.
+- If the caller is unsure, note "unknown" and move on.
+- Use short, clear sentences. Avoid medical jargon unless the caller uses it first.
+- Never rush the caller. Wait for complete answers.
+
+## Task — Initial Screening
+Ask these 5 questions in order, one at a time:
+
+1. "What type of call is this — initial screening or an update to an existing donor?"
+2. "May I have your name, please?"
+3. "Which recovery group are you calling from? I'll need your partner code or organization name."
+4. "What is the donor's age?"
+5. "What was the donor's sex at birth — male or female?"
+
+After all 5 questions, summarize:
+"Let me confirm what I have: [repeat all answers]. Is that correct?"
+Then say: "Thank you, I've recorded this information. Goodbye."
+
+## Task — Update Call
+If the caller says this is an update:
+1. "Do you have the donor ID or donor number?"
+2. "What information would you like to update?"
+3. Collect only the specific fields they mention.
+4. Summarize changes and confirm before ending.
+
+## Rules
+- Always collect the partner code/organization name — it is required for every call.
+- If the caller cannot provide a donor ID for an update, let them know a new record will be created.
+- Do not ask questions beyond the 5 listed for initial screening.
+- If the caller volunteers extra information, acknowledge it and note it, but do not prompt for more.`;
+
+    const AGENT_SETTINGS = {
+      voice_temperature: 0.5,
+      voice_speed: 0.9,
+      responsiveness: 0.8,
+      interruption_sensitivity: 0.6,
+      enable_backchannel: true,
+      backchannel_frequency: 0.8,
+      backchannel_words: ["yeah", "I see", "okay", "got it", "mhmm"],
+      ambient_sound: "office",
+      ambient_sound_volume: 0.3,
+      boosted_keywords: [
+        "LeMaitre", "aorto iliac", "saphenous vein", "femoral", "heart valves",
+        "cardiac death", "brain death", "DCD", "prescreen", "autopsy",
+        "pathology", "donor", "tissue recovery", "clinical course", "deferred",
+      ],
+      enable_voicemail_detection: true,
+    };
+
+    const BEGIN_MESSAGE =
+      "Hello, this is the LeMaitre Vascular tissue recovery intake line. I'll help you record donor screening information. First, what type of call is this — initial screening or an update to an existing donor?";
+
+    if (action === "update") {
+      // Find existing agent
+      const agentsRes = await fetch(`${RETELL_BASE}/list-agents`, {
+        method: "GET",
+        headers: retellHeaders,
+      });
+      if (!agentsRes.ok) throw new Error(`Failed to list agents: ${agentsRes.status}`);
+
+      const agents = await agentsRes.json();
+      const agent = agents.find(
+        (a: { agent_name: string }) => a.agent_name === "HeartStream Donor Intake"
+      );
+      if (!agent) throw new Error("Agent 'HeartStream Donor Intake' not found. Run setup first.");
+
+      const llmId = agent.response_engine?.llm_id;
+      if (!llmId) throw new Error("Could not find LLM ID on existing agent.");
+
+      // PATCH LLM with new prompt
+      const llmPatch = await fetch(`${RETELL_BASE}/update-retell-llm/${llmId}`, {
+        method: "PATCH",
+        headers: retellHeaders,
+        body: JSON.stringify({
+          begin_message: BEGIN_MESSAGE,
+          general_prompt: SHORTENED_PROMPT,
+        }),
+      });
+      if (!llmPatch.ok) {
+        const err = await llmPatch.text();
+        throw new Error(`Failed to update LLM: ${llmPatch.status} ${err}`);
+      }
+
+      // PATCH agent with optimized settings
+      const agentPatch = await fetch(`${RETELL_BASE}/update-agent/${agent.agent_id}`, {
+        method: "PATCH",
+        headers: retellHeaders,
+        body: JSON.stringify(AGENT_SETTINGS),
+      });
+      if (!agentPatch.ok) {
+        const err = await agentPatch.text();
+        throw new Error(`Failed to update agent: ${agentPatch.status} ${err}`);
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Agent and LLM updated successfully." }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (action === "setup") {
       // Step 1: Create LLM
       const llmRes = await fetch(`${RETELL_BASE}/create-retell-llm`, {
         method: "POST",
         headers: retellHeaders,
         body: JSON.stringify({
-          begin_message:
-            "Hello, this is the LeMaitre Vascular tissue recovery intake line. I'll help you record donor screening information. First, what type of call is this — initial screening, prescreen update, courier update, or something else?",
-          general_prompt: `You are a professional tissue recovery intake agent for LeMaitre Vascular. Your job is to collect screening information from tissue recovery partners over the phone. Be professional, empathetic, and patient. Confirm details as you go. If the caller is unsure about a field, note it and move on.
-
-## STEP 1: Determine call type
-Always start with:
-1. "What type of call is this?" (initial screening, prescreen update, courier update, etc.)
-2. "May I have your name please?" (caller's name — not the donor)
-3. "Which recovery group are you calling from?" (their partner code/slug)
-
-## STEP 2: Branch based on call type
-
-### IF INITIAL SCREENING:
-Ask all remaining questions in order, one at a time:
-4. "What is the donor's age?"
-5. "What was the donor's sex at birth?" (male or female)
-6. "What is the date of death?"
-7. "What was the time of death?"
-8. "What type of death was this?" (cardiac death, brain death, DCD, etc.)
-9. "What time zone are you in?" (EST, CST, MST, PST, etc.)
-10. "What was the cause of death?"
-11. "Can you describe the clinical course?"
-12. "What is the donor's height in inches?"
-13. "What is the donor's weight in kilograms?"
-14. "Any relevant medical history?"
-15. "Are there any high-risk factors or additional relevant notes?"
-16. "Is the donor accepted or deferred?"
-
-If the donor is accepted, continue with tissue-specific questions:
-17. "Are heart valves being recovered?" (yes/no)
-18. If heart valves yes: "Any heart valve pathology requests?"
-19. "Is Aorto Iliac being recovered?" (yes/no)
-20. "Is Femoral En Bloc being recovered?" (yes/no)
-21. "Is Saphenous Vein being recovered?" (yes/no)
-22. If any tissue is accepted: "Is this donor having any type of autopsy?" (yes/no)
-
-Then wrap up:
-23. "Do you have a donor ID or donor number?"
-24. "Any courier updates?"
-
-### IF UPDATE / PRESCREEN UPDATE / COURIER UPDATE:
-This is a follow-up call to update an existing donor record. Immediately ask:
-- "Do you have the donor ID or donor number for the donor you'd like to update?"
-- Then ask: "What information would you like to update?" 
-- Only ask about the specific fields the caller wants to update. Do NOT re-ask all 25 questions.
-- Common update scenarios:
-  * Courier updates (tracking info, pickup times)
-  * Medical history additions
-  * Tissue recovery decisions (accepted/deferred changes)
-  * Additional clinical notes
-- After collecting the updates, confirm: "Let me summarize the changes: [list changes]. Is that correct?"
-
-## IMPORTANT RULES:
-- Always collect the partner code (Q3) early — it's required for every call type.
-- For update calls, the donor ID is critical for matching to the right record.
-- If the caller cannot provide a donor ID for an update call, let them know a new record will be created instead.
-
-Once all information is collected, summarize what you've recorded and confirm with the caller before ending the call.`,
+          begin_message: BEGIN_MESSAGE,
+          general_prompt: SHORTENED_PROMPT,
         }),
       });
 
@@ -164,6 +214,7 @@ Once all information is collected, summarize what you've recorded and confirm wi
           agent_name: "HeartStream Donor Intake",
           webhook_url: webhookUrl,
           language: "en-US",
+          ...AGENT_SETTINGS,
         }),
       });
 
@@ -268,7 +319,7 @@ Once all information is collected, summarize what you've recorded and confirm wi
     }
 
     return new Response(
-      JSON.stringify({ error: "Invalid action. Use 'setup' or 'status'." }),
+      JSON.stringify({ error: "Invalid action. Use 'setup', 'status', or 'update'." }),
       {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -4,9 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Pencil, Copy, Check } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Copy, Check } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,7 +49,8 @@ const PartnersTable = ({ partners, loading, onEdit, onRefresh }: PartnersTablePr
   const [partnerToDeactivate, setPartnerToDeactivate] = useState<Partner | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const copyLoginUrl = async (partner: Partner) => {
+  const copyLoginUrl = async (e: React.MouseEvent, partner: Partner) => {
+    e.stopPropagation();
     const url = `${window.location.origin}/login/${partner.slug}`;
     await navigator.clipboard.writeText(url);
     setCopiedId(partner.id);
@@ -73,7 +73,6 @@ const PartnersTable = ({ partners, loading, onEdit, onRefresh }: PartnersTablePr
 
       onRefresh();
     } catch (error: any) {
-      console.error('Error toggling partner status:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to update partner status',
@@ -82,7 +81,8 @@ const PartnersTable = ({ partners, loading, onEdit, onRefresh }: PartnersTablePr
     }
   };
 
-  const handleSwitchChange = (partner: Partner) => {
+  const handleSwitchChange = (e: React.MouseEvent, partner: Partner) => {
+    e.stopPropagation();
     if (partner.is_active) {
       setPartnerToDeactivate(partner);
       setConfirmDialogOpen(true);
@@ -100,60 +100,65 @@ const PartnersTable = ({ partners, loading, onEdit, onRefresh }: PartnersTablePr
   };
 
   if (loading) {
-    return <div className="text-center py-8 text-muted-foreground text-[13px]">Loading...</div>;
+    return <div className="text-center py-12 text-[13px] text-muted-foreground">Loading…</div>;
   }
 
   if (partners.length === 0) {
-    return <div className="text-center py-8 text-muted-foreground text-[13px]">No partners yet</div>;
+    return <div className="text-center py-12 text-[13px] text-muted-foreground">No partners yet</div>;
   }
 
   return (
     <>
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="hover:bg-transparent">
             <TableHead>Organization</TableHead>
-            <TableHead>Login URL</TableHead>
             <TableHead>Contact</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
+            <TableHead>Login URL</TableHead>
             <TableHead>Donors</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Joined</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {partners.map((partner) => (
-            <TableRow key={partner.id} className={`hover:bg-muted/30 ${!partner.is_active ? 'opacity-60' : ''}`}>
-              <TableCell className="font-medium text-[13px] py-3.5">
+            <TableRow
+              key={partner.id}
+              className={`cursor-pointer hover:bg-muted/30 ${!partner.is_active ? 'opacity-50' : ''}`}
+              onClick={() => onEdit(partner)}
+            >
+              <TableCell className="text-[13px] font-medium py-3.5">
                 {partner.organization_name}
-                {!partner.is_active && (
-                  <Badge variant="secondary" className="ml-2">Inactive</Badge>
-                )}
+              </TableCell>
+              <TableCell className="text-[13px] py-3.5">
+                {partner.profiles?.full_name || '—'}
+              </TableCell>
+              <TableCell className="text-[13px] text-muted-foreground py-3.5">
+                {partner.profiles?.email || '—'}
               </TableCell>
               <TableCell className="py-3.5">
                 <div className="flex items-center gap-1">
                   <code className="text-xs text-muted-foreground truncate max-w-[140px]">/login/{partner.slug}</code>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyLoginUrl(partner)}>
-                        {copiedId === partner.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Copy login URL</TooltipContent>
-                  </Tooltip>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => copyLoginUrl(e, partner)}>
+                          {copiedId === partner.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Copy login URL</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </TableCell>
-              <TableCell className="text-[13px] py-3.5">{partner.profiles?.full_name || '—'}</TableCell>
-              <TableCell className="text-[13px] py-3.5">{partner.profiles?.email || '—'}</TableCell>
-              <TableCell className="text-[13px] py-3.5">{partner.contact_phone || '—'}</TableCell>
-              <TableCell className="text-[13px] py-3.5">{partner._count?.donors || 0}</TableCell>
+              <TableCell className="text-[13px] py-3.5">
+                {partner._count?.donors || 0}
+              </TableCell>
               <TableCell className="py-3.5">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" onClick={(e) => handleSwitchChange(e, partner)}>
                   <Switch
                     checked={partner.is_active}
-                    onCheckedChange={() => handleSwitchChange(partner)}
                     aria-label={`Toggle ${partner.organization_name} active status`}
                   />
                   <span className="text-[13px] text-muted-foreground">
@@ -161,16 +166,8 @@ const PartnersTable = ({ partners, loading, onEdit, onRefresh }: PartnersTablePr
                   </span>
                 </div>
               </TableCell>
-              <TableCell className="text-[13px] py-3.5">{new Date(partner.created_at).toLocaleDateString()}</TableCell>
-              <TableCell className="text-right py-3.5">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onEdit(partner)}
-                >
-                  <Pencil className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
+              <TableCell className="text-[13px] text-muted-foreground py-3.5">
+                {new Date(partner.created_at).toLocaleDateString()}
               </TableCell>
             </TableRow>
           ))}
@@ -183,14 +180,12 @@ const PartnersTable = ({ partners, loading, onEdit, onRefresh }: PartnersTablePr
             <AlertDialogTitle>Deactivate Partner Account</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to deactivate{' '}
-              <strong>{partnerToDeactivate?.organization_name}</strong>? 
+              <strong>{partnerToDeactivate?.organization_name}</strong>?
               They will no longer be able to access their account or submit new donors.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPartnerToDeactivate(null)}>
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setPartnerToDeactivate(null)}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeactivation} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Deactivate
             </AlertDialogAction>

@@ -1,98 +1,67 @@
 
 
-# Add Plasma Dilution Worksheet (7059F) to Donor Detail
+# Smart Pre-Fill Across All Forms
 
 ## Overview
 
-Add the LeMaitre 7059F Plasma Dilution of Donor Worksheet as a new tab on the donor detail pages. This compliance form determines whether a donor's blood samples are acceptable based on fluid transfusions/infusions received before death.
+Maximize auto-population of the Plasma Dilution (7059F) and Recovery (7033F) forms using data already captured during the donor intake (the 25 screening questions). This reduces admin workload by eliminating redundant data entry.
 
-## Where It Fits
+## What Gets Pre-Filled
 
-This form is relevant during the **review and approval** stages of a donor referral. When an admin or partner reviews a donor, they need to assess whether the donor's lab samples are diluted. The tab will appear for donors with status `submitted`, `under_review`, or `approved` (not for `draft` donors who haven't been submitted yet).
+### Plasma Dilution (7059F) -- Current vs. Proposed
 
-## What the Form Captures
+| Field | Currently | Proposed |
+|-------|-----------|----------|
+| DIN | Pre-filled | No change |
+| Recovery Agency Donor # | Pre-filled | No change |
+| Donor Weight (kg) | Pre-filled | No change |
+| Sex at Birth | Pre-filled | No change |
+| **Sample Date/Time** | Manual entry | **Auto-fill from death_date + time_of_death, default to Post Mortem** |
+| **Death Type** | Manual entry | **Auto-fill from donor's death_type (Q8): map "Cardiac" to "asystole", "Neurological" to "cct"** |
 
-### Section 1: Donor Header
-- LeMaitre Donor # (pre-filled from DIN)
-- Recovery Agency Donor # (pre-filled from external_donor_id)
-- Donor weight in kg (pre-filled from weight_kgs)
-- Sample type: Post Mortem (with date/time of death) or Pre Mortem (with date/time of collection)
-- Death type: Asystole, LTKA, or CCT
+### Recovery (7033F) -- Current vs. Proposed
 
-### Section 2: Fluids Received
-- **A. Blood products** transfused in the 48 hours before death (dynamic rows: product name + amount)
-- **B. Colloids** infused in the 48 hours before death (dynamic rows: colloid name + amount)
-- **C. Crystalloids** infused in the 1 hour before death (dynamic rows: crystalloid name + amount)
-- Each section has a calculated total
+| Field | Currently | Proposed |
+|-------|-----------|----------|
+| DIN | Pre-filled | No change |
+| Recovery Agency | Pre-filled | No change |
+| Donor Age, Gender, Death Date/Time/Type/Timezone | Pre-filled (read-only header) | No change |
+| **LeMaitre Donor #** | Editable, blank by default | **Already pre-fills from DIN -- no change needed** |
+| **Tissue rows** | Manual entry | **Auto-create rows based on Q17-Q21 answers** |
 
-### Section 3: Weight Calculations (auto-calculated)
-- Blood Volume (BV) based on weight range and gender
-- Plasma Volume (PV) based on weight range and gender
-- For donors 45-100 kg: simple weight-based formula
-- For donors under 45 kg or over 100 kg: BSA-based formula (male/female variants)
+### Tissue Recovery Auto-Rows (New)
 
-### Section 4: Dilution Check (auto-calculated)
-- Check 1: Is B + C > PV?
-- Check 2: Is A + B + C > BV?
-- Result: Acceptable or Not Acceptable (with clear visual indicator)
+When opening the Recovery (7033F) form for the first time (no existing record), pre-populate tissue rows based on the donor's intake answers:
 
-### Section 5: Review
-- Reviewed by (text field)
-- Date reviewed
+- If **HV Heart Valves (Q17)** is true: add a cardiac row for "Heart for Valves"
+- If **AI Aorto Iliac (Q19)** is true: add a cardiac row for "Aortoiliac Artery"
+- If **FM Femoral (Q20)** is true: add vascular rows for "RIGHT Femoral Vessels" and "LEFT Femoral Vessels"
+- If **SV Saphenous Vein (Q21)** is true: add vascular rows for "RIGHT Saphenous Vein" and "LEFT Saphenous Vein"
+
+The admin can still add/remove/edit rows -- these are just pre-populated defaults.
+
+## Bug Fix
+
+The last edit introduced a **duplicate "Logistics" tab** in the partner DonorDetail page (lines 128-129). This will be fixed by removing the duplicate.
 
 ## Technical Details
 
-### Database Changes
+### Files Modified
 
-**New table: `plasma_dilution_worksheets`**
-- `id` UUID primary key
-- `donor_id` UUID (references donors, unique -- one worksheet per donor)
-- `sample_type` TEXT ('post_mortem' or 'pre_mortem')
-- `sample_datetime` TIMESTAMPTZ
-- `death_type` TEXT ('asystole', 'ltka', 'cct')
-- `blood_products` JSONB (array of {name, amount})
-- `colloids` JSONB (array of {name, amount})
-- `crystalloids` JSONB (array of {name, amount})
-- `bsa_value` NUMERIC (optional, for edge-weight donors)
-- `blood_volume` NUMERIC (calculated)
-- `plasma_volume` NUMERIC (calculated)
-- `is_sample_acceptable` BOOLEAN
-- `reviewed_by` TEXT
-- `reviewed_at` TIMESTAMPTZ
-- `created_at`, `updated_at` TIMESTAMPTZ defaults
+**`src/components/PlasmaDilutionForm.tsx`**
+- On initial load (no saved worksheet), auto-set `sample_type` to `'post_mortem'`
+- Auto-set `sample_datetime` from `donorInfo.death_date` + `donorInfo.time_of_death` (combine into datetime-local value)
+- Auto-set `death_type` by mapping donor's `death_type`: "Cardiac" maps to "asystole", "Neurological" maps to "cct", otherwise leave blank
+- These pre-fills only apply when creating a new worksheet (not when loading an existing saved one)
 
-**RLS Policies:** Same pattern as `tissue_recoveries` -- admins full access, partners can manage their own donor's worksheets.
+**`src/components/TissueRecoveryForm.tsx`**
+- Add `donorInfo` fields for tissue flags: `hv_heart_valves`, `ai_aorto_iliac`, `fm_femoral`, `sv_saphenous_vein`
+- On initial load when no recovery record exists, auto-populate `tissues` array based on these flags
+- Pre-populated rows will have empty timestamp and technician fields (to be filled by admin)
 
-### Frontend Changes
+**`src/pages/admin/AdminDonorReview.tsx`**
+- Pass additional donor fields (`hv_heart_valves`, `ai_aorto_iliac`, `fm_femoral`, `sv_saphenous_vein`) to `TissueRecoveryForm` via `donorInfo`
 
-**New component: `src/components/PlasmaDilutionForm.tsx`**
-- Mirrors the structure and styling of `TissueRecoveryForm.tsx` for UI consistency
-- Auto-calculates BV and PV based on donor weight, gender, and optional BSA
-- Dynamic row addition for blood products, colloids, and crystalloids
-- Auto-evaluates the two dilution checks and shows a clear pass/fail result
-- Save and load from database
-- Uses same Card/field patterns as existing forms (text-[13px], h-9 inputs, etc.)
-
-**Modified files:**
-- `src/pages/admin/AdminDonorReview.tsx` -- Add "Plasma Dilution (7059F)" tab after Recovery (7033F), visible for submitted/under_review/approved donors
-- `src/pages/partner/DonorDetail.tsx` -- Same tab addition
-
-### Auto-Calculation Logic
-
-```text
-If weight >= 45 and <= 100:
-  BV = weight / 0.015
-  PV = weight / 0.025
-Else if male:
-  BV = BSA * 2740
-  PV = BSA * 1560
-Else (female):
-  BV = BSA * 2370
-  PV = BSA * 1410
-
-Check 1: (colloids_total + crystalloids_total) > PV
-Check 2: (blood_total + colloids_total + crystalloids_total) > BV
-
-Acceptable = both checks are NO
-```
+**`src/pages/partner/DonorDetail.tsx`**
+- Remove duplicate "Logistics" tab trigger (line 128 or 129)
 

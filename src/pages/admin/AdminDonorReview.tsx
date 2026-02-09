@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { LayoutDashboard, Users, FileText, Bell, ArrowLeft, Check, X, Clock, Phone, Shield } from 'lucide-react';
 import AIScreeningPanel from '@/components/admin/AIScreeningPanel';
@@ -34,11 +35,7 @@ const statusStyles: Record<DonorStatus, string> = {
 };
 
 const statusLabels: Record<DonorStatus, string> = {
-  draft: 'Draft',
-  submitted: 'Submitted',
-  under_review: 'Under Review',
-  approved: 'Approved',
-  rejected: 'Rejected',
+  draft: 'Draft', submitted: 'Submitted', under_review: 'Under Review', approved: 'Approved', rejected: 'Rejected',
 };
 
 const navItems = [
@@ -185,155 +182,166 @@ const AdminDonorReview = () => {
           </div>
         )}
 
-        {/* Pending Updates from Follow-Up Calls */}
+        {/* Pending Updates */}
         <PendingDonorUpdates donorId={donor.id} onUpdated={fetchDonor} />
 
-        {/* Call Information (Q1, Q2, Q24) */}
-        <Card>
-          <CardHeader><p className="text-sm font-medium">Call Information</p></CardHeader>
-          <CardContent>
-            <dl className="grid gap-4 md:grid-cols-3">
-              <Field label="Type of Call (Q1)" value={d.call_type} />
-              <Field label="Caller's Name (Q2)" value={d.caller_name} />
-              <BoolField label="Prescreen/Update (Q24)" value={d.is_prescreen_update} />
-            </dl>
-          </CardContent>
-        </Card>
+        {/* Tabbed Content */}
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-0">
+            <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Overview</TabsTrigger>
+            <TabsTrigger value="clinical" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Clinical</TabsTrigger>
+            <TabsTrigger value="logistics" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Logistics</TabsTrigger>
+            <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Documents</TabsTrigger>
+          </TabsList>
 
-        {/* Demographics (Q4, Q5, Q12, Q13) */}
-        <Card>
-          <CardHeader><p className="text-sm font-medium">Demographics</p></CardHeader>
-          <CardContent>
-            <dl className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <Field label="First Name" value={donor.first_name} />
-              <Field label="Last Name" value={donor.last_name} />
-              <Field label="Age (Q4)" value={d.donor_age} />
-              <Field label="Sex at Birth (Q5)" value={donor.gender} />
-              <Field label="Date of Birth" value={donor.date_of_birth ? new Date(donor.date_of_birth).toLocaleDateString() : null} />
-              <Field label="Blood Type" value={donor.blood_type} />
-              <Field label="Height — Inches (Q12)" value={d.height_inches} />
-              <Field label="Weight — Kgs (Q13)" value={d.weight_kgs} />
-            </dl>
-          </CardContent>
-        </Card>
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-5 mt-5">
+            <Card>
+              <CardHeader><p className="text-sm font-medium">Call Information</p></CardHeader>
+              <CardContent>
+                <dl className="grid gap-4 md:grid-cols-3">
+                  <Field label="Type of Call (Q1)" value={d.call_type} />
+                  <Field label="Caller's Name (Q2)" value={d.caller_name} />
+                  <BoolField label="Prescreen/Update (Q24)" value={d.is_prescreen_update} />
+                </dl>
+              </CardContent>
+            </Card>
 
-        {/* Death Details (Q6-Q10) */}
-        <Card>
-          <CardHeader><p className="text-sm font-medium">Death Details</p></CardHeader>
-          <CardContent>
-            <dl className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <Field label="Date of Death (Q6)" value={donor.death_date ? new Date(donor.death_date).toLocaleDateString() : null} />
-              <Field label="Time of Death (Q7)" value={d.time_of_death} />
-              <Field label="Time Zone (Q9)" value={d.death_timezone} />
-              <Field label="Type of Death (Q8)" value={d.death_type} />
-              <Field label="Cause of Death (Q10)" value={donor.cause_of_death} />
-            </dl>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader><p className="text-sm font-medium">Demographics</p></CardHeader>
+              <CardContent>
+                <dl className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <Field label="First Name" value={donor.first_name} />
+                  <Field label="Last Name" value={donor.last_name} />
+                  <Field label="Age (Q4)" value={d.donor_age} />
+                  <Field label="Sex at Birth (Q5)" value={donor.gender} />
+                  <Field label="Date of Birth" value={donor.date_of_birth ? new Date(donor.date_of_birth).toLocaleDateString() : null} />
+                  <Field label="Blood Type" value={donor.blood_type} />
+                  <Field label="Height — Inches (Q12)" value={d.height_inches} />
+                  <Field label="Weight — Kgs (Q13)" value={d.weight_kgs} />
+                </dl>
+              </CardContent>
+            </Card>
 
-        {/* Clinical (Q11, Q14, Q15) */}
-        <Card>
-          <CardHeader><p className="text-sm font-medium">Clinical Information</p></CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <dt className="text-[13px] text-muted-foreground">Clinical Course (Q11)</dt>
-              <dd className="text-[13px] whitespace-pre-wrap">{d.clinical_course || '—'}</dd>
-            </div>
-            <div>
-              <dt className="text-[13px] text-muted-foreground">Medical History (Q14)</dt>
-              <dd className="text-[13px] whitespace-pre-wrap">{d.medical_history || '—'}</dd>
-            </div>
-            <div>
-              <dt className="text-[13px] text-muted-foreground">High Risk / Additional Notes (Q15)</dt>
-              <dd className="text-[13px] whitespace-pre-wrap">{d.high_risk_notes || '—'}</dd>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader><p className="text-sm font-medium">Death Details</p></CardHeader>
+              <CardContent>
+                <dl className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <Field label="Date of Death (Q6)" value={donor.death_date ? new Date(donor.death_date).toLocaleDateString() : null} />
+                  <Field label="Time of Death (Q7)" value={d.time_of_death} />
+                  <Field label="Time Zone (Q9)" value={d.death_timezone} />
+                  <Field label="Type of Death (Q8)" value={d.death_type} />
+                  <Field label="Cause of Death (Q10)" value={donor.cause_of_death} />
+                </dl>
+              </CardContent>
+            </Card>
 
-        {/* Tissue Recovery (Q16-Q22) */}
-        <Card>
-          <CardHeader><p className="text-sm font-medium">Tissue Recovery</p></CardHeader>
-          <CardContent>
-            <dl className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <Field label="Donor Accepted/Deferred (Q16)" value={d.donor_accepted} />
-              <BoolField label="HV — Heart Valves (Q17)" value={d.hv_heart_valves} />
-              <Field label="HV Pathology Request (Q18)" value={d.hv_pathology_request} />
-              <BoolField label="AI — Aorto Iliac (Q19)" value={d.ai_aorto_iliac} />
-              <BoolField label="FM — Femoral En Bloc (Q20)" value={d.fm_femoral} />
-              <BoolField label="SV — Saphenous Vein (Q21)" value={d.sv_saphenous_vein} />
-              <BoolField label="Autopsy (Q22)" value={d.has_autopsy} />
-            </dl>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader><p className="text-sm font-medium">Timeline</p></CardHeader>
+              <CardContent>
+                <dl className="grid gap-4 md:grid-cols-3">
+                  <Field label="Created" value={new Date(donor.created_at).toLocaleString()} />
+                  {donor.submitted_at && <Field label="Submitted" value={new Date(donor.submitted_at).toLocaleString()} />}
+                  {donor.reviewed_at && <Field label="Reviewed" value={new Date(donor.reviewed_at).toLocaleString()} />}
+                </dl>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* 7033F Tissue Recovery Form — only for accepted donors */}
-        {donor.status === 'approved' && (
-          <TissueRecoveryForm
-            donorId={donor.id}
-            donorInfo={{
-              donor_code: donor.donor_code,
-              donor_age: d.donor_age,
-              gender: donor.gender,
-              death_date: donor.death_date,
-              time_of_death: d.time_of_death,
-              death_type: d.death_type,
-              death_timezone: d.death_timezone,
-              external_donor_id: d.external_donor_id,
-              partner_name: donor.partners?.organization_name || null,
-            }}
-          />
-        )}
+          {/* Clinical Tab */}
+          <TabsContent value="clinical" className="space-y-5 mt-5">
+            <Card>
+              <CardHeader><p className="text-sm font-medium">Clinical Information</p></CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <dt className="text-[13px] text-muted-foreground">Clinical Course (Q11)</dt>
+                  <dd className="text-[13px] whitespace-pre-wrap">{d.clinical_course || '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-[13px] text-muted-foreground">Medical History (Q14)</dt>
+                  <dd className="text-[13px] whitespace-pre-wrap">{d.medical_history || '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-[13px] text-muted-foreground">High Risk / Additional Notes (Q15)</dt>
+                  <dd className="text-[13px] whitespace-pre-wrap">{d.high_risk_notes || '—'}</dd>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Logistics (Q23, Q25) */}
-        <Card>
-          <CardHeader><p className="text-sm font-medium">Logistics</p></CardHeader>
-          <CardContent>
-            <dl className="grid gap-4 md:grid-cols-2">
-              <Field label="External Donor ID (Q23)" value={d.external_donor_id} />
-              <Field label="Courier Update (Q25)" value={d.courier_update} />
-            </dl>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader><p className="text-sm font-medium">Tissue Recovery</p></CardHeader>
+              <CardContent>
+                <dl className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <Field label="Donor Accepted/Deferred (Q16)" value={d.donor_accepted} />
+                  <BoolField label="HV — Heart Valves (Q17)" value={d.hv_heart_valves} />
+                  <Field label="HV Pathology Request (Q18)" value={d.hv_pathology_request} />
+                  <BoolField label="AI — Aorto Iliac (Q19)" value={d.ai_aorto_iliac} />
+                  <BoolField label="FM — Femoral En Bloc (Q20)" value={d.fm_femoral} />
+                  <BoolField label="SV — Saphenous Vein (Q21)" value={d.sv_saphenous_vein} />
+                  <BoolField label="Autopsy (Q22)" value={d.has_autopsy} />
+                </dl>
+              </CardContent>
+            </Card>
 
-        {/* Legacy Tissue fields */}
-        <Card>
-          <CardHeader><p className="text-sm font-medium">Legacy Tissue Info</p></CardHeader>
-          <CardContent>
-            <dl className="grid gap-4 md:grid-cols-2">
-              <Field label="Tissue Type" value={donor.tissue_type} />
-              <Field label="Tissue Condition" value={donor.tissue_condition} />
-            </dl>
-          </CardContent>
-        </Card>
+            {donor.status === 'approved' && (
+              <TissueRecoveryForm
+                donorId={donor.id}
+                donorInfo={{
+                  donor_code: donor.donor_code,
+                  donor_age: d.donor_age,
+                  gender: donor.gender,
+                  death_date: donor.death_date,
+                  time_of_death: d.time_of_death,
+                  death_type: d.death_type,
+                  death_timezone: d.death_timezone,
+                  external_donor_id: d.external_donor_id,
+                  partner_name: donor.partners?.organization_name || null,
+                }}
+              />
+            )}
 
-        {/* Compliance */}
-        <Card>
-          <CardHeader><p className="text-sm font-medium">Compliance</p></CardHeader>
-          <CardContent>
-            <dl className="grid gap-4 md:grid-cols-2">
-              <BoolField label="Consent Obtained" value={donor.consent_obtained} />
-              <BoolField label="Medical History Reviewed" value={donor.medical_history_reviewed} />
-            </dl>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader><p className="text-sm font-medium">Compliance</p></CardHeader>
+              <CardContent>
+                <dl className="grid gap-4 md:grid-cols-2">
+                  <BoolField label="Consent Obtained" value={donor.consent_obtained} />
+                  <BoolField label="Medical History Reviewed" value={donor.medical_history_reviewed} />
+                </dl>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Call Transcript */}
-        {d.intake_method === 'phone' && <CallTranscript donorId={donor.id} />}
+          {/* Logistics Tab */}
+          <TabsContent value="logistics" className="space-y-5 mt-5">
+            <Card>
+              <CardHeader><p className="text-sm font-medium">Logistics</p></CardHeader>
+              <CardContent>
+                <dl className="grid gap-4 md:grid-cols-2">
+                  <Field label="External Donor ID (Q23)" value={d.external_donor_id} />
+                  <Field label="Courier Update (Q25)" value={d.courier_update} />
+                </dl>
+              </CardContent>
+            </Card>
 
-        <ShipmentTracking donorId={donor.id} canAdd={false} />
-        <DocumentUpload donorId={donor.id} canUpload={true} />
+            <Card>
+              <CardHeader><p className="text-sm font-medium">Legacy Tissue Info</p></CardHeader>
+              <CardContent>
+                <dl className="grid gap-4 md:grid-cols-2">
+                  <Field label="Tissue Type" value={donor.tissue_type} />
+                  <Field label="Tissue Condition" value={donor.tissue_condition} />
+                </dl>
+              </CardContent>
+            </Card>
 
-        {/* Timeline */}
-        <Card>
-          <CardHeader><p className="text-sm font-medium">Timeline</p></CardHeader>
-          <CardContent>
-            <dl className="grid gap-4 md:grid-cols-3">
-              <Field label="Created" value={new Date(donor.created_at).toLocaleString()} />
-              {donor.submitted_at && <Field label="Submitted" value={new Date(donor.submitted_at).toLocaleString()} />}
-              {donor.reviewed_at && <Field label="Reviewed" value={new Date(donor.reviewed_at).toLocaleString()} />}
-            </dl>
-          </CardContent>
-        </Card>
+            <ShipmentTracking donorId={donor.id} canAdd={false} />
+          </TabsContent>
+
+          {/* Documents Tab */}
+          <TabsContent value="documents" className="space-y-5 mt-5">
+            {d.intake_method === 'phone' && <CallTranscript donorId={donor.id} />}
+            <DocumentUpload donorId={donor.id} canUpload={true} />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );

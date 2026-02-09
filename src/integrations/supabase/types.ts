@@ -137,6 +137,7 @@ export type Database = {
           intake_method: string | null
           is_prescreen_update: boolean | null
           last_name: string | null
+          linked_donor_id: string | null
           medical_history: string | null
           medical_history_reviewed: boolean | null
           partner_id: string | null
@@ -182,6 +183,7 @@ export type Database = {
           intake_method?: string | null
           is_prescreen_update?: boolean | null
           last_name?: string | null
+          linked_donor_id?: string | null
           medical_history?: string | null
           medical_history_reviewed?: boolean | null
           partner_id?: string | null
@@ -227,6 +229,7 @@ export type Database = {
           intake_method?: string | null
           is_prescreen_update?: boolean | null
           last_name?: string | null
+          linked_donor_id?: string | null
           medical_history?: string | null
           medical_history_reviewed?: boolean | null
           partner_id?: string | null
@@ -243,6 +246,13 @@ export type Database = {
           weight_kgs?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "donors_linked_donor_id_fkey"
+            columns: ["linked_donor_id"]
+            isOneToOne: false
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "donors_partner_id_fkey"
             columns: ["partner_id"]

@@ -4,8 +4,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Pencil } from 'lucide-react';
+import { Pencil, Copy, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +23,7 @@ interface Partner {
   organization_name: string;
   contact_phone: string | null;
   address: string | null;
+  slug: string;
   created_at: string;
   is_active: boolean;
   user_id: string;
@@ -46,6 +48,14 @@ const PartnersTable = ({ partners, loading, onEdit, onRefresh }: PartnersTablePr
   const { toast } = useToast();
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [partnerToDeactivate, setPartnerToDeactivate] = useState<Partner | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const copyLoginUrl = async (partner: Partner) => {
+    const url = `${window.location.origin}/login/${partner.slug}`;
+    await navigator.clipboard.writeText(url);
+    setCopiedId(partner.id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   const handleToggleActive = async (partner: Partner, newStatus: boolean) => {
     try {
@@ -105,6 +115,7 @@ const PartnersTable = ({ partners, loading, onEdit, onRefresh }: PartnersTablePr
         <TableHeader>
           <TableRow>
             <TableHead>Organization</TableHead>
+            <TableHead>Login URL</TableHead>
             <TableHead>Contact</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
@@ -122,6 +133,19 @@ const PartnersTable = ({ partners, loading, onEdit, onRefresh }: PartnersTablePr
                 {!partner.is_active && (
                   <Badge variant="secondary" className="ml-2">Inactive</Badge>
                 )}
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-1">
+                  <code className="text-xs text-muted-foreground truncate max-w-[140px]">/login/{partner.slug}</code>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyLoginUrl(partner)}>
+                        {copiedId === partner.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy login URL</TooltipContent>
+                  </Tooltip>
+                </div>
               </TableCell>
               <TableCell>{partner.profiles?.full_name || '—'}</TableCell>
               <TableCell>{partner.profiles?.email || '—'}</TableCell>

@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { LogOut, Menu, X, Phone } from 'lucide-react';
-import lemaitreLogo from '@/assets/lemaitre-logo.png';
+import lemaitreIcon from '@/assets/lemaitre-icon.png';
 
 interface NavItem {
   label: string;
@@ -53,8 +53,8 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
         <div className="flex flex-col h-full">
           {/* Logo & Portal */}
           <div className="flex items-center justify-between h-14 px-5 border-b">
-            <div className="flex items-baseline gap-2">
-              <span className="text-lg font-bold tracking-tight text-foreground leading-none">Atlas</span>
+            <div className="flex items-center gap-2.5">
+              <img src={lemaitreIcon} alt="LeMaitre" className="h-6 w-auto" />
               <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground leading-none">
                 {navItems.some(item => item.href.startsWith('/admin')) ? 'Admin' : 'Partner'}
               </span>

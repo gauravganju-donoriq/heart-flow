@@ -220,7 +220,7 @@ const DonorForm = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="Partner Portal">
+      <DashboardLayout navItems={navItems} title="DonorIQ">
         <div className="flex items-center justify-center py-12">
           <div className="text-muted-foreground">Loading...</div>
         </div>
@@ -229,16 +229,13 @@ const DonorForm = () => {
   }
 
   return (
-    <DashboardLayout navItems={navItems} title="Partner Portal">
-      <div className="space-y-6 max-w-3xl">
+    <DashboardLayout navItems={navItems} title="DonorIQ">
+      <div className="space-y-5 max-w-3xl">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/partner/donors')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">{isEdit ? 'Edit Donor' : 'New Donor'}</h1>
-            <p className="text-muted-foreground">Enter donor screening information</p>
-          </div>
+          <p className="text-lg font-semibold">{isEdit ? 'Edit Donor' : 'New Donor'}</p>
         </div>
 
         <Tabs defaultValue="info" className="w-full">
@@ -251,8 +248,7 @@ const DonorForm = () => {
             {/* Call Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Call Information</CardTitle>
-                <CardDescription>Type of call, caller identity</CardDescription>
+                <p className="text-sm font-medium">Call Information</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
@@ -283,8 +279,7 @@ const DonorForm = () => {
             {/* Demographics */}
             <Card>
               <CardHeader>
-                <CardTitle>Demographics</CardTitle>
-                <CardDescription>Age, sex, height, weight, donor info</CardDescription>
+                <p className="text-sm font-medium">Demographics</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
@@ -352,8 +347,7 @@ const DonorForm = () => {
             {/* Death Details */}
             <Card>
               <CardHeader>
-                <CardTitle>Death Details</CardTitle>
-                <CardDescription>Date, time, type, timezone, cause of death</CardDescription>
+                <p className="text-sm font-medium">Death Details</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-3">
@@ -406,8 +400,7 @@ const DonorForm = () => {
             {/* Clinical */}
             <Card>
               <CardHeader>
-                <CardTitle>Clinical Information</CardTitle>
-                <CardDescription>Clinical course, medical history, high-risk notes</CardDescription>
+                <p className="text-sm font-medium">Clinical Information</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -428,8 +421,7 @@ const DonorForm = () => {
             {/* Tissue Recovery */}
             <Card>
               <CardHeader>
-                <CardTitle>Tissue Recovery</CardTitle>
-                <CardDescription>Acceptance, tissue types, autopsy</CardDescription>
+                <p className="text-sm font-medium">Tissue Recovery</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2 max-w-sm">
@@ -505,8 +497,7 @@ const DonorForm = () => {
             {/* Logistics */}
             <Card>
               <CardHeader>
-                <CardTitle>Logistics</CardTitle>
-                <CardDescription>External donor ID, courier updates</CardDescription>
+                <p className="text-sm font-medium">Logistics</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2 max-w-sm">
@@ -523,8 +514,7 @@ const DonorForm = () => {
             {/* Compliance */}
             <Card>
               <CardHeader>
-                <CardTitle>Compliance</CardTitle>
-                <CardDescription>Required documentation checks</CardDescription>
+                <p className="text-sm font-medium">Compliance</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-2">

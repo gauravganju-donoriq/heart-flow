@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,7 +23,6 @@ interface PendingUpdate {
   } | null;
 }
 
-// Human-readable labels for donor fields
 const fieldLabels: Record<string, string> = {
   call_type: 'Call Type',
   caller_name: 'Caller Name',
@@ -82,7 +81,6 @@ const PendingDonorUpdates = ({ donorId, onUpdated }: PendingDonorUpdatesProps) =
   }, [donorId]);
 
   const fetchData = async () => {
-    // Fetch pending updates and current donor data in parallel
     const [updatesRes, donorRes] = await Promise.all([
       supabase
         .from('pending_donor_updates')
@@ -110,7 +108,6 @@ const PendingDonorUpdates = ({ donorId, onUpdated }: PendingDonorUpdatesProps) =
     if (!update) return;
 
     if (action === 'approved') {
-      // Apply proposed changes to donor
       const { error: donorError } = await supabase
         .from('donors')
         .update(update.proposed_changes as Record<string, unknown>)
@@ -123,7 +120,6 @@ const PendingDonorUpdates = ({ donorId, onUpdated }: PendingDonorUpdatesProps) =
       }
     }
 
-    // Update the pending record
     const { error: updateError } = await supabase
       .from('pending_donor_updates')
       .update({
@@ -140,7 +136,6 @@ const PendingDonorUpdates = ({ donorId, onUpdated }: PendingDonorUpdatesProps) =
       return;
     }
 
-    // Notify partner
     const donor = update.donors;
     if (donor) {
       const { data: partnerData } = await supabase
@@ -189,26 +184,26 @@ const PendingDonorUpdates = ({ donorId, onUpdated }: PendingDonorUpdatesProps) =
         );
 
         return (
-          <Card key={update.id} className="border-amber-300 bg-amber-50/50">
+          <Card key={update.id} className="border border-amber-200 bg-amber-50/30">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg flex items-center gap-2">
+                  <p className="text-sm font-medium flex items-center gap-2">
                     Pending Update
-                    <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+                    <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 rounded-md">
                       Awaiting Approval
                     </Badge>
-                  </CardTitle>
-                  <CardDescription>
+                  </p>
+                  <p className="text-[13px] text-muted-foreground">
                     Received {new Date(update.created_at).toLocaleString()} — {changedKeys.length} field{changedKeys.length !== 1 ? 's' : ''} proposed
-                  </CardDescription>
+                  </p>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Side-by-side diff */}
               <div className="rounded-lg border overflow-hidden">
-                <div className="grid grid-cols-3 bg-muted/50 px-4 py-2 text-sm font-medium">
+                <div className="grid grid-cols-3 bg-muted/50 px-4 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
                   <div>Field</div>
                   <div>Current Value</div>
                   <div>Proposed Value</div>
@@ -220,7 +215,7 @@ const PendingDonorUpdates = ({ donorId, onUpdated }: PendingDonorUpdatesProps) =
                     const isChanged = formatValue(currentVal) !== formatValue(proposedVal);
 
                     return (
-                      <div key={key} className={`grid grid-cols-3 px-4 py-2 text-sm ${isChanged ? 'bg-amber-50' : ''}`}>
+                      <div key={key} className={`grid grid-cols-3 px-4 py-2 text-[13px] ${isChanged ? 'bg-amber-50/50' : ''}`}>
                         <div className="font-medium text-muted-foreground">{fieldLabels[key] || key}</div>
                         <div>{formatValue(currentVal)}</div>
                         <div className="flex items-center gap-2">
@@ -237,7 +232,7 @@ const PendingDonorUpdates = ({ donorId, onUpdated }: PendingDonorUpdatesProps) =
 
               {/* Review notes */}
               <div className="space-y-2">
-                <Label>Review Notes (optional)</Label>
+                <Label className="text-[13px]">Review Notes (optional)</Label>
                 <Textarea
                   placeholder="Add notes about your decision..."
                   value={reviewNotes[update.id] || ''}
@@ -252,6 +247,7 @@ const PendingDonorUpdates = ({ donorId, onUpdated }: PendingDonorUpdatesProps) =
                   variant="destructive"
                   onClick={() => handleAction(update.id, 'rejected')}
                   disabled={saving === update.id}
+                  className="h-9 text-[13px]"
                 >
                   <X className="h-4 w-4 mr-2" />
                   Reject Changes
@@ -259,7 +255,7 @@ const PendingDonorUpdates = ({ donorId, onUpdated }: PendingDonorUpdatesProps) =
                 <Button
                   onClick={() => handleAction(update.id, 'approved')}
                   disabled={saving === update.id}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-green-600 hover:bg-green-700 h-9 text-[13px]"
                 >
                   <Check className="h-4 w-4 mr-2" />
                   Approve & Apply Changes

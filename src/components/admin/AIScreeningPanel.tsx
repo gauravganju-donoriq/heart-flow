@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -26,16 +26,16 @@ interface AIScreeningPanelProps {
 }
 
 const verdictConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  accept: { label: 'Accept', color: 'bg-green-100 text-green-800 border-green-200', icon: <CheckCircle className="h-5 w-5 text-green-600" /> },
-  reject: { label: 'Reject', color: 'bg-red-100 text-red-800 border-red-200', icon: <XCircle className="h-5 w-5 text-red-600" /> },
-  needs_review: { label: 'Needs Review', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: <Clock className="h-5 w-5 text-yellow-600" /> },
+  accept: { label: 'Accept', color: 'bg-emerald-50 text-emerald-600 border border-emerald-100', icon: <CheckCircle className="h-5 w-5 text-emerald-600" /> },
+  reject: { label: 'Reject', color: 'bg-red-50 text-red-500 border border-red-100', icon: <XCircle className="h-5 w-5 text-red-500" /> },
+  needs_review: { label: 'Needs Review', color: 'bg-amber-50 text-amber-600 border border-amber-100', icon: <Clock className="h-5 w-5 text-amber-600" /> },
 };
 
 const severityColors: Record<string, string> = {
-  low: 'bg-blue-100 text-blue-800',
-  medium: 'bg-yellow-100 text-yellow-800',
-  high: 'bg-orange-100 text-orange-800',
-  critical: 'bg-red-100 text-red-800',
+  low: 'bg-blue-50 text-blue-600 border border-blue-100',
+  medium: 'bg-amber-50 text-amber-600 border border-amber-100',
+  high: 'bg-orange-50 text-orange-600 border border-orange-100',
+  critical: 'bg-red-50 text-red-500 border border-red-100',
 };
 
 const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
@@ -102,12 +102,12 @@ const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
   if (loading) return null;
 
   return (
-    <Card className="border-primary/20">
+    <Card className="border border-border">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
-            <CardTitle>AI Screening</CardTitle>
+            <p className="text-sm font-medium">AI Screening</p>
           </div>
           {result ? (
             <Button variant="outline" size="sm" onClick={runScreening} disabled={screening}>
@@ -116,14 +116,14 @@ const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
             </Button>
           ) : null}
         </div>
-        <CardDescription className="flex items-center gap-1">
+        <p className="text-[13px] text-muted-foreground flex items-center gap-1">
           <Info className="h-3 w-3" /> AI Recommendation — Final decision is yours
-        </CardDescription>
+        </p>
       </CardHeader>
       <CardContent>
         {!result && !screening && (
           <div className="text-center py-6 space-y-3">
-            <p className="text-muted-foreground text-sm">No screening has been run for this donor yet.</p>
+            <p className="text-muted-foreground text-[13px]">No screening has been run for this donor yet.</p>
             <Button onClick={runScreening}><Brain className="h-4 w-4 mr-2" />Run AI Screening</Button>
           </div>
         )}
@@ -131,7 +131,7 @@ const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
         {screening && (
           <div className="text-center py-8 space-y-3">
             <RefreshCw className="h-8 w-8 animate-spin mx-auto text-primary" />
-            <p className="text-sm text-muted-foreground">Agent is evaluating donor profile...</p>
+            <p className="text-[13px] text-muted-foreground">Agent is evaluating donor profile...</p>
           </div>
         )}
 
@@ -139,12 +139,12 @@ const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
           <div className="space-y-4">
             {/* Verdict + Confidence */}
             <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${verdictConfig[result.verdict]?.color || 'bg-muted'}`}>
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-md ${verdictConfig[result.verdict]?.color || 'bg-muted'}`}>
                 {verdictConfig[result.verdict]?.icon}
                 <span className="font-semibold text-lg">{verdictConfig[result.verdict]?.label || result.verdict}</span>
               </div>
               <div className="flex-1 space-y-1">
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-[13px]">
                   <span className="text-muted-foreground">Confidence</span>
                   <span className="font-medium">{Math.round(result.confidence * 100)}%</span>
                 </div>
@@ -155,15 +155,15 @@ const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
             {/* Concerns */}
             {result.concerns.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium">Concerns ({result.concerns.length})</h4>
+                <h4 className="text-[13px] font-medium">Concerns ({result.concerns.length})</h4>
                 <div className="space-y-2">
                   {result.concerns.map((c, i) => (
                     <div key={i} className="flex items-start gap-2 p-2 rounded border bg-muted/30">
                       <AlertTriangle className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                      <div className="flex-1 text-sm">
+                      <div className="flex-1 text-[13px]">
                         <p>{c.concern}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge className={`text-xs ${severityColors[c.severity] || 'bg-muted'}`}>{c.severity}</Badge>
+                          <Badge className={`text-xs rounded-md ${severityColors[c.severity] || 'bg-muted'}`}>{c.severity}</Badge>
                           <span className="text-xs text-muted-foreground">Ref: {c.guideline_ref}</span>
                         </div>
                       </div>
@@ -176,10 +176,10 @@ const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
             {/* Missing Data */}
             {result.missing_data.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium text-yellow-700">Missing Data</h4>
+                <h4 className="text-[13px] font-medium text-amber-600">Missing Data</h4>
                 <div className="flex flex-wrap gap-1">
                   {result.missing_data.map((field, i) => (
-                    <Badge key={i} variant="outline" className="text-yellow-700 border-yellow-300">{field}</Badge>
+                    <Badge key={i} variant="outline" className="text-amber-600 border-amber-200">{field}</Badge>
                   ))}
                 </div>
               </div>
@@ -194,7 +194,7 @@ const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="p-4 rounded border bg-muted/20 text-sm whitespace-pre-wrap mt-2">
+                <div className="p-4 rounded border bg-muted/20 text-[13px] whitespace-pre-wrap mt-2">
                   {result.reasoning}
                 </div>
               </CollapsibleContent>

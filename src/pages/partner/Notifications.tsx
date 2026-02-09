@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LayoutDashboard, FileText, Bell, Check, Eye } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
@@ -64,82 +63,38 @@ const Notifications = () => {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <DashboardLayout navItems={navItems} title="Partner Portal">
-      <div className="space-y-6">
-        {/* Header */}
+    <DashboardLayout navItems={navItems} title="DonorIQ">
+      <div className="space-y-5">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Notifications</h1>
-            <p className="text-muted-foreground">
-              {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}
-            </p>
-          </div>
+          <p className="text-[13px] text-muted-foreground">{unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}</p>
           {unreadCount > 0 && (
-            <Button variant="outline" onClick={markAllAsRead}>
-              <Check className="h-4 w-4 mr-2" />
-              Mark All as Read
-            </Button>
+            <Button variant="outline" onClick={markAllAsRead} className="h-9 text-[13px]"><Check className="h-4 w-4 mr-2" />Mark All as Read</Button>
           )}
         </div>
 
-        {/* Notifications List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>All Notifications</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8 text-muted-foreground">Loading...</div>
-            ) : notifications.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No notifications yet
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`p-4 border rounded-lg ${
-                      !notification.read ? 'bg-primary/5 border-primary/20' : ''
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <p className={`font-medium ${!notification.read ? 'text-primary' : ''}`}>
-                          {notification.title}
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {new Date(notification.created_at).toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {notification.donor_id && (
-                          <Link to={`/partner/donors/${notification.donor_id}`}>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                        )}
-                        {!notification.read && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => markAsRead(notification.id)}
-                          >
-                            <Check className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
+        {loading ? (
+          <div className="text-center py-8 text-muted-foreground text-[13px]">Loading...</div>
+        ) : notifications.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground text-[13px]">No notifications yet</div>
+        ) : (
+          <div className="space-y-3">
+            {notifications.map((notification) => (
+              <div key={notification.id} className={`p-4 border rounded-lg ${!notification.read ? 'bg-primary/5 border-primary/20' : 'border-border'}`}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <p className={`text-[13px] font-medium ${!notification.read ? 'text-primary' : ''}`}>{notification.title}</p>
+                    <p className="text-[13px] text-muted-foreground mt-1">{notification.message}</p>
+                    <p className="text-xs text-muted-foreground mt-2">{new Date(notification.created_at).toLocaleString()}</p>
                   </div>
-                ))}
+                  <div className="flex items-center gap-2">
+                    {notification.donor_id && (<Link to={`/partner/donors/${notification.donor_id}`}><Button variant="ghost" size="sm"><Eye className="h-4 w-4" /></Button></Link>)}
+                    {!notification.read && (<Button variant="ghost" size="sm" onClick={() => markAsRead(notification.id)}><Check className="h-4 w-4" /></Button>)}
+                  </div>
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            ))}
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

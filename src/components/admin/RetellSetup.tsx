@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -82,32 +82,31 @@ const RetellSetup = () => {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Phone className="h-5 w-5" />
-              Phone Intake (Retell AI)
-            </CardTitle>
-            <CardDescription>
-              Allow partners to submit donor information via phone call
-            </CardDescription>
+          <div className="flex items-center gap-2">
+            <Phone className="h-5 w-5" />
+            <p className="text-sm font-medium">Phone Intake (Retell AI)</p>
           </div>
           {status?.configured && (
-            <Badge className="bg-green-100 text-green-800">
+            <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-md">
               <CheckCircle className="h-3 w-3 mr-1" />
               Active
             </Badge>
           )}
         </div>
+        <p className="text-[13px] text-muted-foreground">
+          Allow partners to submit donor information via phone call
+        </p>
       </CardHeader>
       <CardContent>
         {status?.configured ? (
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-[13px] text-muted-foreground">
               The AI phone intake agent is active. Partners can call to submit or update donor
               information. The phone number is displayed on each partner's dashboard.
             </p>
             <Button
               variant="outline"
+              className="h-9 text-[13px]"
               onClick={async () => {
                 setUpdating(true);
                 try {
@@ -147,7 +146,7 @@ const RetellSetup = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-[13px] text-muted-foreground">
               Set up an AI-powered phone line that partners can call to submit donor information
               conversationally. The system will automatically create draft donor records from call
               transcripts.

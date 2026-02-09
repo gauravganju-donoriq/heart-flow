@@ -57,6 +57,8 @@ const BoolField = ({ label, value }: { label: string; value: boolean | null | un
   <Field label={label} value={value === true ? 'Yes' : value === false ? 'No' : '—'} />
 );
 
+const tabTriggerClass = "rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5";
+
 const AdminDonorReview = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -151,47 +153,20 @@ const AdminDonorReview = () => {
           </div>
         </div>
 
-        {/* AI Screening Panel */}
-        <AIScreeningPanel donorId={donor.id} />
-
-        {/* Review Actions */}
-        {canReview && (
-          <Card className="border border-border bg-muted/30">
-            <CardHeader><p className="text-sm font-medium">Review Actions</p></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="reviewNotes" className="text-[13px]">Review Notes</Label>
-                <Textarea id="reviewNotes" placeholder="Add notes about your decision (visible to partner)" value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} rows={3} />
-              </div>
-              <div className="flex items-center gap-3">
-                {donor.status === 'submitted' && (
-                  <Button variant="outline" onClick={() => handleStatusChange('under_review')} disabled={saving} className="h-9 text-[13px]"><Clock className="h-4 w-4 mr-2" />Mark Under Review</Button>
-                )}
-                <Button variant="destructive" onClick={() => handleStatusChange('rejected')} disabled={saving} className="h-9 text-[13px]"><X className="h-4 w-4 mr-2" />Reject</Button>
-                <Button onClick={() => handleStatusChange('approved')} disabled={saving} className="bg-green-600 hover:bg-green-700 h-9 text-[13px]"><Check className="h-4 w-4 mr-2" />Approve</Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {!canReview && donor.review_notes && (
-          <div className={`p-4 border-l-4 rounded-r-lg ${donor.status === 'rejected' ? 'border-l-red-400 bg-muted/30' : 'border-l-emerald-400 bg-muted/30'}`}>
-            <p className="text-sm font-medium mb-1">Review Notes</p>
-            <p className="text-[13px]">{donor.review_notes}</p>
-            {donor.reviewed_at && <p className="text-xs text-muted-foreground mt-2">Reviewed on {new Date(donor.reviewed_at).toLocaleString()}</p>}
-          </div>
-        )}
-
         {/* Pending Updates */}
         <PendingDonorUpdates donorId={donor.id} onUpdated={fetchDonor} />
 
         {/* Tabbed Content */}
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-0">
-            <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Overview</TabsTrigger>
-            <TabsTrigger value="clinical" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Clinical</TabsTrigger>
-            <TabsTrigger value="logistics" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Logistics</TabsTrigger>
-            <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Documents</TabsTrigger>
+            <TabsTrigger value="overview" className={tabTriggerClass}>Overview</TabsTrigger>
+            <TabsTrigger value="clinical" className={tabTriggerClass}>Clinical</TabsTrigger>
+            <TabsTrigger value="logistics" className={tabTriggerClass}>Logistics</TabsTrigger>
+            <TabsTrigger value="documents" className={tabTriggerClass}>Documents</TabsTrigger>
+            <TabsTrigger value="screening" className={tabTriggerClass}>AI Screening</TabsTrigger>
+            {(canReview || donor.review_notes) && (
+              <TabsTrigger value="review" className={tabTriggerClass}>Review</TabsTrigger>
+            )}
           </TabsList>
 
           {/* Overview Tab */}
@@ -341,6 +316,43 @@ const AdminDonorReview = () => {
             {d.intake_method === 'phone' && <CallTranscript donorId={donor.id} />}
             <DocumentUpload donorId={donor.id} canUpload={true} />
           </TabsContent>
+
+          {/* AI Screening Tab */}
+          <TabsContent value="screening" className="mt-5">
+            <AIScreeningPanel donorId={donor.id} />
+          </TabsContent>
+
+          {/* Review Tab */}
+          {(canReview || donor.review_notes) && (
+            <TabsContent value="review" className="space-y-5 mt-5">
+              {canReview && (
+                <Card className="border border-border bg-muted/30">
+                  <CardHeader><p className="text-sm font-medium">Review Actions</p></CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reviewNotes" className="text-[13px]">Review Notes</Label>
+                      <Textarea id="reviewNotes" placeholder="Add notes about your decision (visible to partner)" value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} rows={3} />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {donor.status === 'submitted' && (
+                        <Button variant="outline" onClick={() => handleStatusChange('under_review')} disabled={saving} className="h-9 text-[13px]"><Clock className="h-4 w-4 mr-2" />Mark Under Review</Button>
+                      )}
+                      <Button variant="destructive" onClick={() => handleStatusChange('rejected')} disabled={saving} className="h-9 text-[13px]"><X className="h-4 w-4 mr-2" />Reject</Button>
+                      <Button onClick={() => handleStatusChange('approved')} disabled={saving} className="bg-green-600 hover:bg-green-700 h-9 text-[13px]"><Check className="h-4 w-4 mr-2" />Approve</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {!canReview && donor.review_notes && (
+                <div className={`p-4 border-l-4 rounded-r-lg ${donor.status === 'rejected' ? 'border-l-red-400 bg-muted/30' : 'border-l-emerald-400 bg-muted/30'}`}>
+                  <p className="text-sm font-medium mb-1">Review Notes</p>
+                  <p className="text-[13px]">{donor.review_notes}</p>
+                  {donor.reviewed_at && <p className="text-xs text-muted-foreground mt-2">Reviewed on {new Date(donor.reviewed_at).toLocaleString()}</p>}
+                </div>
+              )}
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </DashboardLayout>

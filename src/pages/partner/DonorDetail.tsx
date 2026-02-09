@@ -255,7 +255,7 @@ const DonorDetail = () => {
         <ShipmentTracking donorId={donor.id} canAdd={isDraft} />
 
         {/* Documents */}
-        <DocumentUpload donorId={donor.id} canUpload={isDraft} />
+        <DocumentUpload donorId={donor.id} canUpload={true} />
 
         {/* Timestamps */}
         <Card>

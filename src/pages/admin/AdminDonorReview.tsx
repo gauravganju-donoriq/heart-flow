@@ -338,7 +338,7 @@ const AdminDonorReview = () => {
         <ShipmentTracking donorId={donor.id} canAdd={false} />
 
         {/* Documents */}
-        <DocumentUpload donorId={donor.id} canUpload={false} />
+        <DocumentUpload donorId={donor.id} canUpload={true} />
 
         {/* Timeline */}
         <Card>

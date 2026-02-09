@@ -71,8 +71,8 @@ const Auth = () => {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">LeMaitre Partner Portal</CardTitle>
-          <CardDescription>Sign in to access your account</CardDescription>
+          <CardTitle className="text-2xl font-bold">LeMaitre Portal</CardTitle>
+          <CardDescription>Sign in to access your admin or partner account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -108,9 +108,10 @@ const Auth = () => {
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            Contact your administrator if you need an account.
-          </p>
+          <div className="mt-4 space-y-1 text-center text-sm text-muted-foreground">
+            <p>Partners can also use their custom login URL.</p>
+            <p>Contact your administrator if you need an account.</p>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { triggerAutoScreening } from '@/lib/autoScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import DocumentUpload from '@/components/DocumentUpload';
@@ -71,6 +72,7 @@ const DonorDetail = () => {
     const { error } = await supabase.from('donors').update({ status: 'submitted', submitted_at: new Date().toISOString() }).eq('id', id);
     if (error) { toast({ variant: 'destructive', title: 'Error', description: error.message }); return; }
     toast({ title: 'Submitted', description: 'Donor has been submitted for review' });
+    if (id) triggerAutoScreening(id);
     fetchDonor();
   };
 

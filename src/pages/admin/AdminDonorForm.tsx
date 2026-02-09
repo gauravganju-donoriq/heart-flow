@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { triggerAutoScreening } from '@/lib/autoScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import DocumentUpload from '@/components/DocumentUpload';
@@ -241,6 +242,10 @@ const AdminDonorForm = () => {
       title: submit ? 'Donor Submitted' : 'Donor Saved',
       description: submit ? 'Donor has been submitted for review' : 'Donor has been saved as a draft',
     });
+
+    if (submit && result.data?.id) {
+      triggerAutoScreening(result.data.id);
+    }
 
     if (!isEdit) {
       navigate(`/admin/donors/${result.data.id}/edit`, { replace: true });

@@ -101,13 +101,9 @@ const RetellSetup = () => {
       <CardContent>
         {status?.configured ? (
           <div className="space-y-3">
-            <div>
-              <p className="text-sm text-muted-foreground">Phone Number</p>
-              <p className="text-lg font-mono font-semibold">{status.phone_number}</p>
-            </div>
             <p className="text-sm text-muted-foreground">
-              Partners can call this number to submit donor information. The AI agent will collect
-              details and create a draft donor record automatically.
+              The AI phone intake agent is active. Partners can call to submit or update donor
+              information. The phone number is displayed on each partner's dashboard.
             </p>
           </div>
         ) : (

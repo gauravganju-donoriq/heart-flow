@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.setup-retell]
 verify_jwt = false
+
+[functions.get-intake-phone]
+verify_jwt = false

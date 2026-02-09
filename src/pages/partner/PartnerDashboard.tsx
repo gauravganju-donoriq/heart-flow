@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LayoutDashboard, FileText, Bell, Plus, Eye } from 'lucide-react';
+import { LayoutDashboard, FileText, Bell, Plus, Eye, Phone } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -39,6 +39,7 @@ const PartnerDashboard = () => {
   const { partnerId } = useAuth();
   const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [intakePhone, setIntakePhone] = useState<string | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     draft: 0,
@@ -51,7 +52,17 @@ const PartnerDashboard = () => {
     if (partnerId) {
       fetchDonors();
     }
+    fetchIntakePhone();
   }, [partnerId]);
+
+  const fetchIntakePhone = async () => {
+    try {
+      const { data } = await supabase.functions.invoke('get-intake-phone');
+      if (data?.phone_number) setIntakePhone(data.phone_number);
+    } catch {
+      // Phone intake may not be configured — that's fine
+    }
+  };
 
   const fetchDonors = async () => {
     if (!partnerId) return;
@@ -152,6 +163,27 @@ const PartnerDashboard = () => {
             </CardHeader>
           </Card>
         </div>
+
+        {/* Phone Intake */}
+        {intakePhone && (
+          <Card className="border-primary/20 bg-primary/5">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Phone className="h-5 w-5 text-primary" />
+                <CardTitle>Phone Intake Line</CardTitle>
+              </div>
+              <CardDescription>
+                Call to submit or update donor information by phone
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-mono font-bold tracking-wide">{intakePhone}</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Our AI agent will walk you through the screening questions and automatically create or update a donor record.
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Recent Donors */}
         <Card>

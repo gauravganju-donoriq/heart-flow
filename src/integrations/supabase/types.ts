@@ -121,6 +121,7 @@ export type Database = {
           death_date: string | null
           death_timezone: string | null
           death_type: string | null
+          din: string | null
           donor_accepted: string | null
           donor_age: number | null
           donor_code: string | null
@@ -166,6 +167,7 @@ export type Database = {
           death_date?: string | null
           death_timezone?: string | null
           death_type?: string | null
+          din?: string | null
           donor_accepted?: string | null
           donor_age?: number | null
           donor_code?: string | null
@@ -211,6 +213,7 @@ export type Database = {
           death_date?: string | null
           death_timezone?: string | null
           death_type?: string | null
+          din?: string | null
           donor_accepted?: string | null
           donor_age?: number | null
           donor_code?: string | null

@@ -88,6 +88,7 @@ const DonorsList = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Donor Code</TableHead>
+                  <TableHead>DIN</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Source</TableHead>
                   <TableHead>Status</TableHead>
@@ -100,6 +101,7 @@ const DonorsList = () => {
                 {donors.map((donor) => (
                   <TableRow key={donor.id} className="cursor-pointer hover:bg-muted/30" onClick={() => navigate(`/partner/donors/${donor.id}`)}>
                     <TableCell className="font-mono text-[13px] py-3.5">{donor.donor_code}</TableCell>
+                    <TableCell className="font-mono text-[13px] py-3.5 text-muted-foreground">{(donor as any).din || '—'}</TableCell>
                     <TableCell className="text-[13px] py-3.5">{donor.first_name && donor.last_name ? `${donor.first_name} ${donor.last_name}` : '—'}</TableCell>
                     <TableCell className="py-3.5">
                       {donor.intake_method === 'phone' ? (

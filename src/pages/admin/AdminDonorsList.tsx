@@ -110,6 +110,7 @@ const AdminDonorsList = () => {
       .select(`
         id,
         donor_code,
+        din,
         first_name,
         last_name,
         tissue_type,
@@ -183,6 +184,7 @@ const AdminDonorsList = () => {
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   <TableHead>Code</TableHead>
+                  <TableHead>DIN</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Partner</TableHead>
                   <TableHead>Source</TableHead>
@@ -200,6 +202,9 @@ const AdminDonorsList = () => {
                   >
                     <TableCell className="font-mono text-[13px] py-3.5">
                       {donor.donor_code || '—'}
+                    </TableCell>
+                    <TableCell className="font-mono text-[13px] py-3.5 text-muted-foreground">
+                      {(donor as any).din || '—'}
                     </TableCell>
                     <TableCell className="text-[13px] py-3.5">
                       {donor.first_name && donor.last_name

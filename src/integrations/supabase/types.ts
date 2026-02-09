@@ -69,7 +69,7 @@ export type Database = {
           id: string
           last_name: string | null
           medical_history_reviewed: boolean | null
-          partner_id: string
+          partner_id: string | null
           review_notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -92,7 +92,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           medical_history_reviewed?: boolean | null
-          partner_id: string
+          partner_id?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -115,7 +115,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           medical_history_reviewed?: boolean | null
-          partner_id?: string
+          partner_id?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null

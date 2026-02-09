@@ -176,7 +176,7 @@ const AdminDonorReview = () => {
                 </Badge>
               </div>
               <p className="text-muted-foreground">
-                From: {donor.partners?.organization_name || 'Unknown Partner'}
+                From: {donor.partners?.organization_name || 'Direct Admin Entry'}
               </p>
             </div>
           </div>

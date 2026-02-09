@@ -65,9 +65,46 @@ export type Database = {
           },
         ]
       }
+      document_requirements: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_required: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string
+          document_requirement_id: string | null
           donor_id: string
           file_name: string
           file_path: string
@@ -78,6 +115,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          document_requirement_id?: string | null
           donor_id: string
           file_name: string
           file_path: string
@@ -88,6 +126,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          document_requirement_id?: string | null
           donor_id?: string
           file_name?: string
           file_path?: string
@@ -97,6 +136,13 @@ export type Database = {
           uploaded_by?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "documents_document_requirement_id_fkey"
+            columns: ["document_requirement_id"]
+            isOneToOne: false
+            referencedRelation: "document_requirements"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "documents_donor_id_fkey"
             columns: ["donor_id"]

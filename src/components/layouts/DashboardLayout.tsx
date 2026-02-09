@@ -53,9 +53,9 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
         <div className="flex flex-col h-full">
           {/* Logo & Portal */}
           <div className="flex items-center justify-between h-14 px-5 border-b">
-            <div className="flex items-center gap-2">
-              <img src={lemaitreIcon} alt="LeMaitre" className="h-6 w-auto shrink-0" />
-              <span className="text-base font-bold tracking-tight text-foreground leading-none">Atlas</span>
+            <div className="flex items-center gap-2.5">
+              <img src={lemaitreIcon} alt="LeMaitre" className="h-8 w-auto shrink-0" />
+              <span className="text-lg font-bold uppercase tracking-[0.15em] text-foreground leading-none">Atlas</span>
             </div>
             <Button
               variant="ghost"

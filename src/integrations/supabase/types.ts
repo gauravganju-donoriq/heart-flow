@@ -137,7 +137,6 @@ export type Database = {
           intake_method: string | null
           is_prescreen_update: boolean | null
           last_name: string | null
-          linked_donor_id: string | null
           medical_history: string | null
           medical_history_reviewed: boolean | null
           partner_id: string | null
@@ -183,7 +182,6 @@ export type Database = {
           intake_method?: string | null
           is_prescreen_update?: boolean | null
           last_name?: string | null
-          linked_donor_id?: string | null
           medical_history?: string | null
           medical_history_reviewed?: boolean | null
           partner_id?: string | null
@@ -229,7 +227,6 @@ export type Database = {
           intake_method?: string | null
           is_prescreen_update?: boolean | null
           last_name?: string | null
-          linked_donor_id?: string | null
           medical_history?: string | null
           medical_history_reviewed?: boolean | null
           partner_id?: string | null
@@ -246,13 +243,6 @@ export type Database = {
           weight_kgs?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "donors_linked_donor_id_fkey"
-            columns: ["linked_donor_id"]
-            isOneToOne: false
-            referencedRelation: "donors"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "donors_partner_id_fkey"
             columns: ["partner_id"]
@@ -335,6 +325,60 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      pending_donor_updates: {
+        Row: {
+          call_transcript_id: string | null
+          created_at: string
+          donor_id: string
+          id: string
+          proposed_changes: Json
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          call_transcript_id?: string | null
+          created_at?: string
+          donor_id: string
+          id?: string
+          proposed_changes: Json
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          call_transcript_id?: string | null
+          created_at?: string
+          donor_id?: string
+          id?: string
+          proposed_changes?: Json
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_donor_updates_call_transcript_id_fkey"
+            columns: ["call_transcript_id"]
+            isOneToOne: false
+            referencedRelation: "call_transcripts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_donor_updates_donor_id_fkey"
+            columns: ["donor_id"]
+            isOneToOne: false
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

@@ -297,30 +297,66 @@ Deno.serve(async (req) => {
         notificationTitle = "Donor Updated from Phone Call";
         notificationMessage = `Donor ${existingDonor.donor_code} was updated from a follow-up phone call. Please review the changes.`;
       } else if (existingDonor) {
-        // Donor found but NOT draft — create new linked record
-        console.log("Donor found but status is:", existingDonor.status, "— creating linked record");
+        // Donor found but NOT draft — save as pending update for admin approval
+        console.log("Donor found but status is:", existingDonor.status, "— saving pending update");
 
-        const newFields = buildDonorFields(extracted);
-        newFields.partner_id = partner.id;
-        newFields.status = "draft";
-        newFields.intake_method = "phone";
-        newFields.linked_donor_id = existingDonor.id;
-
-        const { data: newDonor, error: insertError } = await supabase
-          .from("donors")
-          .insert(newFields)
-          .select("id, donor_code")
+        // Save transcript first to get its ID
+        const { data: savedTranscript, error: earlyTranscriptError } = await supabase
+          .from("call_transcripts")
+          .insert({
+            donor_id: existingDonor.id,
+            partner_id: partner.id,
+            retell_call_id: call.call_id,
+            transcript: transcriptText,
+            call_duration_seconds: callDuration,
+            caller_phone: call.from_number || null,
+            extracted_data: extracted,
+          })
+          .select("id")
           .single();
 
-        if (insertError) {
-          console.error("Failed to create linked donor:", insertError);
-          throw new Error(`Linked donor creation failed: ${insertError.message}`);
+        if (earlyTranscriptError) {
+          console.error("Failed to save transcript:", earlyTranscriptError);
         }
 
-        donorId = newDonor.id;
-        donorCode = newDonor.donor_code;
-        notificationTitle = "Update Received — New Record Created";
-        notificationMessage = `An update call referenced donor ${existingDonor.donor_code} (status: ${existingDonor.status}), but it could not be edited. A new record (${newDonor.donor_code}) was created and linked.`;
+        // Save proposed changes for admin review
+        const proposedChanges = buildDonorFields(extracted);
+        const { error: pendingError } = await supabase
+          .from("pending_donor_updates")
+          .insert({
+            donor_id: existingDonor.id,
+            call_transcript_id: savedTranscript?.id || null,
+            proposed_changes: proposedChanges,
+            status: "pending",
+          });
+
+        if (pendingError) {
+          console.error("Failed to save pending update:", pendingError);
+          throw new Error(`Pending update save failed: ${pendingError.message}`);
+        }
+
+        donorId = existingDonor.id;
+        donorCode = existingDonor.donor_code;
+        notificationTitle = "Pending Update Awaiting Approval";
+        notificationMessage = `A follow-up call proposed changes to donor ${existingDonor.donor_code} (status: ${existingDonor.status}). An admin must review and approve the changes.`;
+
+        // Skip the transcript save at the end since we already saved it
+        const skipTranscript = true;
+
+        // Send notification and return early
+        await supabase.from("notifications").insert({
+          user_id: partner.user_id,
+          title: notificationTitle,
+          message: notificationMessage,
+          donor_id: donorId,
+        });
+
+        console.log("Successfully saved pending update for donor:", donorId);
+
+        return new Response(
+          JSON.stringify({ success: true, donor_id: donorId, donor_code: donorCode, was_update: true, pending_approval: true }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       } else {
         // No match found — create new donor
         console.log("No matching donor found for update call. Creating new donor.");

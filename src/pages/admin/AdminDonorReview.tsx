@@ -167,6 +167,9 @@ const AdminDonorReview = () => {
             {donor.status === 'approved' && (
               <TabsTrigger value="recovery" className={tabTriggerClass}>Recovery (7033F)</TabsTrigger>
             )}
+            {donor.status === 'approved' && d.hv_heart_valves && (
+              <TabsTrigger value="heart_request" className={tabTriggerClass}>Heart Request (7117F)</TabsTrigger>
+            )}
             {donor.status !== 'draft' && (
               <TabsTrigger value="plasma_dilution" className={tabTriggerClass}>Plasma Dilution (7059F)</TabsTrigger>
             )}
@@ -311,23 +314,27 @@ const AdminDonorReview = () => {
                   sv_saphenous_vein: d.sv_saphenous_vein,
                 }}
               />
-              {d.hv_heart_valves && (
-                <HeartRequestForm
-                  donorId={donor.id}
-                  donorInfo={{
-                    first_name: donor.first_name,
-                    last_name: donor.last_name,
-                    gender: donor.gender,
-                    donor_age: d.donor_age,
-                    height_inches: d.height_inches,
-                    weight_kgs: d.weight_kgs,
-                    cause_of_death: donor.cause_of_death,
-                    external_donor_id: d.external_donor_id,
-                    din: d.din,
-                    partner_name: donor.partners?.organization_name || null,
-                  }}
-                />
-              )}
+            </TabsContent>
+          )}
+
+          {/* Heart Request Tab */}
+          {donor.status === 'approved' && d.hv_heart_valves && (
+            <TabsContent value="heart_request" className="space-y-5 mt-5">
+              <HeartRequestForm
+                donorId={donor.id}
+                donorInfo={{
+                  first_name: donor.first_name,
+                  last_name: donor.last_name,
+                  gender: donor.gender,
+                  donor_age: d.donor_age,
+                  height_inches: d.height_inches,
+                  weight_kgs: d.weight_kgs,
+                  cause_of_death: donor.cause_of_death,
+                  external_donor_id: d.external_donor_id,
+                  din: d.din,
+                  partner_name: donor.partners?.organization_name || null,
+                }}
+              />
             </TabsContent>
           )}
 

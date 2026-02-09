@@ -304,6 +304,87 @@ export type Database = {
           },
         ]
       }
+      heart_request_forms: {
+        Row: {
+          circumstances_of_death: string | null
+          consented_for_research: boolean | null
+          created_at: string
+          donor_id: string
+          form_completed_by: string | null
+          form_completed_date: string | null
+          height_method: string | null
+          histologic_slides_requested: boolean | null
+          id: string
+          me_address: string | null
+          me_city_state_zip: string | null
+          me_coroner_name: string | null
+          me_institution: string | null
+          me_telephone: string | null
+          request_type: string
+          return_heart: boolean | null
+          tissue_recovery_id: string | null
+          updated_at: string
+          weight_method: string | null
+        }
+        Insert: {
+          circumstances_of_death?: string | null
+          consented_for_research?: boolean | null
+          created_at?: string
+          donor_id: string
+          form_completed_by?: string | null
+          form_completed_date?: string | null
+          height_method?: string | null
+          histologic_slides_requested?: boolean | null
+          id?: string
+          me_address?: string | null
+          me_city_state_zip?: string | null
+          me_coroner_name?: string | null
+          me_institution?: string | null
+          me_telephone?: string | null
+          request_type?: string
+          return_heart?: boolean | null
+          tissue_recovery_id?: string | null
+          updated_at?: string
+          weight_method?: string | null
+        }
+        Update: {
+          circumstances_of_death?: string | null
+          consented_for_research?: boolean | null
+          created_at?: string
+          donor_id?: string
+          form_completed_by?: string | null
+          form_completed_date?: string | null
+          height_method?: string | null
+          histologic_slides_requested?: boolean | null
+          id?: string
+          me_address?: string | null
+          me_city_state_zip?: string | null
+          me_coroner_name?: string | null
+          me_institution?: string | null
+          me_telephone?: string | null
+          request_type?: string
+          return_heart?: boolean | null
+          tissue_recovery_id?: string | null
+          updated_at?: string
+          weight_method?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "heart_request_forms_donor_id_fkey"
+            columns: ["donor_id"]
+            isOneToOne: true
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "heart_request_forms_tissue_recovery_id_fkey"
+            columns: ["tissue_recovery_id"]
+            isOneToOne: false
+            referencedRelation: "tissue_recoveries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string

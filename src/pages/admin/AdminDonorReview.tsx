@@ -15,7 +15,8 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { ResponsiveTabsList, type TabItem } from '@/components/ui/responsive-tabs';
 import { useToast } from '@/hooks/use-toast';
 import { LayoutDashboard, Users, FileText, Bell, ArrowLeft, Check, X, Clock, Phone, Shield } from 'lucide-react';
 import AIScreeningPanel from '@/components/admin/AIScreeningPanel';
@@ -61,6 +62,22 @@ const BoolField = ({ label, value }: { label: string; value: boolean | null | un
 
 const tabTriggerClass = "rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5";
 
+const buildAdminTabs = (donor: DonorWithPartner, canReview: boolean): TabItem[] => {
+  const d = donor as any;
+  const tabs: TabItem[] = [
+    { value: 'overview', label: 'Overview' },
+    { value: 'clinical', label: 'Clinical' },
+  ];
+  if (donor.status === 'approved') tabs.push({ value: 'recovery', label: 'Recovery (7033F)' });
+  if (donor.status === 'approved' && d.hv_heart_valves) tabs.push({ value: 'heart_request', label: 'Heart Request (7117F)' });
+  if (donor.status !== 'draft') tabs.push({ value: 'plasma_dilution', label: 'Plasma Dilution (7059F)' });
+  tabs.push({ value: 'logistics', label: 'Logistics' });
+  tabs.push({ value: 'documents', label: 'Documents' });
+  tabs.push({ value: 'screening', label: 'AI Screening' });
+  if (canReview || donor.review_notes) tabs.push({ value: 'review', label: 'Review' });
+  return tabs;
+};
+
 const AdminDonorReview = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -69,6 +86,7 @@ const AdminDonorReview = () => {
   const [donor, setDonor] = useState<DonorWithPartner | null>(null);
   const [loading, setLoading] = useState(true);
   const [reviewNotes, setReviewNotes] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { fetchDonor(); }, [id]);
@@ -160,26 +178,12 @@ const AdminDonorReview = () => {
         <PendingDonorUpdates donorId={donor.id} onUpdated={fetchDonor} />
 
         {/* Tabbed Content */}
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-0">
-            <TabsTrigger value="overview" className={tabTriggerClass}>Overview</TabsTrigger>
-            <TabsTrigger value="clinical" className={tabTriggerClass}>Clinical</TabsTrigger>
-            {donor.status === 'approved' && (
-              <TabsTrigger value="recovery" className={tabTriggerClass}>Recovery (7033F)</TabsTrigger>
-            )}
-            {donor.status === 'approved' && d.hv_heart_valves && (
-              <TabsTrigger value="heart_request" className={tabTriggerClass}>Heart Request (7117F)</TabsTrigger>
-            )}
-            {donor.status !== 'draft' && (
-              <TabsTrigger value="plasma_dilution" className={tabTriggerClass}>Plasma Dilution (7059F)</TabsTrigger>
-            )}
-            <TabsTrigger value="logistics" className={tabTriggerClass}>Logistics</TabsTrigger>
-            <TabsTrigger value="documents" className={tabTriggerClass}>Documents</TabsTrigger>
-            <TabsTrigger value="screening" className={tabTriggerClass}>AI Screening</TabsTrigger>
-            {(canReview || donor.review_notes) && (
-              <TabsTrigger value="review" className={tabTriggerClass}>Review</TabsTrigger>
-            )}
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <ResponsiveTabsList
+            tabs={buildAdminTabs(donor, canReview)}
+            activeValue={activeTab}
+            onValueChange={setActiveTab}
+          />
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-5 mt-5">

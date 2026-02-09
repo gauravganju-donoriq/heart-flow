@@ -26,10 +26,12 @@ const navItems = [
 const DonorForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { partnerId } = useAuth();
+  const { partnerId, user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [donorStatus, setDonorStatus] = useState<string>('draft');
+  const [originalData, setOriginalData] = useState<Record<string, any> | null>(null);
 
   const [formData, setFormData] = useState({
     call_type: '',
@@ -82,11 +84,8 @@ const DonorForm = () => {
       return;
     }
 
-    if (data.status !== 'draft') {
-      toast({ variant: 'destructive', title: 'Cannot Edit', description: 'Only draft donors can be edited' });
-      navigate(`/partner/donors/${id}`);
-      return;
-    }
+    setDonorStatus(data.status);
+    setOriginalData(data as Record<string, any>);
 
     setFormData({
       call_type: (data as any).call_type || '',
@@ -150,13 +149,11 @@ const DonorForm = () => {
 
   const handleSave = async (submit = false) => {
     if (submit && !validateForSubmission()) return;
-    if (!partnerId) return;
+    if (!partnerId || !user) return;
     setSaving(true);
 
     const donorData: Record<string, any> = {
       partner_id: partnerId,
-      status: submit ? 'submitted' : 'draft',
-      submitted_at: submit ? new Date().toISOString() : null,
       call_type: formData.call_type || null,
       caller_name: formData.caller_name || null,
       is_prescreen_update: formData.is_prescreen_update,
@@ -191,11 +188,103 @@ const DonorForm = () => {
       medical_history_reviewed: formData.medical_history_reviewed,
     };
 
+    const isDraft = donorStatus === 'draft';
+
+    if (isEdit && !isDraft) {
+      // Non-draft: create pending update with only changed fields
+      const changedFields: Record<string, any> = {};
+      const changedFieldsDiff: Record<string, { old: any; new: any }> = {};
+
+      if (originalData) {
+        for (const [key, value] of Object.entries(donorData)) {
+          if (key === 'partner_id') continue;
+          const oldVal = originalData[key] ?? null;
+          let newVal = value ?? null;
+          // Normalize for comparison
+          if (String(oldVal) !== String(newVal)) {
+            changedFields[key] = newVal;
+            changedFieldsDiff[key] = { old: oldVal, new: newVal };
+          }
+        }
+      }
+
+      if (Object.keys(changedFields).length === 0) {
+        toast({ title: 'No Changes', description: 'No fields were modified.' });
+        setSaving(false);
+        return;
+      }
+
+      const { error: pendingError } = await (supabase.from as any)('pending_donor_updates').insert({
+        donor_id: id!,
+        proposed_changes: changedFields,
+        status: 'pending',
+        source: 'manual',
+      });
+
+      if (pendingError) {
+        toast({ variant: 'destructive', title: 'Error', description: pendingError.message });
+        setSaving(false);
+        return;
+      }
+
+      // Write audit log
+      await (supabase.from as any)('audit_logs').insert({
+        donor_id: id!,
+        action: 'edit_pending',
+        changed_by: user.id,
+        changed_fields: changedFieldsDiff,
+        metadata: { source: 'manual' },
+      });
+
+      toast({ title: 'Changes Submitted', description: 'Your edits have been submitted for admin approval.' });
+      setSaving(false);
+      navigate(`/partner/donors/${id}`);
+      return;
+    }
+
+    // Draft or new: direct save
+    if (isDraft || !isEdit) {
+      donorData.status = submit ? 'submitted' : 'draft';
+      donorData.submitted_at = submit ? new Date().toISOString() : null;
+    }
+
     let result;
     if (isEdit) {
       result = await supabase.from('donors').update(donorData).eq('id', id).select().single();
+
+      // Audit log for direct edit
+      if (!result.error && originalData) {
+        const changedFieldsDiff: Record<string, { old: any; new: any }> = {};
+        for (const [key, value] of Object.entries(donorData)) {
+          if (key === 'partner_id') continue;
+          const oldVal = originalData[key] ?? null;
+          const newVal = value ?? null;
+          if (String(oldVal) !== String(newVal)) {
+            changedFieldsDiff[key] = { old: oldVal, new: newVal };
+          }
+        }
+        if (Object.keys(changedFieldsDiff).length > 0) {
+          await (supabase.from as any)('audit_logs').insert({
+            donor_id: id!,
+            action: submit ? 'status_change' : 'edit_direct',
+            changed_by: user.id,
+            changed_fields: changedFieldsDiff,
+            metadata: { source: 'manual' },
+          });
+        }
+      }
     } else {
       result = await supabase.from('donors').insert(donorData).select().single();
+
+      if (!result.error && result.data) {
+        await (supabase.from as any)('audit_logs').insert({
+          donor_id: result.data.id,
+          action: 'created',
+          changed_by: user.id,
+          changed_fields: null,
+          metadata: { source: 'manual' },
+        });
+      }
     }
 
     setSaving(false);
@@ -551,12 +640,20 @@ const DonorForm = () => {
         </Tabs>
 
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => handleSave(false)} disabled={saving} className="h-9 text-[13px]">
-            <Save className="h-3.5 w-3.5 mr-1.5" />Save as Draft
-          </Button>
-          <Button size="sm" onClick={() => handleSave(true)} disabled={saving} className="h-9 text-[13px]">
-            <Send className="h-3.5 w-3.5 mr-1.5" />Submit for Review
-          </Button>
+          {donorStatus === 'draft' ? (
+            <>
+              <Button variant="outline" size="sm" onClick={() => handleSave(false)} disabled={saving} className="h-9 text-[13px]">
+                <Save className="h-3.5 w-3.5 mr-1.5" />Save as Draft
+              </Button>
+              <Button size="sm" onClick={() => handleSave(true)} disabled={saving} className="h-9 text-[13px]">
+                <Send className="h-3.5 w-3.5 mr-1.5" />Submit for Review
+              </Button>
+            </>
+          ) : (
+            <Button size="sm" onClick={() => handleSave(false)} disabled={saving} className="h-9 text-[13px]">
+              <Send className="h-3.5 w-3.5 mr-1.5" />Submit Changes for Approval
+            </Button>
+          )}
         </div>
       </div>
     </DashboardLayout>

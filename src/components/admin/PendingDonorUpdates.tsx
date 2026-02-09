@@ -107,6 +107,13 @@ const PendingDonorUpdates = ({ donorId, onUpdated }: PendingDonorUpdatesProps) =
     const update = updates.find(u => u.id === updateId);
     if (!update) return;
 
+    // Build before/after diff for audit
+    const changedFieldsDiff: Record<string, { old: unknown; new: unknown }> = {};
+    const changes = update.proposed_changes || {};
+    for (const key of Object.keys(changes)) {
+      changedFieldsDiff[key] = { old: currentDonor[key] ?? null, new: changes[key] };
+    }
+
     if (action === 'approved') {
       const { error: donorError } = await supabase
         .from('donors')
@@ -136,6 +143,16 @@ const PendingDonorUpdates = ({ donorId, onUpdated }: PendingDonorUpdatesProps) =
       return;
     }
 
+    // Write audit log
+    await (supabase.from as any)('audit_logs').insert({
+      donor_id: donorId,
+      action: action === 'approved' ? 'edit_approved' : 'edit_rejected',
+      changed_by: user.id,
+      changed_fields: changedFieldsDiff,
+      metadata: { pending_update_id: updateId, review_notes: reviewNotes[updateId] || null },
+    });
+
+    // Notify partner
     const donor = update.donors;
     if (donor) {
       const { data: partnerData } = await supabase

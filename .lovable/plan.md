@@ -1,64 +1,98 @@
 
 
-# Auto-Generate DIN (Donor Identification Number) on Submission
+# Add Plasma Dilution Worksheet (7059F) to Donor Detail
 
-## What This Does
+## Overview
 
-When a partner submits a donor referral (with their own External Donor ID), the system will automatically generate a **DIN** -- a unique LeMaitre-specific identifier for that donor. This replaces the current manual "LeMaitre Donor Number" field in the recovery form with a system-generated value.
+Add the LeMaitre 7059F Plasma Dilution of Donor Worksheet as a new tab on the donor detail pages. This compliance form determines whether a donor's blood samples are acceptable based on fluid transfusions/infusions received before death.
 
-## How It Works
+## Where It Fits
 
-1. Partner submits a donor referral containing their **External Donor ID**
-2. The system auto-generates a **DIN** (e.g., `DIN-250209-0001`) and stores it on the donor record
-3. The DIN appears in the donor header, overview tab, and pre-fills into the Recovery (7033F) form
+This form is relevant during the **review and approval** stages of a donor referral. When an admin or partner reviews a donor, they need to assess whether the donor's lab samples are diluted. The tab will appear for donors with status `submitted`, `under_review`, or `approved` (not for `draft` donors who haven't been submitted yet).
 
-## Default DIN Format
+## What the Form Captures
 
-Until the customer specifies their numbering system, the format will be:
+### Section 1: Donor Header
+- LeMaitre Donor # (pre-filled from DIN)
+- Recovery Agency Donor # (pre-filled from external_donor_id)
+- Donor weight in kg (pre-filled from weight_kgs)
+- Sample type: Post Mortem (with date/time of death) or Pre Mortem (with date/time of collection)
+- Death type: Asystole, LTKA, or CCT
 
-```text
-DIN-YYMMDD-NNNN
-```
+### Section 2: Fluids Received
+- **A. Blood products** transfused in the 48 hours before death (dynamic rows: product name + amount)
+- **B. Colloids** infused in the 48 hours before death (dynamic rows: colloid name + amount)
+- **C. Crystalloids** infused in the 1 hour before death (dynamic rows: crystalloid name + amount)
+- Each section has a calculated total
 
-Where `YYMMDD` is the submission date and `NNNN` is a zero-padded daily sequence number (e.g., `DIN-250209-0001`).
+### Section 3: Weight Calculations (auto-calculated)
+- Blood Volume (BV) based on weight range and gender
+- Plasma Volume (PV) based on weight range and gender
+- For donors 45-100 kg: simple weight-based formula
+- For donors under 45 kg or over 100 kg: BSA-based formula (male/female variants)
 
----
+### Section 4: Dilution Check (auto-calculated)
+- Check 1: Is B + C > PV?
+- Check 2: Is A + B + C > BV?
+- Result: Acceptable or Not Acceptable (with clear visual indicator)
+
+### Section 5: Review
+- Reviewed by (text field)
+- Date reviewed
 
 ## Technical Details
 
-### 1. Database Changes
+### Database Changes
 
-**Add `din` column to `donors` table:**
-- New column: `din TEXT UNIQUE NULLABLE`
-- The column is nullable because drafts won't have a DIN yet -- it's generated on submission
+**New table: `plasma_dilution_worksheets`**
+- `id` UUID primary key
+- `donor_id` UUID (references donors, unique -- one worksheet per donor)
+- `sample_type` TEXT ('post_mortem' or 'pre_mortem')
+- `sample_datetime` TIMESTAMPTZ
+- `death_type` TEXT ('asystole', 'ltka', 'cct')
+- `blood_products` JSONB (array of {name, amount})
+- `colloids` JSONB (array of {name, amount})
+- `crystalloids` JSONB (array of {name, amount})
+- `bsa_value` NUMERIC (optional, for edge-weight donors)
+- `blood_volume` NUMERIC (calculated)
+- `plasma_volume` NUMERIC (calculated)
+- `is_sample_acceptable` BOOLEAN
+- `reviewed_by` TEXT
+- `reviewed_at` TIMESTAMPTZ
+- `created_at`, `updated_at` TIMESTAMPTZ defaults
 
-**Create a database function `generate_din()`:**
-- A trigger function that fires on UPDATE of the `donors` table
-- Condition: when `status` changes to `'submitted'` and `din` IS NULL
-- Logic: queries the count of donors submitted on that date to determine the sequence number, then sets `din` to `DIN-YYMMDD-NNNN`
+**RLS Policies:** Same pattern as `tissue_recoveries` -- admins full access, partners can manage their own donor's worksheets.
 
-**Create trigger `set_din_on_submit`:**
-- `BEFORE UPDATE` trigger on `donors`
-- Calls `generate_din()` only when the status transitions to `submitted`
+### Frontend Changes
 
-### 2. Frontend Changes
+**New component: `src/components/PlasmaDilutionForm.tsx`**
+- Mirrors the structure and styling of `TissueRecoveryForm.tsx` for UI consistency
+- Auto-calculates BV and PV based on donor weight, gender, and optional BSA
+- Dynamic row addition for blood products, colloids, and crystalloids
+- Auto-evaluates the two dilution checks and shows a clear pass/fail result
+- Save and load from database
+- Uses same Card/field patterns as existing forms (text-[13px], h-9 inputs, etc.)
 
-**`src/pages/admin/AdminDonorReview.tsx`:**
-- Display the DIN in the donor header alongside the donor code
-- Show DIN in the Overview tab under a new "Identifiers" card (External Donor ID + DIN side by side)
+**Modified files:**
+- `src/pages/admin/AdminDonorReview.tsx` -- Add "Plasma Dilution (7059F)" tab after Recovery (7033F), visible for submitted/under_review/approved donors
+- `src/pages/partner/DonorDetail.tsx` -- Same tab addition
 
-**`src/pages/partner/DonorDetail.tsx`:**
-- Same DIN display in header and Overview tab
+### Auto-Calculation Logic
 
-**`src/components/TissueRecoveryForm.tsx`:**
-- Pre-fill the `lemaitre_donor_number` field with the donor's DIN
-- Make it read-only (since it's system-generated)
-- Update the label from "LeMaitre Donor Number" to "DIN (Donor Identification Number)"
+```text
+If weight >= 45 and <= 100:
+  BV = weight / 0.015
+  PV = weight / 0.025
+Else if male:
+  BV = BSA * 2740
+  PV = BSA * 1560
+Else (female):
+  BV = BSA * 2370
+  PV = BSA * 1410
 
-**`src/pages/admin/AdminDonorsList.tsx` and `src/pages/partner/DonorsList.tsx`:**
-- Add a DIN column to the donors list table for quick reference
+Check 1: (colloids_total + crystalloids_total) > PV
+Check 2: (blood_total + colloids_total + crystalloids_total) > BV
 
-### 3. Type Updates
-
-The `din` column will automatically appear in the generated Supabase types after the migration runs, so no manual type changes are needed.
+Acceptable = both checks are NO
+```
 

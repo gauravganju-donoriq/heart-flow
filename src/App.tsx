@@ -153,7 +153,7 @@ const App = () => (
               }
             />
             <Route
-              path="/admin/notifications"
+              path="/admin/audit-log"
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminNotifications />

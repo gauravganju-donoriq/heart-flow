@@ -95,7 +95,7 @@ const ScreeningBadge = ({ results }: { results: DonorWithPartner['screening_resu
 const AdminDonorsList = () => {
   const [donors, setDonors] = useState<DonorWithPartner[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>('pending');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const navigate = useNavigate();
 
   useEffect(() => {

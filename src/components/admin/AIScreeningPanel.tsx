@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { RefreshCw, AlertTriangle, CheckCircle, XCircle, Clock, ChevronDown } from 'lucide-react';
+import { RefreshCw, AlertTriangle, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 interface ScreeningResult {
   id: string;
@@ -41,7 +41,7 @@ const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
   const [result, setResult] = useState<ScreeningResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [screening, setScreening] = useState(false);
-  const [showReasoning, setShowReasoning] = useState(false);
+  
 
   useEffect(() => { fetchLatestResult(); }, [donorId]);
 
@@ -152,8 +152,13 @@ const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
                 />
               </div>
 
-              <p className="text-xs text-muted-foreground">
-                Advisory only — final decision is yours · {result.model_used} · {new Date(result.created_at).toLocaleString()}
+              {/* Reasoning summary inline */}
+              {result.reasoning && (
+                <p className="text-[13px] text-muted-foreground leading-relaxed">{result.reasoning}</p>
+              )}
+
+              <p className="text-xs text-muted-foreground pt-1">
+                Advisory only — final decision is yours · {new Date(result.created_at).toLocaleString()}
               </p>
             </div>
           )}
@@ -206,24 +211,6 @@ const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
         </Card>
       )}
 
-      {/* Reasoning */}
-      {result && !screening && result.reasoning && (
-        <Card>
-          <button
-            type="button"
-            className="w-full flex items-center justify-between px-6 py-4 cursor-pointer"
-            onClick={() => setShowReasoning(v => !v)}
-          >
-            <p className="text-sm font-medium">Agent Reasoning</p>
-            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showReasoning ? 'rotate-180' : ''}`} />
-          </button>
-          {showReasoning && (
-            <CardContent className="pt-0">
-              <p className="text-[13px] text-muted-foreground whitespace-pre-wrap leading-relaxed">{result.reasoning}</p>
-            </CardContent>
-          )}
-        </Card>
-      )}
     </div>
   );
 };

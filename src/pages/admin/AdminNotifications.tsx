@@ -65,7 +65,7 @@ const AdminNotifications = () => {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <DashboardLayout navItems={navItems} title="DonorIQ">
+    <DashboardLayout navItems={navItems} title="Atlas">
       <div className="space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between">

@@ -121,7 +121,7 @@ const AdminDonorReview = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="DonorIQ">
+      <DashboardLayout navItems={navItems} title="Atlas">
         <div className="flex items-center justify-center py-12"><div className="text-muted-foreground text-[13px]">Loading...</div></div>
       </DashboardLayout>
     );
@@ -133,7 +133,7 @@ const AdminDonorReview = () => {
   const canReview = donor.status === 'submitted' || donor.status === 'under_review';
 
   return (
-    <DashboardLayout navItems={navItems} title="DonorIQ">
+    <DashboardLayout navItems={navItems} title="Atlas">
       <div className="space-y-5 max-w-4xl">
         {/* Header */}
         <div className="flex items-center justify-between">

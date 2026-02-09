@@ -125,7 +125,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <DashboardLayout navItems={navItems} title="DonorIQ">
+    <DashboardLayout navItems={navItems} title="Atlas">
       <div className="space-y-5">
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">

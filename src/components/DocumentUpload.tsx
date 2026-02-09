@@ -148,7 +148,7 @@ const DocumentUpload = ({ donorId, canUpload = true }: DocumentUploadProps) => {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-sm">Document Checklist</CardTitle>
+                <p className="text-sm font-medium">Document Checklist</p>
                 <CardDescription className="text-[13px]">
                   {requiredCount > 0 ? `${fulfilledCount} of ${requiredCount} required documents uploaded` : 'All documents optional'}
                 </CardDescription>
@@ -204,8 +204,8 @@ const DocumentUpload = ({ donorId, canUpload = true }: DocumentUploadProps) => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Documents</CardTitle>
-              <CardDescription>Uploaded files for this donor</CardDescription>
+              <p className="text-sm font-medium">Documents</p>
+              <p className="text-[13px] text-muted-foreground">Uploaded files for this donor</p>
             </div>
             {canUpload && (
               <div className="flex items-center gap-2">
@@ -248,12 +248,12 @@ const DocumentUpload = ({ donorId, canUpload = true }: DocumentUploadProps) => {
               {documents.map((doc) => {
                 const matchedReq = requirements.find(r => r.id === (doc as any).document_requirement_id);
                 return (
-                  <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div key={doc.id} className="flex items-center justify-between py-2.5 px-3 border rounded-lg">
                     <div className="flex items-center gap-3">
                       <File className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <p className="text-sm font-medium">{doc.file_name}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-[13px] font-medium">{doc.file_name}</p>
+                        <p className="text-[12px] text-muted-foreground">
                           {matchedReq && <span className="text-foreground font-medium">{matchedReq.name} · </span>}
                           {formatFileSize(doc.file_size)} · {new Date(doc.created_at).toLocaleDateString()}
                         </p>

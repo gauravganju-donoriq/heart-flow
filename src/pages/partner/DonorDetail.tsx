@@ -75,7 +75,7 @@ const DonorDetail = () => {
   };
 
   if (loading) {
-    return (<DashboardLayout navItems={navItems} title="DonorIQ"><div className="flex items-center justify-center py-12"><div className="text-muted-foreground text-[13px]">Loading...</div></div></DashboardLayout>);
+    return (<DashboardLayout navItems={navItems} title="Atlas"><div className="flex items-center justify-center py-12"><div className="text-muted-foreground text-[13px]">Loading...</div></div></DashboardLayout>);
   }
 
   if (!donor) return null;
@@ -84,7 +84,7 @@ const DonorDetail = () => {
   const isDraft = donor.status === 'draft';
 
   return (
-    <DashboardLayout navItems={navItems} title="DonorIQ">
+    <DashboardLayout navItems={navItems} title="Atlas">
       <div className="space-y-5 max-w-4xl">
         {/* Header */}
         <div className="flex items-center justify-between">

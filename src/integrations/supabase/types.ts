@@ -108,18 +108,36 @@ export type Database = {
       }
       donors: {
         Row: {
+          ai_aorto_iliac: boolean | null
           blood_type: string | null
+          call_type: string | null
+          caller_name: string | null
           cause_of_death: string | null
+          clinical_course: string | null
           consent_obtained: boolean | null
+          courier_update: string | null
           created_at: string
           date_of_birth: string | null
           death_date: string | null
+          death_timezone: string | null
+          death_type: string | null
+          donor_accepted: string | null
+          donor_age: number | null
           donor_code: string | null
+          external_donor_id: string | null
           first_name: string | null
+          fm_femoral: boolean | null
           gender: string | null
+          has_autopsy: boolean | null
+          height_inches: number | null
+          high_risk_notes: string | null
+          hv_heart_valves: boolean | null
+          hv_pathology_request: string | null
           id: string
           intake_method: string | null
+          is_prescreen_update: boolean | null
           last_name: string | null
+          medical_history: string | null
           medical_history_reviewed: boolean | null
           partner_id: string | null
           review_notes: string | null
@@ -127,23 +145,44 @@ export type Database = {
           reviewed_by: string | null
           status: Database["public"]["Enums"]["donor_status"]
           submitted_at: string | null
+          sv_saphenous_vein: boolean | null
+          time_of_death: string | null
           tissue_condition: string | null
           tissue_type: string | null
           updated_at: string
+          weight_kgs: number | null
         }
         Insert: {
+          ai_aorto_iliac?: boolean | null
           blood_type?: string | null
+          call_type?: string | null
+          caller_name?: string | null
           cause_of_death?: string | null
+          clinical_course?: string | null
           consent_obtained?: boolean | null
+          courier_update?: string | null
           created_at?: string
           date_of_birth?: string | null
           death_date?: string | null
+          death_timezone?: string | null
+          death_type?: string | null
+          donor_accepted?: string | null
+          donor_age?: number | null
           donor_code?: string | null
+          external_donor_id?: string | null
           first_name?: string | null
+          fm_femoral?: boolean | null
           gender?: string | null
+          has_autopsy?: boolean | null
+          height_inches?: number | null
+          high_risk_notes?: string | null
+          hv_heart_valves?: boolean | null
+          hv_pathology_request?: string | null
           id?: string
           intake_method?: string | null
+          is_prescreen_update?: boolean | null
           last_name?: string | null
+          medical_history?: string | null
           medical_history_reviewed?: boolean | null
           partner_id?: string | null
           review_notes?: string | null
@@ -151,23 +190,44 @@ export type Database = {
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["donor_status"]
           submitted_at?: string | null
+          sv_saphenous_vein?: boolean | null
+          time_of_death?: string | null
           tissue_condition?: string | null
           tissue_type?: string | null
           updated_at?: string
+          weight_kgs?: number | null
         }
         Update: {
+          ai_aorto_iliac?: boolean | null
           blood_type?: string | null
+          call_type?: string | null
+          caller_name?: string | null
           cause_of_death?: string | null
+          clinical_course?: string | null
           consent_obtained?: boolean | null
+          courier_update?: string | null
           created_at?: string
           date_of_birth?: string | null
           death_date?: string | null
+          death_timezone?: string | null
+          death_type?: string | null
+          donor_accepted?: string | null
+          donor_age?: number | null
           donor_code?: string | null
+          external_donor_id?: string | null
           first_name?: string | null
+          fm_femoral?: boolean | null
           gender?: string | null
+          has_autopsy?: boolean | null
+          height_inches?: number | null
+          high_risk_notes?: string | null
+          hv_heart_valves?: boolean | null
+          hv_pathology_request?: string | null
           id?: string
           intake_method?: string | null
+          is_prescreen_update?: boolean | null
           last_name?: string | null
+          medical_history?: string | null
           medical_history_reviewed?: boolean | null
           partner_id?: string | null
           review_notes?: string | null
@@ -175,9 +235,12 @@ export type Database = {
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["donor_status"]
           submitted_at?: string | null
+          sv_saphenous_vein?: boolean | null
+          time_of_death?: string | null
           tissue_condition?: string | null
           tissue_type?: string | null
           updated_at?: string
+          weight_kgs?: number | null
         }
         Relationships: [
           {

@@ -82,22 +82,40 @@ Deno.serve(async (req) => {
         headers: retellHeaders,
         body: JSON.stringify({
           begin_message:
-            "Hello, this is the HeartStream tissue recovery intake line. I'll help you record donor information. First, could you please tell me your partner code?",
-          general_prompt: `You are a professional tissue recovery intake agent for HeartStream. Your job is to collect donor information from tissue recovery partners over the phone.
+            "Hello, this is the LeMaitre Vascular tissue recovery intake line. I'll help you record donor screening information. First, what type of call is this — initial screening, prescreen update, or something else?",
+          general_prompt: `You are a professional tissue recovery intake agent for LeMaitre Vascular. Your job is to collect initial screening information from tissue recovery partners over the phone. Ask the following questions in order, one at a time. Be professional, empathetic, and patient. Confirm details as you go. If the caller is unsure about a field, note it and move on.
 
-Collect the following information in a conversational manner:
-1. Partner code (their organization identifier) - ask this FIRST
-2. Donor's first name
-3. Donor's last name  
-4. Date of birth
-5. Gender
-6. Blood type
-7. Cause of death
-8. Date of death
-9. Tissue type (vascular, cardiac, or other)
-10. Tissue condition (excellent, good, fair, or poor)
+1. "What type of call is this?" (initial screening, prescreen update, courier update, etc.)
+2. "May I have your name please?" (caller's name — not the donor)
+3. "Which recovery group are you calling from?" (their partner code/slug)
+4. "What is the donor's age?"
+5. "What was the donor's sex at birth?" (male or female)
+6. "What is the date of death?"
+7. "What was the time of death?"
+8. "What type of death was this?" (cardiac death, brain death, DCD, etc.)
+9. "What time zone are you in?" (EST, CST, MST, PST, etc.)
+10. "What was the cause of death?"
+11. "Can you describe the clinical course?"
+12. "What is the donor's height in inches?"
+13. "What is the donor's weight in kilograms?"
+14. "Any relevant medical history?"
+15. "Are there any high-risk factors or additional relevant notes?"
+16. "Is the donor accepted or deferred?"
 
-Be professional, empathetic, and patient. Confirm details as you go. If the partner is unsure about a field, note it and move on. Once all information is collected, summarize what you've recorded and confirm with the partner before ending the call.`,
+If the donor is accepted, continue with tissue-specific questions:
+17. "Are heart valves being recovered?" (yes/no)
+18. If heart valves yes: "Any heart valve pathology requests?"
+19. "Is Aorto Iliac being recovered?" (yes/no)
+20. "Is Femoral En Bloc being recovered?" (yes/no)
+21. "Is Saphenous Vein being recovered?" (yes/no)
+22. If any tissue is accepted: "Is this donor having any type of autopsy?" (yes/no)
+
+Then wrap up:
+23. "Do you have a donor ID or donor number?"
+24. "Is this a prescreen or an update on a pre-existing donor?"
+25. "Any courier updates?"
+
+Once all information is collected, summarize what you've recorded and confirm with the caller before ending the call.`,
         }),
       });
 

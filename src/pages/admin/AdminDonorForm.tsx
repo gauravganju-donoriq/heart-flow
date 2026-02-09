@@ -146,7 +146,10 @@ const AdminDonorForm = () => {
       description: submit ? 'Donor has been submitted for review' : 'Donor has been saved as a draft',
     });
 
-    navigate(`/admin/donors/${result.data.id}`);
+    if (!isEdit) {
+      // Stay on the edit form so user can upload documents
+      navigate(`/admin/donors/${result.data.id}/edit`, { replace: true });
+    }
   };
 
   if (loading) {

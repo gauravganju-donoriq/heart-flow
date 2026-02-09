@@ -159,7 +159,10 @@ const DonorForm = () => {
         : 'Your donor has been saved as a draft',
     });
 
-    navigate(`/partner/donors/${result.data.id}`);
+    if (!isEdit) {
+      // Stay on the edit form so user can upload documents
+      navigate(`/partner/donors/${result.data.id}/edit`, { replace: true });
+    }
   };
 
   if (loading) {

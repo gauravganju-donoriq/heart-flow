@@ -10,6 +10,7 @@ import TissueRecoveryForm from '@/components/TissueRecoveryForm';
 import HeartRequestForm from '@/components/HeartRequestForm';
 import PlasmaDilutionForm from '@/components/PlasmaDilutionForm';
 import PendingDonorUpdates from '@/components/admin/PendingDonorUpdates';
+import AuditLog from '@/components/admin/AuditLog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -74,6 +75,7 @@ const buildAdminTabs = (donor: DonorWithPartner, canReview: boolean): TabItem[] 
   tabs.push({ value: 'logistics', label: 'Logistics' });
   tabs.push({ value: 'documents', label: 'Documents' });
   tabs.push({ value: 'screening', label: 'AI Screening' });
+  tabs.push({ value: 'audit', label: 'Audit Log' });
   if (canReview || donor.review_notes) tabs.push({ value: 'review', label: 'Review' });
   return tabs;
 };
@@ -391,6 +393,11 @@ const AdminDonorReview = () => {
           <TabsContent value="documents" className="space-y-5 mt-5">
             {d.intake_method === 'phone' && <CallTranscript donorId={donor.id} />}
             <DocumentUpload donorId={donor.id} canUpload={true} />
+          </TabsContent>
+
+          {/* Audit Log Tab */}
+          <TabsContent value="audit" className="mt-5">
+            <AuditLog donorId={donor.id} />
           </TabsContent>
 
           {/* AI Screening Tab */}

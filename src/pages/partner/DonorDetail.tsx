@@ -321,7 +321,7 @@ const DonorDetail = () => {
               </Card>
             )}
 
-            <ShipmentTracking donorId={donor.id} canAdd={isDraft} />
+            <ShipmentTracking donorId={donor.id} canAdd={true} />
           </TabsContent>
 
           {/* Documents Tab */}

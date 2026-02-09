@@ -386,7 +386,7 @@ const AdminDonorReview = () => {
               </Card>
             )}
 
-            <ShipmentTracking donorId={donor.id} canAdd={false} />
+            <ShipmentTracking donorId={donor.id} canAdd={true} isAdmin={true} />
           </TabsContent>
 
           {/* Documents Tab */}

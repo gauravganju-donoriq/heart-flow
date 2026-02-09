@@ -126,7 +126,6 @@ const DonorDetail = () => {
               <TabsTrigger value="recovery" className={tabTriggerClass}>Recovery (7033F)</TabsTrigger>
             )}
             <TabsTrigger value="logistics" className={tabTriggerClass}>Logistics</TabsTrigger>
-            <TabsTrigger value="logistics" className={tabTriggerClass}>Logistics</TabsTrigger>
             <TabsTrigger value="documents" className={tabTriggerClass}>Documents</TabsTrigger>
           </TabsList>
 
@@ -244,7 +243,7 @@ const DonorDetail = () => {
           {/* Recovery Tab */}
           {donor.status === 'approved' && (
             <TabsContent value="recovery" className="space-y-5 mt-5">
-              <TissueRecoveryForm donorId={donor.id} donorInfo={{ donor_code: donor.donor_code, donor_age: d.donor_age, gender: donor.gender, death_date: donor.death_date, time_of_death: d.time_of_death, death_type: d.death_type, death_timezone: d.death_timezone, external_donor_id: d.external_donor_id, partner_name: null, din: d.din }} />
+              <TissueRecoveryForm donorId={donor.id} donorInfo={{ donor_code: donor.donor_code, donor_age: d.donor_age, gender: donor.gender, death_date: donor.death_date, time_of_death: d.time_of_death, death_type: d.death_type, death_timezone: d.death_timezone, external_donor_id: d.external_donor_id, partner_name: null, din: d.din, hv_heart_valves: d.hv_heart_valves, ai_aorto_iliac: d.ai_aorto_iliac, fm_femoral: d.fm_femoral, sv_saphenous_vein: d.sv_saphenous_vein }} />
             </TabsContent>
           )}
 

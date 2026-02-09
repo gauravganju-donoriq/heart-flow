@@ -64,6 +64,10 @@ interface DonorInfo {
   external_donor_id: string | null;
   partner_name: string | null;
   din?: string | null;
+  hv_heart_valves?: boolean | null;
+  ai_aorto_iliac?: boolean | null;
+  fm_femoral?: boolean | null;
+  sv_saphenous_vein?: boolean | null;
 }
 
 interface Props {
@@ -124,6 +128,24 @@ const TissueRecoveryForm = ({ donorId, donorInfo, readOnly = false }: Props) => 
           recovery_technician: t.recovery_technician || '',
         })));
       }
+    } else {
+      // Pre-populate tissue rows based on intake flags
+      const autoRows: TissueRow[] = [];
+      if (donorInfo?.hv_heart_valves) {
+        autoRows.push({ tissue_category: 'cardiac', tissue_type: 'Heart for Valves', timestamp_value: '', recovery_technician: '' });
+      }
+      if (donorInfo?.ai_aorto_iliac) {
+        autoRows.push({ tissue_category: 'cardiac', tissue_type: 'Aortoiliac Artery', timestamp_value: '', recovery_technician: '' });
+      }
+      if (donorInfo?.fm_femoral) {
+        autoRows.push({ tissue_category: 'vascular', tissue_type: 'RIGHT Femoral Vessels', timestamp_value: '', recovery_technician: '' });
+        autoRows.push({ tissue_category: 'vascular', tissue_type: 'LEFT Femoral Vessels', timestamp_value: '', recovery_technician: '' });
+      }
+      if (donorInfo?.sv_saphenous_vein) {
+        autoRows.push({ tissue_category: 'vascular', tissue_type: 'RIGHT Saphenous Vein', timestamp_value: '', recovery_technician: '' });
+        autoRows.push({ tissue_category: 'vascular', tissue_type: 'LEFT Saphenous Vein', timestamp_value: '', recovery_technician: '' });
+      }
+      if (autoRows.length > 0) setTissues(autoRows);
     }
     setLoading(false);
   };

@@ -1,114 +1,42 @@
 
 
-# Donor Workflow Enhancement: Courier Tracking + Linked Data
+# Unified Login Page with Role-Based Routing
 
 ## Overview
 
-Enhance the donor workflow so partners can submit full donor details via forms and attach courier tracking numbers to each donor. Since a donor can have multiple shipments, we'll create a separate `shipments` table linked to donors. All relevant information (donor details, documents, shipments) will flow through the entire journey from partner submission to admin review.
+Redesign the `/auth` login page so both admins and partners can log in from a single page. After entering credentials, the system automatically detects the user's role and redirects them to the correct dashboard. Partners also keep their custom branded URLs (`/login/:slug`) as an alternative entry point.
 
-## What's Changing
+## What Changes
 
-### 1. New Database Table: `shipments`
+### Login Page (`/auth`) Redesign
 
-A new table to store courier tracking entries linked to donors:
+The current page already handles role-based redirect after login -- it checks the user's role and sends them to `/admin` or `/partner`. The main improvement is making the UI clearly communicate that **both** admins and partners can sign in here:
 
-| Column | Type | Notes |
-|--------|------|-------|
-| id | uuid (PK) | Auto-generated |
-| donor_id | uuid (FK -> donors) | Links to the donor |
-| tracking_number | text | The courier tracking number |
-| notes | text (nullable) | Optional description (e.g. "Vascular tissue sample") |
-| created_at | timestamp | Auto-set |
-| created_by | uuid | The user who added it |
+- Update the page title/description to say something like "LeMaitre Portal" with "Sign in as an Admin or Recovery Partner"
+- Add two visual tabs or a toggle: **Admin** and **Partner** -- these are purely cosmetic/informational (the actual routing is determined by the user's role in the database, not by which tab they pick)
+- Alternatively, keep a single form but with clearer messaging that this is a universal login
 
-RLS policies:
-- Partners can INSERT shipments for their own donors
-- Partners can SELECT shipments for their own donors
-- Admins can SELECT all shipments
+**Recommended approach**: Keep a single login form (no tabs needed) since the backend already determines the role. Just update the copy to make it clear both user types can log in here. This avoids confusion where someone picks "Admin" tab but has a partner account.
 
-### 2. Partner Donor Form Updates
+### Post-Login Flow
 
-Add a **Shipment / Courier Tracking** section to the donor form (`DonorForm.tsx`):
-- Partners can add one or more tracking numbers while the donor is in draft
-- Each entry is just a tracking number + optional note
-- Tracking entries are saved to the `shipments` table when the form is saved
+This already works correctly:
+1. User enters email + password
+2. `signIn` authenticates via the backend
+3. `AuthContext` fetches the user's role from `user_roles` table
+4. `Auth.tsx` redirects: admin -> `/admin`, partner -> `/partner`
 
-### 3. Partner Donor Detail Updates
-
-Update `DonorDetail.tsx` to show:
-- A new **Shipments** card listing all tracking numbers with their notes and timestamps
-- Ability to add more tracking entries while the donor is still in draft status
-
-### 4. Admin Donor Review Updates
-
-Update `AdminDonorReview.tsx` to show:
-- The same **Shipments** card (read-only) so admins see all courier tracking info alongside donor details, documents, and compliance data when reviewing
-
-This ensures all relevant information travels through the full journey: partner entry -> submission -> admin review -> approval/rejection.
-
----
+No backend changes needed -- the routing logic is already in place.
 
 ## Technical Details
 
-### Database Migration SQL
+### File Changes
 
-```sql
-CREATE TABLE public.shipments (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  donor_id uuid NOT NULL REFERENCES public.donors(id) ON DELETE CASCADE,
-  tracking_number text NOT NULL,
-  notes text,
-  created_by uuid NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
+**1. `src/pages/Auth.tsx`** -- Update UI copy and styling:
+- Change title from "LeMaitre Partner Portal" to "LeMaitre Portal"
+- Change description to "Sign in to access your admin or partner account"
+- Add a small note below the form: "Partners can also use their custom login URL"
+- Keep the existing form and redirect logic untouched
 
-ALTER TABLE public.shipments ENABLE ROW LEVEL SECURITY;
-
--- Partners can view shipments for their own donors
-CREATE POLICY "Partners can view their donor shipments"
-  ON public.shipments FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM donors
-      JOIN partners ON partners.id = donors.partner_id
-      WHERE donors.id = shipments.donor_id
-      AND partners.user_id = auth.uid()
-    )
-  );
-
--- Partners can add shipments to their own donors
-CREATE POLICY "Partners can add shipments"
-  ON public.shipments FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM donors
-      JOIN partners ON partners.id = donors.partner_id
-      WHERE donors.id = shipments.donor_id
-      AND partners.user_id = auth.uid()
-    )
-    AND created_by = auth.uid()
-  );
-
--- Admins can view all shipments
-CREATE POLICY "Admins can view all shipments"
-  ON public.shipments FOR SELECT
-  USING (has_role(auth.uid(), 'admin'));
-```
-
-### Files to Create/Modify
-
-1. **New migration** - SQL above
-2. **New component**: `src/components/ShipmentTracking.tsx` - Reusable component that displays shipment list and optionally allows adding new entries (used by both partner detail and admin review)
-3. **Modify** `src/pages/partner/DonorDetail.tsx` - Add ShipmentTracking component with add capability when draft
-4. **Modify** `src/pages/partner/DonorForm.tsx` - Add inline tracking number fields that get saved after initial donor creation
-5. **Modify** `src/pages/admin/AdminDonorReview.tsx` - Add ShipmentTracking component in read-only mode
-
-### ShipmentTracking Component Design
-
-A shared component accepting props:
-- `donorId: string` - which donor
-- `canAdd: boolean` - whether to show the "add tracking" input
-- Fetches shipments from the `shipments` table filtered by `donor_id`
-- Displays a list/table of tracking numbers with notes and dates
-- When `canAdd` is true, shows an input + button to insert new entries
+That's it -- the core functionality already works. This is primarily a UI/copy update to make it obvious that both roles can log in from this single page.
 

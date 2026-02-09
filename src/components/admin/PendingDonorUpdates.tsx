@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
-import { Check, X, ArrowRight } from 'lucide-react';
+import { Check, X, ArrowRight, ChevronDown } from 'lucide-react';
 
 interface PendingUpdate {
   id: string;
@@ -193,95 +193,97 @@ const PendingDonorUpdates = ({ donorId, onUpdated }: PendingDonorUpdatesProps) =
   if (updates.length === 0) return null;
 
   return (
-    <div className="space-y-4">
-      {updates.map((update) => {
-        const changes = update.proposed_changes || {};
-        const changedKeys = Object.keys(changes).filter(
-          key => changes[key] !== null && changes[key] !== undefined && changes[key] !== ''
-        );
+    <div className="space-y-3">
+      <p className="text-sm font-medium">Pending Updates</p>
+      <div className="border border-border rounded-lg divide-y divide-border overflow-hidden">
+        {updates.map((update) => {
+          const changes = update.proposed_changes || {};
+          const changedKeys = Object.keys(changes).filter(
+            key => changes[key] !== null && changes[key] !== undefined && changes[key] !== ''
+          );
 
-        return (
-          <Card key={update.id} className="border border-amber-200 bg-amber-50/30">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium flex items-center gap-2">
-                    Pending Update
-                    <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 rounded-md">
-                      Awaiting Approval
-                    </Badge>
-                  </p>
-                  <p className="text-[13px] text-muted-foreground">
-                    Received {new Date(update.created_at).toLocaleString()} — {changedKeys.length} field{changedKeys.length !== 1 ? 's' : ''} proposed
-                  </p>
+          return (
+            <Collapsible key={update.id}>
+              <CollapsibleTrigger className="flex items-center justify-between w-full px-5 py-3.5 hover:bg-muted/30 transition-colors text-left group">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 rounded-md text-[11px] shrink-0">
+                    Awaiting Approval
+                  </Badge>
+                  <span className="text-[13px] text-muted-foreground truncate">
+                    {changedKeys.length} field{changedKeys.length !== 1 ? 's' : ''} · {new Date(update.created_at).toLocaleDateString()}
+                  </span>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Side-by-side diff */}
-              <div className="rounded-lg border overflow-hidden">
-                <div className="grid grid-cols-3 bg-muted/50 px-4 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
-                  <div>Field</div>
-                  <div>Current Value</div>
-                  <div>Proposed Value</div>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform group-data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-5 pb-5 space-y-4">
+                  {/* Diff table */}
+                  <div className="rounded-lg border border-border overflow-hidden">
+                    <div className="grid grid-cols-3 bg-muted/50 px-4 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
+                      <div>Field</div>
+                      <div>Current</div>
+                      <div>Proposed</div>
+                    </div>
+                    <div className="divide-y divide-border">
+                      {changedKeys.map((key) => {
+                        const currentVal = currentDonor[key];
+                        const proposedVal = changes[key];
+                        const isChanged = formatValue(currentVal) !== formatValue(proposedVal);
+
+                        return (
+                          <div key={key} className="grid grid-cols-3 px-4 py-2 text-[13px]">
+                            <div className="font-medium text-muted-foreground">{fieldLabels[key] || key}</div>
+                            <div className="text-muted-foreground">{formatValue(currentVal)}</div>
+                            <div className="flex items-center gap-2">
+                              {isChanged && <ArrowRight className="h-3 w-3 text-amber-600 shrink-0" />}
+                              <span className={isChanged ? 'font-medium' : ''}>
+                                {formatValue(proposedVal)}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Review notes */}
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px]">Review Notes (optional)</Label>
+                    <Textarea
+                      placeholder="Add notes about your decision..."
+                      value={reviewNotes[update.id] || ''}
+                      onChange={(e) => setReviewNotes(prev => ({ ...prev, [update.id]: e.target.value }))}
+                      rows={2}
+                      className="text-[13px]"
+                    />
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleAction(update.id, 'rejected')}
+                      disabled={saving === update.id}
+                      className="h-8 text-[13px] text-destructive hover:text-destructive"
+                    >
+                      <X className="h-3.5 w-3.5 mr-1.5" />
+                      Reject
+                    </Button>
+                    <Button
+                      onClick={() => handleAction(update.id, 'approved')}
+                      disabled={saving === update.id}
+                      className="h-8 text-[13px]"
+                    >
+                      <Check className="h-3.5 w-3.5 mr-1.5" />
+                      Approve & Apply
+                    </Button>
+                  </div>
                 </div>
-                <div className="divide-y">
-                  {changedKeys.map((key) => {
-                    const currentVal = currentDonor[key];
-                    const proposedVal = changes[key];
-                    const isChanged = formatValue(currentVal) !== formatValue(proposedVal);
-
-                    return (
-                      <div key={key} className={`grid grid-cols-3 px-4 py-2 text-[13px] ${isChanged ? 'bg-amber-50/50' : ''}`}>
-                        <div className="font-medium text-muted-foreground">{fieldLabels[key] || key}</div>
-                        <div>{formatValue(currentVal)}</div>
-                        <div className="flex items-center gap-2">
-                          {isChanged && <ArrowRight className="h-3 w-3 text-amber-600 shrink-0" />}
-                          <span className={isChanged ? 'font-medium text-amber-800' : ''}>
-                            {formatValue(proposedVal)}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Review notes */}
-              <div className="space-y-2">
-                <Label className="text-[13px]">Review Notes (optional)</Label>
-                <Textarea
-                  placeholder="Add notes about your decision..."
-                  value={reviewNotes[update.id] || ''}
-                  onChange={(e) => setReviewNotes(prev => ({ ...prev, [update.id]: e.target.value }))}
-                  rows={2}
-                />
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="destructive"
-                  onClick={() => handleAction(update.id, 'rejected')}
-                  disabled={saving === update.id}
-                  className="h-9 text-[13px]"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Reject Changes
-                </Button>
-                <Button
-                  onClick={() => handleAction(update.id, 'approved')}
-                  disabled={saving === update.id}
-                  className="bg-green-600 hover:bg-green-700 h-9 text-[13px]"
-                >
-                  <Check className="h-4 w-4 mr-2" />
-                  Approve & Apply Changes
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+              </CollapsibleContent>
+            </Collapsible>
+          );
+        })}
+      </div>
     </div>
   );
 };

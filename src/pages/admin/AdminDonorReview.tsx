@@ -162,7 +162,7 @@ const AdminDonorReview = () => {
             <TabsTrigger value="overview" className={tabTriggerClass}>Overview</TabsTrigger>
             <TabsTrigger value="clinical" className={tabTriggerClass}>Clinical</TabsTrigger>
             {donor.status === 'approved' && (
-              <TabsTrigger value="recovery" className={tabTriggerClass}>Recovery</TabsTrigger>
+              <TabsTrigger value="recovery" className={tabTriggerClass}>Recovery (7033F)</TabsTrigger>
             )}
             <TabsTrigger value="logistics" className={tabTriggerClass}>Logistics</TabsTrigger>
             <TabsTrigger value="documents" className={tabTriggerClass}>Documents</TabsTrigger>

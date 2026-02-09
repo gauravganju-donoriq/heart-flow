@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Auth
 import Auth from "./pages/Auth";
+import PartnerLogin from "./pages/PartnerLogin";
 
 // Partner pages
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
@@ -38,6 +39,7 @@ const App = () => (
             {/* Public routes */}
             <Route path="/" element={<Navigate to="/auth" replace />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/login/:slug" element={<PartnerLogin />} />
 
             {/* Partner routes */}
             <Route

@@ -12,6 +12,7 @@ interface Partner {
   organization_name: string;
   contact_phone: string | null;
   address: string | null;
+  slug: string;
   created_at: string;
   is_active: boolean;
   user_id: string;
@@ -50,6 +51,7 @@ const PartnersList = () => {
         organization_name,
         contact_phone,
         address,
+        slug,
         created_at,
         is_active,
         user_id

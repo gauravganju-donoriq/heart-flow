@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus } from 'lucide-react';
+import { Plus, Copy, Check } from 'lucide-react';
 import { z } from 'zod';
 
 const partnerSchema = z.object({
@@ -16,8 +16,24 @@ const partnerSchema = z.object({
   phone: z.string().optional(),
 });
 
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 interface CreatePartnerDialogProps {
   onSuccess: () => void;
+}
+
+interface CreatedPartnerInfo {
+  organizationName: string;
+  email: string;
+  password: string;
+  loginUrl: string;
 }
 
 const CreatePartnerDialog = ({ onSuccess }: CreatePartnerDialogProps) => {
@@ -25,6 +41,8 @@ const CreatePartnerDialog = ({ onSuccess }: CreatePartnerDialogProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [createdPartner, setCreatedPartner] = useState<CreatedPartnerInfo | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -48,16 +66,13 @@ const CreatePartnerDialog = ({ onSuccess }: CreatePartnerDialogProps) => {
     }
 
     setCreating(true);
+    const slug = generateSlug(formData.organizationName);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        toast({
-          title: 'Error',
-          description: 'You must be logged in to create partners',
-          variant: 'destructive',
-        });
+        toast({ title: 'Error', description: 'You must be logged in to create partners', variant: 'destructive' });
         return;
       }
 
@@ -68,46 +83,51 @@ const CreatePartnerDialog = ({ onSuccess }: CreatePartnerDialogProps) => {
           organizationName: formData.organizationName,
           fullName: formData.fullName,
           phone: formData.phone || undefined,
+          slug,
         },
       });
 
-      if (response.error) {
-        throw new Error(response.error.message || 'Failed to create partner');
-      }
+      if (response.error) throw new Error(response.error.message || 'Failed to create partner');
+      if (response.data?.error) throw new Error(response.data.error);
 
-      if (response.data?.error) {
-        throw new Error(response.data.error);
-      }
+      const loginUrl = `${window.location.origin}/login/${slug}`;
 
-      toast({
-        title: 'Partner Created',
-        description: `Successfully created account for ${formData.organizationName}`,
+      setCreatedPartner({
+        organizationName: formData.organizationName,
+        email: formData.email,
+        password: formData.password,
+        loginUrl,
       });
 
-      setDialogOpen(false);
-      setFormData({
-        email: '',
-        password: '',
-        organizationName: '',
-        fullName: '',
-        phone: '',
-      });
-      
       onSuccess();
     } catch (error: any) {
       console.error('Error creating partner:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to create partner account',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error.message || 'Failed to create partner account', variant: 'destructive' });
     } finally {
       setCreating(false);
     }
   };
 
+  const handleCopyUrl = async () => {
+    if (!createdPartner) return;
+    await navigator.clipboard.writeText(createdPartner.loginUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleClose = () => {
+    setDialogOpen(false);
+    setCreatedPartner(null);
+    setCopied(false);
+    setFormData({ email: '', password: '', organizationName: '', fullName: '', phone: '' });
+    setErrors({});
+  };
+
   return (
-    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+    <Dialog open={dialogOpen} onOpenChange={(open) => {
+      if (!open) handleClose();
+      else setDialogOpen(true);
+    }}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
@@ -115,76 +135,78 @@ const CreatePartnerDialog = ({ onSuccess }: CreatePartnerDialogProps) => {
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create Partner Account</DialogTitle>
-          <DialogDescription>
-            Create a new recovery partner account
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="organizationName">Organization Name</Label>
-            <Input
-              id="organizationName"
-              value={formData.organizationName}
-              onChange={(e) => setFormData({ ...formData, organizationName: e.target.value })}
-            />
-            {errors.organizationName && (
-              <p className="text-sm text-destructive">{errors.organizationName}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="fullName">Contact Name</Label>
-            <Input
-              id="fullName"
-              value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-            />
-            {errors.fullName && (
-              <p className="text-sm text-destructive">{errors.fullName}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            />
-            {errors.password && (
-              <p className="text-sm text-destructive">{errors.password}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone (Optional)</Label>
-            <Input
-              id="phone"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleCreate} disabled={creating}>
-            {creating ? 'Creating...' : 'Create Partner'}
-          </Button>
-        </DialogFooter>
+        {createdPartner ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>Partner Created Successfully!</DialogTitle>
+              <DialogDescription>
+                Share the login details below with {createdPartner.organizationName}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-1">
+                <Label className="text-muted-foreground text-xs">Login URL</Label>
+                <div className="flex items-center gap-2">
+                  <Input value={createdPartner.loginUrl} readOnly className="font-mono text-sm" />
+                  <Button variant="outline" size="icon" onClick={handleCopyUrl}>
+                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-muted-foreground text-xs">Email</Label>
+                <Input value={createdPartner.email} readOnly />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-muted-foreground text-xs">Password</Label>
+                <Input value={createdPartner.password} readOnly />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                ⚠️ Save these credentials now. The password cannot be retrieved later.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleClose}>Done</Button>
+            </DialogFooter>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>Create Partner Account</DialogTitle>
+              <DialogDescription>Create a new recovery partner account</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="organizationName">Organization Name</Label>
+                <Input id="organizationName" value={formData.organizationName} onChange={(e) => setFormData({ ...formData, organizationName: e.target.value })} />
+                {errors.organizationName && <p className="text-sm text-destructive">{errors.organizationName}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Contact Name</Label>
+                <Input id="fullName" value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} />
+                {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone (Optional)</Label>
+                <Input id="phone" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleClose}>Cancel</Button>
+              <Button onClick={handleCreate} disabled={creating}>{creating ? 'Creating...' : 'Create Partner'}</Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

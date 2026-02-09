@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
 
     console.log("Processing call_ended event:", call.call_id);
 
-    // Build transcript text from transcript_object or use transcript string
+    // Build transcript text
     let transcriptText = call.transcript || "";
     if (call.transcript_object && Array.isArray(call.transcript_object)) {
       transcriptText = call.transcript_object
@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use Lovable AI to extract donor data and partner code
+    // Use Lovable AI to extract all 25 screening fields
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
@@ -75,11 +75,11 @@ Deno.serve(async (req) => {
             {
               role: "system",
               content:
-                "You extract structured donor information from phone call transcripts between a tissue recovery partner and an AI agent. Extract all fields mentioned clearly. Use null for anything unclear or not mentioned.",
+                "You extract structured donor screening information from phone call transcripts between a tissue recovery partner and an AI intake agent. Extract all fields mentioned clearly. Use null for anything unclear or not mentioned.",
             },
             {
               role: "user",
-              content: `Extract donor information and the partner code from this transcript:\n\n${transcriptText}`,
+              content: `Extract all donor screening information from this transcript. Map to the LeMaitre 25-question screening format:\n\n${transcriptText}`,
             },
           ],
           tools: [
@@ -88,15 +88,161 @@ Deno.serve(async (req) => {
               function: {
                 name: "extract_donor_data",
                 description:
-                  "Extract structured donor data and partner identifier from a call transcript.",
+                  "Extract all 25 screening fields from a tissue recovery intake call transcript.",
                 parameters: {
                   type: "object",
                   properties: {
+                    // Q1: Type of call
+                    call_type: {
+                      type: "string",
+                      nullable: true,
+                      description: "Type of call: initial screening, prescreen update, courier update, etc.",
+                    },
+                    // Q2: Caller's name
+                    caller_name: {
+                      type: "string",
+                      nullable: true,
+                      description: "Name of the person calling (not the donor).",
+                    },
+                    // Q3: Recovery group / partner code
                     partner_code: {
                       type: "string",
-                      description:
-                        "The partner code/slug/PIN the caller identified themselves with.",
+                      description: "The partner code/slug/PIN the caller identified themselves with.",
                     },
+                    // Q4: Age
+                    donor_age: {
+                      type: "integer",
+                      nullable: true,
+                      description: "Donor's age at death.",
+                    },
+                    // Q5: Sex at birth
+                    gender: {
+                      type: "string",
+                      nullable: true,
+                      enum: ["male", "female"],
+                      description: "Donor's sex at birth.",
+                    },
+                    // Q6: Date of death
+                    death_date: {
+                      type: "string",
+                      nullable: true,
+                      description: "Date of death in YYYY-MM-DD format.",
+                    },
+                    // Q7: Time of death
+                    time_of_death: {
+                      type: "string",
+                      nullable: true,
+                      description: "Time of death, e.g. '14:30' or '2:30 PM'.",
+                    },
+                    // Q8: Type of death
+                    death_type: {
+                      type: "string",
+                      nullable: true,
+                      description: "Type of death: cardiac, brain death, DCD, etc.",
+                    },
+                    // Q9: Time zone
+                    death_timezone: {
+                      type: "string",
+                      nullable: true,
+                      description: "Time zone: EST, CST, MST, PST, etc.",
+                    },
+                    // Q10: Cause of death
+                    cause_of_death: {
+                      type: "string",
+                      nullable: true,
+                      description: "Cause of death.",
+                    },
+                    // Q11: Clinical course
+                    clinical_course: {
+                      type: "string",
+                      nullable: true,
+                      description: "Clinical course narrative.",
+                    },
+                    // Q12: Height in inches
+                    height_inches: {
+                      type: "number",
+                      nullable: true,
+                      description: "Donor's height in inches.",
+                    },
+                    // Q13: Weight in kgs
+                    weight_kgs: {
+                      type: "number",
+                      nullable: true,
+                      description: "Donor's weight in kilograms.",
+                    },
+                    // Q14: Medical history
+                    medical_history: {
+                      type: "string",
+                      nullable: true,
+                      description: "Relevant medical history (free text).",
+                    },
+                    // Q15: High risk / additional notes
+                    high_risk_notes: {
+                      type: "string",
+                      nullable: true,
+                      description: "High-risk factors or additional relevant notes.",
+                    },
+                    // Q16: Donor accepted/deferred
+                    donor_accepted: {
+                      type: "string",
+                      nullable: true,
+                      description: "Whether donor is accepted, deferred, or notes about the decision.",
+                    },
+                    // Q17: Heart valves
+                    hv_heart_valves: {
+                      type: "boolean",
+                      nullable: true,
+                      description: "Are heart valves being recovered?",
+                    },
+                    // Q18: Heart valve pathology request
+                    hv_pathology_request: {
+                      type: "string",
+                      nullable: true,
+                      description: "Heart valve pathology request details.",
+                    },
+                    // Q19: Aorto Iliac
+                    ai_aorto_iliac: {
+                      type: "boolean",
+                      nullable: true,
+                      description: "Is Aorto Iliac being recovered?",
+                    },
+                    // Q20: Femoral En Bloc
+                    fm_femoral: {
+                      type: "boolean",
+                      nullable: true,
+                      description: "Is Femoral En Bloc being recovered?",
+                    },
+                    // Q21: Saphenous Vein
+                    sv_saphenous_vein: {
+                      type: "boolean",
+                      nullable: true,
+                      description: "Is Saphenous Vein being recovered?",
+                    },
+                    // Q22: Autopsy
+                    has_autopsy: {
+                      type: "boolean",
+                      nullable: true,
+                      description: "Is an autopsy being performed?",
+                    },
+                    // Q23: Donor ID / number
+                    external_donor_id: {
+                      type: "string",
+                      nullable: true,
+                      description: "The partner's own donor ID or donor number.",
+                    },
+                    // Q24: Prescreen / update
+                    is_prescreen_update: {
+                      type: "boolean",
+                      nullable: true,
+                      description: "Is this a prescreen or update on a pre-existing donor?",
+                    },
+                    // Q25: Courier update
+                    courier_update: {
+                      type: "string",
+                      nullable: true,
+                      description: "Courier/logistics updates or notes.",
+                    },
+                    // Legacy fields kept for backward compatibility
                     first_name: { type: "string", nullable: true },
                     last_name: { type: "string", nullable: true },
                     date_of_birth: {
@@ -104,23 +250,10 @@ Deno.serve(async (req) => {
                       nullable: true,
                       description: "YYYY-MM-DD format",
                     },
-                    gender: {
-                      type: "string",
-                      nullable: true,
-                      enum: ["male", "female", "other"],
-                    },
                     blood_type: {
                       type: "string",
                       nullable: true,
-                      enum: [
-                        "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown",
-                      ],
-                    },
-                    cause_of_death: { type: "string", nullable: true },
-                    death_date: {
-                      type: "string",
-                      nullable: true,
-                      description: "YYYY-MM-DD format",
+                      enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"],
                     },
                     tissue_type: {
                       type: "string",
@@ -185,18 +318,63 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Create donor record
+    // Create donor record with all 25 screening fields
     const donorFields: Record<string, unknown> = {
       partner_id: partner.id,
       status: "draft",
       intake_method: "phone",
+      // Q1-Q3
+      call_type: extracted.call_type || null,
+      caller_name: extracted.caller_name || null,
+      // Q4: Age
+      donor_age: extracted.donor_age ?? null,
+      // Q5: Sex at birth
+      gender: extracted.gender || null,
+      // Q6: Date of death
+      death_date: extracted.death_date || null,
+      // Q7: Time of death
+      time_of_death: extracted.time_of_death || null,
+      // Q8: Type of death
+      death_type: extracted.death_type || null,
+      // Q9: Time zone
+      death_timezone: extracted.death_timezone || null,
+      // Q10: Cause of death
+      cause_of_death: extracted.cause_of_death || null,
+      // Q11: Clinical course
+      clinical_course: extracted.clinical_course || null,
+      // Q12: Height
+      height_inches: extracted.height_inches ?? null,
+      // Q13: Weight
+      weight_kgs: extracted.weight_kgs ?? null,
+      // Q14: Medical history
+      medical_history: extracted.medical_history || null,
+      // Q15: High risk notes
+      high_risk_notes: extracted.high_risk_notes || null,
+      // Q16: Donor accepted/deferred
+      donor_accepted: extracted.donor_accepted || null,
+      // Q17: Heart valves
+      hv_heart_valves: extracted.hv_heart_valves ?? null,
+      // Q18: HV pathology request
+      hv_pathology_request: extracted.hv_pathology_request || null,
+      // Q19: Aorto Iliac
+      ai_aorto_iliac: extracted.ai_aorto_iliac ?? null,
+      // Q20: Femoral En Bloc
+      fm_femoral: extracted.fm_femoral ?? null,
+      // Q21: Saphenous Vein
+      sv_saphenous_vein: extracted.sv_saphenous_vein ?? null,
+      // Q22: Autopsy
+      has_autopsy: extracted.has_autopsy ?? null,
+      // Q23: External donor ID
+      external_donor_id: extracted.external_donor_id || null,
+      // Q24: Prescreen/update
+      is_prescreen_update: extracted.is_prescreen_update ?? null,
+      // Q25: Courier update
+      courier_update: extracted.courier_update || null,
+      // Legacy fields
       first_name: extracted.first_name || null,
       last_name: extracted.last_name || null,
       date_of_birth: extracted.date_of_birth || null,
-      gender: extracted.gender || null,
       blood_type: extracted.blood_type || null,
-      cause_of_death: extracted.cause_of_death || null,
-      death_date: extracted.death_date || null,
       tissue_type: extracted.tissue_type || null,
       tissue_condition: extracted.tissue_condition || null,
     };

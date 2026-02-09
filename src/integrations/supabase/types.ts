@@ -353,6 +353,44 @@ export type Database = {
         }
         Relationships: []
       }
+      recovered_tissues: {
+        Row: {
+          created_at: string
+          id: string
+          recovery_technician: string | null
+          timestamp_value: string | null
+          tissue_category: string
+          tissue_recovery_id: string
+          tissue_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recovery_technician?: string | null
+          timestamp_value?: string | null
+          tissue_category: string
+          tissue_recovery_id: string
+          tissue_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recovery_technician?: string | null
+          timestamp_value?: string | null
+          tissue_category?: string
+          tissue_recovery_id?: string
+          tissue_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recovered_tissues_tissue_recovery_id_fkey"
+            columns: ["tissue_recovery_id"]
+            isOneToOne: false
+            referencedRelation: "tissue_recoveries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shipments: {
         Row: {
           created_at: string
@@ -383,6 +421,56 @@ export type Database = {
             foreignKeyName: "shipments_donor_id_fkey"
             columns: ["donor_id"]
             isOneToOne: false
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tissue_recoveries: {
+        Row: {
+          consent_delivery_method: string | null
+          created_at: string
+          donor_id: string
+          form_completed_by: string | null
+          heart_request_form_completed: boolean | null
+          heart_request_needed: boolean | null
+          id: string
+          lemaitre_donor_number: string | null
+          packaging_deviation: boolean | null
+          packaging_notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          consent_delivery_method?: string | null
+          created_at?: string
+          donor_id: string
+          form_completed_by?: string | null
+          heart_request_form_completed?: boolean | null
+          heart_request_needed?: boolean | null
+          id?: string
+          lemaitre_donor_number?: string | null
+          packaging_deviation?: boolean | null
+          packaging_notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          consent_delivery_method?: string | null
+          created_at?: string
+          donor_id?: string
+          form_completed_by?: string | null
+          heart_request_form_completed?: boolean | null
+          heart_request_needed?: boolean | null
+          id?: string
+          lemaitre_donor_number?: string | null
+          packaging_deviation?: boolean | null
+          packaging_notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tissue_recoveries_donor_id_fkey"
+            columns: ["donor_id"]
+            isOneToOne: true
             referencedRelation: "donors"
             referencedColumns: ["id"]
           },

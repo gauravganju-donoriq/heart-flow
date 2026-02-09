@@ -5,11 +5,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import DocumentUpload from '@/components/DocumentUpload';
 import ShipmentTracking from '@/components/ShipmentTracking';
+import CallTranscript from '@/components/CallTranscript';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { LayoutDashboard, FileText, Bell, ArrowLeft, Edit, Send } from 'lucide-react';
+import { LayoutDashboard, FileText, Bell, ArrowLeft, Edit, Send, Phone } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -125,6 +126,12 @@ const DonorDetail = () => {
                 <Badge className={statusColors[donor.status]}>
                   {statusLabels[donor.status]}
                 </Badge>
+                {donor.intake_method === 'phone' && (
+                  <Badge variant="outline" className="gap-1">
+                    <Phone className="h-3 w-3" />
+                    Phone Intake
+                  </Badge>
+                )}
               </div>
               <p className="text-muted-foreground">
                 {donor.first_name && donor.last_name
@@ -252,6 +259,11 @@ const DonorDetail = () => {
         </Card>
 
         {/* Shipments */}
+        {/* Call Transcript (for phone intake) */}
+        {donor.intake_method === 'phone' && (
+          <CallTranscript donorId={donor.id} />
+        )}
+
         <ShipmentTracking donorId={donor.id} canAdd={isDraft} />
 
         {/* Documents */}

@@ -5,13 +5,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import DocumentUpload from '@/components/DocumentUpload';
 import ShipmentTracking from '@/components/ShipmentTracking';
+import CallTranscript from '@/components/CallTranscript';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { LayoutDashboard, Users, FileText, Bell, ArrowLeft, Check, X, Clock } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Bell, ArrowLeft, Check, X, Clock, Phone } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -174,6 +175,12 @@ const AdminDonorReview = () => {
                 <Badge className={statusColors[donor.status]}>
                   {statusLabels[donor.status]}
                 </Badge>
+                {(donor as any).intake_method === 'phone' && (
+                  <Badge variant="outline" className="gap-1">
+                    <Phone className="h-3 w-3" />
+                    Phone Intake
+                  </Badge>
+                )}
               </div>
               <p className="text-muted-foreground">
                 From: {donor.partners?.organization_name || 'Direct Admin Entry'}
@@ -335,6 +342,11 @@ const AdminDonorReview = () => {
         </Card>
 
         {/* Shipments */}
+        {/* Call Transcript (for phone intake) */}
+        {(donor as any).intake_method === 'phone' && (
+          <CallTranscript donorId={donor.id} />
+        )}
+
         <ShipmentTracking donorId={donor.id} canAdd={false} />
 
         {/* Documents */}

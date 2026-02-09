@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LayoutDashboard, Users, FileText, Bell, Eye, Plus, Phone, Shield } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { LayoutDashboard, Users, FileText, Bell, Eye, Plus, Phone, Shield, CheckCircle, XCircle, AlertTriangle, Minus } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type DonorStatus = Database['public']['Enums']['donor_status'];
@@ -25,6 +26,10 @@ interface DonorWithPartner {
   partners: {
     organization_name: string;
   } | null;
+  screening_results: {
+    verdict: string;
+    confidence: number;
+  }[] | null;
 }
 
 const statusColors: Record<DonorStatus, string> = {
@@ -50,6 +55,44 @@ const navItems = [
   { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
   { label: 'Notifications', href: '/admin/notifications', icon: <Bell className="h-4 w-4" /> },
 ];
+
+const ScreeningBadge = ({ results }: { results: DonorWithPartner['screening_results'] }) => {
+  const latest = results && results.length > 0 ? results[results.length - 1] : null;
+
+  if (!latest) {
+    return (
+      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+        <Minus className="h-3.5 w-3.5" />
+        Not screened
+      </span>
+    );
+  }
+
+  const config = {
+    accept: { icon: CheckCircle, label: 'Accept', className: 'text-green-600 bg-green-50 border-green-200' },
+    reject: { icon: XCircle, label: 'Reject', className: 'text-red-600 bg-red-50 border-red-200' },
+    needs_review: { icon: AlertTriangle, label: 'Review', className: 'text-amber-600 bg-amber-50 border-amber-200' },
+  }[latest.verdict] || { icon: AlertTriangle, label: latest.verdict, className: 'text-muted-foreground bg-muted' };
+
+  const Icon = config.icon;
+  const confidence = Math.round(latest.confidence * 100);
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${config.className}`}>
+            <Icon className="h-3.5 w-3.5" />
+            {config.label}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>AI Verdict: {config.label} ({confidence}% confidence)</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
 
 const AdminDonorsList = () => {
   const [donors, setDonors] = useState<DonorWithPartner[]>([]);
@@ -77,6 +120,10 @@ const AdminDonorsList = () => {
         intake_method,
         partners (
           organization_name
+        ),
+        screening_results (
+          verdict,
+          confidence
         )
       `)
       .order('submitted_at', { ascending: true, nullsFirst: false });
@@ -157,6 +204,7 @@ const AdminDonorsList = () => {
                     <TableHead>Partner</TableHead>
                     <TableHead>Tissue Type</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>AI Screening</TableHead>
                     <TableHead>Submitted</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
@@ -185,6 +233,9 @@ const AdminDonorsList = () => {
                         <Badge className={statusColors[donor.status]}>
                           {statusLabels[donor.status]}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <ScreeningBadge results={donor.screening_results} />
                       </TableCell>
                       <TableCell>
                         {donor.submitted_at

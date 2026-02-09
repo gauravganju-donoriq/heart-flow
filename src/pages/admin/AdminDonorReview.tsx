@@ -363,7 +363,7 @@ const AdminDonorReview = () => {
           {/* Logistics Tab */}
           <TabsContent value="logistics" className="space-y-5 mt-5">
             <Card>
-              <CardHeader><p className="text-sm font-medium">Logistics</p></CardHeader>
+              <CardHeader><p className="text-sm font-medium">Shipping & Courier</p></CardHeader>
               <CardContent>
                 <dl className="grid gap-4 md:grid-cols-2">
                   <Field label="External Donor ID (Q23)" value={d.external_donor_id} />
@@ -372,15 +372,17 @@ const AdminDonorReview = () => {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader><p className="text-sm font-medium">Legacy Tissue Info</p></CardHeader>
-              <CardContent>
-                <dl className="grid gap-4 md:grid-cols-2">
-                  <Field label="Tissue Type" value={donor.tissue_type} />
-                  <Field label="Tissue Condition" value={donor.tissue_condition} />
-                </dl>
-              </CardContent>
-            </Card>
+            {(donor.tissue_type || donor.tissue_condition) && (
+              <Card>
+                <CardHeader><p className="text-sm font-medium">Tissue Info</p></CardHeader>
+                <CardContent>
+                  <dl className="grid gap-4 md:grid-cols-2">
+                    <Field label="Tissue Type" value={donor.tissue_type} />
+                    <Field label="Tissue Condition" value={donor.tissue_condition} />
+                  </dl>
+                </CardContent>
+              </Card>
+            )}
 
             <ShipmentTracking donorId={donor.id} canAdd={false} />
           </TabsContent>
@@ -400,30 +402,40 @@ const AdminDonorReview = () => {
           {(canReview || donor.review_notes) && (
             <TabsContent value="review" className="space-y-5 mt-5">
               {canReview && (
-                <Card className="border border-border bg-muted/30">
-                  <CardHeader><p className="text-sm font-medium">Review Actions</p></CardHeader>
+                <Card>
+                  <CardHeader><p className="text-sm font-medium">Decision</p></CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="reviewNotes" className="text-[13px]">Review Notes</Label>
-                      <Textarea id="reviewNotes" placeholder="Add notes about your decision (visible to partner)" value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} rows={3} />
+                    <div className="space-y-1.5">
+                      <Label htmlFor="reviewNotes" className="text-[13px] text-muted-foreground">Review Notes</Label>
+                      <Textarea id="reviewNotes" placeholder="Add notes about your decision (visible to partner)" value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} rows={3} className="text-[13px]" />
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 pt-1">
                       {donor.status === 'submitted' && (
-                        <Button variant="outline" onClick={() => handleStatusChange('under_review')} disabled={saving} className="h-9 text-[13px]"><Clock className="h-4 w-4 mr-2" />Mark Under Review</Button>
+                        <Button variant="outline" onClick={() => handleStatusChange('under_review')} disabled={saving} className="h-9 text-[13px]">
+                          <Clock className="h-3.5 w-3.5 mr-1.5" />Under Review
+                        </Button>
                       )}
-                      <Button variant="destructive" onClick={() => handleStatusChange('rejected')} disabled={saving} className="h-9 text-[13px]"><X className="h-4 w-4 mr-2" />Reject</Button>
-                      <Button onClick={() => handleStatusChange('approved')} disabled={saving} className="bg-green-600 hover:bg-green-700 h-9 text-[13px]"><Check className="h-4 w-4 mr-2" />Approve</Button>
+                      <Button variant="outline" className="h-9 text-[13px] text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => handleStatusChange('rejected')} disabled={saving}>
+                        <X className="h-3.5 w-3.5 mr-1.5" />Reject
+                      </Button>
+                      <Button onClick={() => handleStatusChange('approved')} disabled={saving} className="h-9 text-[13px] bg-emerald-600 hover:bg-emerald-700">
+                        <Check className="h-3.5 w-3.5 mr-1.5" />Approve
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
               )}
 
               {!canReview && donor.review_notes && (
-                <div className={`p-4 border-l-4 rounded-r-lg ${donor.status === 'rejected' ? 'border-l-red-400 bg-muted/30' : 'border-l-emerald-400 bg-muted/30'}`}>
-                  <p className="text-sm font-medium mb-1">Review Notes</p>
-                  <p className="text-[13px]">{donor.review_notes}</p>
-                  {donor.reviewed_at && <p className="text-xs text-muted-foreground mt-2">Reviewed on {new Date(donor.reviewed_at).toLocaleString()}</p>}
-                </div>
+                <Card>
+                  <CardHeader><p className="text-sm font-medium">Review Notes</p></CardHeader>
+                  <CardContent>
+                    <p className="text-[13px]">{donor.review_notes}</p>
+                    {donor.reviewed_at && (
+                      <p className="text-[12px] text-muted-foreground mt-2">Reviewed on {new Date(donor.reviewed_at).toLocaleString()}</p>
+                    )}
+                  </CardContent>
+                </Card>
               )}
             </TabsContent>
           )}

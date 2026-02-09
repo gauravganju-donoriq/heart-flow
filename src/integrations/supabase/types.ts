@@ -236,6 +236,41 @@ export type Database = {
         }
         Relationships: []
       }
+      shipments: {
+        Row: {
+          created_at: string
+          created_by: string
+          donor_id: string
+          id: string
+          notes: string | null
+          tracking_number: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          donor_id: string
+          id?: string
+          notes?: string | null
+          tracking_number: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          donor_id?: string
+          id?: string
+          notes?: string | null
+          tracking_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipments_donor_id_fkey"
+            columns: ["donor_id"]
+            isOneToOne: false
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string

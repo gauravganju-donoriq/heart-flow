@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import DocumentUpload from '@/components/DocumentUpload';
+import ShipmentTracking from '@/components/ShipmentTracking';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -332,6 +333,9 @@ const AdminDonorReview = () => {
             </dl>
           </CardContent>
         </Card>
+
+        {/* Shipments */}
+        <ShipmentTracking donorId={donor.id} canAdd={false} />
 
         {/* Documents */}
         <DocumentUpload donorId={donor.id} canUpload={false} />

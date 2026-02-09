@@ -7,6 +7,7 @@ import DocumentUpload from '@/components/DocumentUpload';
 import ShipmentTracking from '@/components/ShipmentTracking';
 import CallTranscript from '@/components/CallTranscript';
 import TissueRecoveryForm from '@/components/TissueRecoveryForm';
+import PendingDonorUpdates from '@/components/admin/PendingDonorUpdates';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -180,6 +181,9 @@ const AdminDonorReview = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Pending Updates from Follow-Up Calls */}
+        <PendingDonorUpdates donorId={donor.id} onUpdated={fetchDonor} />
 
         {/* Call Information (Q1, Q2, Q24) */}
         <Card>

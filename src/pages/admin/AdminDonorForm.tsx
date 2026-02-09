@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { LayoutDashboard, Users, FileText, Bell, ArrowLeft, Save, Send } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Bell, ArrowLeft, Save, Send, FileUp } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type DonorInsert = Database['public']['Tables']['donors']['Insert'];
@@ -176,157 +177,175 @@ const AdminDonorForm = () => {
           </div>
         </div>
 
-        {/* Partner Selector */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Partner Assignment</CardTitle>
-            <CardDescription>Optionally assign this donor to a partner organization</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 max-w-sm">
-              <Label htmlFor="partner">Partner Organization</Label>
-              <Select
-                value={selectedPartnerId}
-                onValueChange={setSelectedPartnerId}
-                disabled={isEdit}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a partner" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None (Direct Admin Entry)</SelectItem>
-                  {partners.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.organization_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="info" className="w-full">
+          <TabsList>
+            <TabsTrigger value="info">Donor Information</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
+          </TabsList>
 
-        {/* Demographics */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Demographics</CardTitle>
-            <CardDescription>Basic donor information</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="first_name">First Name</Label>
-                <Input id="first_name" value={formData.first_name} onChange={(e) => handleChange('first_name', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="last_name">Last Name</Label>
-                <Input id="last_name" value={formData.last_name} onChange={(e) => handleChange('last_name', e.target.value)} />
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <Label htmlFor="date_of_birth">Date of Birth</Label>
-                <Input id="date_of_birth" type="date" value={formData.date_of_birth} onChange={(e) => handleChange('date_of_birth', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
-                <Select value={formData.gender} onValueChange={(v) => handleChange('gender', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="blood_type">Blood Type</Label>
-                <Select value={formData.blood_type} onValueChange={(v) => handleChange('blood_type', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="A+">A+</SelectItem>
-                    <SelectItem value="A-">A-</SelectItem>
-                    <SelectItem value="B+">B+</SelectItem>
-                    <SelectItem value="B-">B-</SelectItem>
-                    <SelectItem value="AB+">AB+</SelectItem>
-                    <SelectItem value="AB-">AB-</SelectItem>
-                    <SelectItem value="O+">O+</SelectItem>
-                    <SelectItem value="O-">O-</SelectItem>
-                    <SelectItem value="unknown">Unknown</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          <TabsContent value="info" className="space-y-6">
+            {/* Partner Selector */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Partner Assignment</CardTitle>
+                <CardDescription>Optionally assign this donor to a partner organization</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-w-sm">
+                  <Label htmlFor="partner">Partner Organization</Label>
+                  <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId} disabled={isEdit}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a partner" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None (Direct Admin Entry)</SelectItem>
+                      {partners.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>{p.organization_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Tissue Condition */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Tissue Condition</CardTitle>
-            <CardDescription>Information about the tissue</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="cause_of_death">Cause of Death</Label>
-                <Input id="cause_of_death" value={formData.cause_of_death} onChange={(e) => handleChange('cause_of_death', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="death_date">Date of Death</Label>
-                <Input id="death_date" type="date" value={formData.death_date} onChange={(e) => handleChange('death_date', e.target.value)} />
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="tissue_type">Tissue Type</Label>
-                <Select value={formData.tissue_type} onValueChange={(v) => handleChange('tissue_type', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="vascular">Vascular</SelectItem>
-                    <SelectItem value="cardiac">Cardiac</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="tissue_condition">Tissue Condition</Label>
-                <Select value={formData.tissue_condition} onValueChange={(v) => handleChange('tissue_condition', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="excellent">Excellent</SelectItem>
-                    <SelectItem value="good">Good</SelectItem>
-                    <SelectItem value="fair">Fair</SelectItem>
-                    <SelectItem value="poor">Poor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            {/* Demographics */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Demographics</CardTitle>
+                <CardDescription>Basic donor information</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="first_name">First Name</Label>
+                    <Input id="first_name" value={formData.first_name} onChange={(e) => handleChange('first_name', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="last_name">Last Name</Label>
+                    <Input id="last_name" value={formData.last_name} onChange={(e) => handleChange('last_name', e.target.value)} />
+                  </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="date_of_birth">Date of Birth</Label>
+                    <Input id="date_of_birth" type="date" value={formData.date_of_birth} onChange={(e) => handleChange('date_of_birth', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="gender">Gender</Label>
+                    <Select value={formData.gender} onValueChange={(v) => handleChange('gender', v)}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="blood_type">Blood Type</Label>
+                    <Select value={formData.blood_type} onValueChange={(v) => handleChange('blood_type', v)}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="A+">A+</SelectItem>
+                        <SelectItem value="A-">A-</SelectItem>
+                        <SelectItem value="B+">B+</SelectItem>
+                        <SelectItem value="B-">B-</SelectItem>
+                        <SelectItem value="AB+">AB+</SelectItem>
+                        <SelectItem value="AB-">AB-</SelectItem>
+                        <SelectItem value="O+">O+</SelectItem>
+                        <SelectItem value="O-">O-</SelectItem>
+                        <SelectItem value="unknown">Unknown</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Compliance */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Compliance</CardTitle>
-            <CardDescription>Required documentation checks</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox id="consent_obtained" checked={formData.consent_obtained} onCheckedChange={(checked) => handleChange('consent_obtained', !!checked)} />
-              <Label htmlFor="consent_obtained">Consent obtained from next of kin</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox id="medical_history_reviewed" checked={formData.medical_history_reviewed} onCheckedChange={(checked) => handleChange('medical_history_reviewed', !!checked)} />
-              <Label htmlFor="medical_history_reviewed">Medical history reviewed</Label>
-            </div>
-          </CardContent>
-        </Card>
+            {/* Tissue Condition */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Tissue Condition</CardTitle>
+                <CardDescription>Information about the tissue</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="cause_of_death">Cause of Death</Label>
+                    <Input id="cause_of_death" value={formData.cause_of_death} onChange={(e) => handleChange('cause_of_death', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="death_date">Date of Death</Label>
+                    <Input id="death_date" type="date" value={formData.death_date} onChange={(e) => handleChange('death_date', e.target.value)} />
+                  </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="tissue_type">Tissue Type</Label>
+                    <Select value={formData.tissue_type} onValueChange={(v) => handleChange('tissue_type', v)}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="vascular">Vascular</SelectItem>
+                        <SelectItem value="cardiac">Cardiac</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tissue_condition">Tissue Condition</Label>
+                    <Select value={formData.tissue_condition} onValueChange={(v) => handleChange('tissue_condition', v)}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="excellent">Excellent</SelectItem>
+                        <SelectItem value="good">Good</SelectItem>
+                        <SelectItem value="fair">Fair</SelectItem>
+                        <SelectItem value="poor">Poor</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Documents - only shown when editing an existing donor */}
-        {isEdit && id && (
-          <DocumentUpload donorId={id} canUpload={true} />
-        )}
+            {/* Compliance */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Compliance</CardTitle>
+                <CardDescription>Required documentation checks</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="consent_obtained" checked={formData.consent_obtained} onCheckedChange={(checked) => handleChange('consent_obtained', !!checked)} />
+                  <Label htmlFor="consent_obtained">Consent obtained from next of kin</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="medical_history_reviewed" checked={formData.medical_history_reviewed} onCheckedChange={(checked) => handleChange('medical_history_reviewed', !!checked)} />
+                  <Label htmlFor="medical_history_reviewed">Medical history reviewed</Label>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="documents">
+            {isEdit && id ? (
+              <DocumentUpload donorId={id} canUpload={true} />
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Save the donor first</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md">
+                    Please save the donor record before uploading documents. Once saved, you can upload and manage documents here.
+                  </p>
+                  <Button onClick={() => handleSave(false)} disabled={saving}>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save as Draft
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
 
         {/* Actions */}
         <div className="flex items-center gap-4">

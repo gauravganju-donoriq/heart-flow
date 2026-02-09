@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import DocumentChecklistSettings from '@/components/admin/DocumentChecklistSettings';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -157,86 +158,101 @@ const ScreeningSettings = () => {
   return (
     <DashboardLayout navItems={navItems} title="DonorIQ">
       <div className="space-y-5 max-w-4xl">
-        <div className="flex items-center justify-end">
-          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) { setEditingGuideline(null); setForm({ title: '', content: '', category: 'general' }); } }}>
-            <DialogTrigger asChild>
-              <Button className="h-9 text-[13px]"><Plus className="h-4 w-4 mr-2" />Add Guideline</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle>{editingGuideline ? 'Edit Guideline' : 'Add Guideline'}</DialogTitle>
-                <DialogDescription>Write a screening guideline in natural language. The AI agent will interpret and apply it holistically.</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Title</Label>
-                  <Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="e.g. Age Criteria" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Category</Label>
-                  <Select value={form.category} onValueChange={v => setForm(p => ({ ...p, category: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {categories.map(c => <SelectItem key={c} value={c}>{categoryLabels[c]}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Content</Label>
-                  <Textarea value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))} placeholder="Write your screening guideline in plain English..." rows={6} />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : editingGuideline ? 'Update' : 'Add'}</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
+        <Tabs defaultValue="guidelines" className="w-full">
+          <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-0 mb-5">
+            <TabsTrigger value="guidelines" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Screening Guidelines</TabsTrigger>
+            <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Document Checklist</TabsTrigger>
+          </TabsList>
 
-        {guidelines.length === 0 && !loading && (
-          <Card className="border-dashed">
-            <CardContent className="py-8 text-center space-y-4">
-              <p className="text-muted-foreground text-[13px]">No screening guidelines configured yet.</p>
-              <Button variant="outline" onClick={handleAddStarters}>Load Starter Templates</Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {guidelines.length > 0 && (
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList>
-              <TabsTrigger value="all">All ({guidelines.length})</TabsTrigger>
-              {categories.map(c => {
-                const count = guidelines.filter(g => g.category === c).length;
-                return count > 0 ? <TabsTrigger key={c} value={c}>{categoryLabels[c]} ({count})</TabsTrigger> : null;
-              })}
-            </TabsList>
-
-            <TabsContent value={activeTab} className="space-y-4 mt-4">
-              {filtered.map(g => (
-                <Card key={g.id} className={!g.is_active ? 'opacity-60' : ''}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <p className="text-sm font-medium">{g.title}</p>
-                        <Badge variant="outline">{categoryLabels[g.category as Category] || g.category}</Badge>
-                        {!g.is_active && <Badge variant="secondary">Inactive</Badge>}
+          <TabsContent value="guidelines">
+            <div className="space-y-5">
+              <div className="flex items-center justify-end">
+                <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) { setEditingGuideline(null); setForm({ title: '', content: '', category: 'general' }); } }}>
+                  <DialogTrigger asChild>
+                    <Button className="h-9 text-[13px]"><Plus className="h-4 w-4 mr-2" />Add Guideline</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>{editingGuideline ? 'Edit Guideline' : 'Add Guideline'}</DialogTitle>
+                      <DialogDescription>Write a screening guideline in natural language. The AI agent will interpret and apply it holistically.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Title</Label>
+                        <Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="e.g. Age Criteria" />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Switch checked={g.is_active} onCheckedChange={v => handleToggleActive(g.id, v)} />
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(g)}><Pencil className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(g.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      <div className="space-y-2">
+                        <Label>Category</Label>
+                        <Select value={form.category} onValueChange={v => setForm(p => ({ ...p, category: v }))}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {categories.map(c => <SelectItem key={c} value={c}>{categoryLabels[c]}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Content</Label>
+                        <Textarea value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))} placeholder="Write your screening guideline in plain English..." rows={6} />
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-[13px] whitespace-pre-wrap">{g.content}</p>
+                    <DialogFooter>
+                      <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : editingGuideline ? 'Update' : 'Add'}</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {guidelines.length === 0 && !loading && (
+                <Card className="border-dashed">
+                  <CardContent className="py-8 text-center space-y-4">
+                    <p className="text-muted-foreground text-[13px]">No screening guidelines configured yet.</p>
+                    <Button variant="outline" onClick={handleAddStarters}>Load Starter Templates</Button>
                   </CardContent>
                 </Card>
-              ))}
-            </TabsContent>
-          </Tabs>
-        )}
+              )}
+
+              {guidelines.length > 0 && (
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList>
+                    <TabsTrigger value="all">All ({guidelines.length})</TabsTrigger>
+                    {categories.map(c => {
+                      const count = guidelines.filter(g => g.category === c).length;
+                      return count > 0 ? <TabsTrigger key={c} value={c}>{categoryLabels[c]} ({count})</TabsTrigger> : null;
+                    })}
+                  </TabsList>
+
+                  <TabsContent value={activeTab} className="space-y-4 mt-4">
+                    {filtered.map(g => (
+                      <Card key={g.id} className={!g.is_active ? 'opacity-60' : ''}>
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <p className="text-sm font-medium">{g.title}</p>
+                              <Badge variant="outline">{categoryLabels[g.category as Category] || g.category}</Badge>
+                              {!g.is_active && <Badge variant="secondary">Inactive</Badge>}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Switch checked={g.is_active} onCheckedChange={v => handleToggleActive(g.id, v)} />
+                              <Button variant="ghost" size="icon" onClick={() => handleEdit(g)}><Pencil className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDelete(g.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-[13px] whitespace-pre-wrap">{g.content}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </TabsContent>
+                </Tabs>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="documents">
+            <DocumentChecklistSettings />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );

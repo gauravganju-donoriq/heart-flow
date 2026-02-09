@@ -8,7 +8,6 @@ import DocumentUpload from '@/components/DocumentUpload';
 import ShipmentTracking from '@/components/ShipmentTracking';
 import CallTranscript from '@/components/CallTranscript';
 import TissueRecoveryForm from '@/components/TissueRecoveryForm';
-import PlasmaDilutionForm from '@/components/PlasmaDilutionForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -126,9 +125,7 @@ const DonorDetail = () => {
             {donor.status === 'approved' && (
               <TabsTrigger value="recovery" className={tabTriggerClass}>Recovery (7033F)</TabsTrigger>
             )}
-            {donor.status !== 'draft' && (
-              <TabsTrigger value="plasma_dilution" className={tabTriggerClass}>Plasma Dilution (7059F)</TabsTrigger>
-            )}
+            <TabsTrigger value="logistics" className={tabTriggerClass}>Logistics</TabsTrigger>
             <TabsTrigger value="logistics" className={tabTriggerClass}>Logistics</TabsTrigger>
             <TabsTrigger value="documents" className={tabTriggerClass}>Documents</TabsTrigger>
           </TabsList>
@@ -251,23 +248,8 @@ const DonorDetail = () => {
             </TabsContent>
           )}
 
-          {/* Plasma Dilution Tab */}
-          {donor.status !== 'draft' && (
-            <TabsContent value="plasma_dilution" className="space-y-5 mt-5">
-              <PlasmaDilutionForm
-                donorId={donor.id}
-                donorInfo={{
-                  din: d.din,
-                  external_donor_id: d.external_donor_id,
-                  weight_kgs: d.weight_kgs,
-                  gender: donor.gender,
-                  death_date: donor.death_date,
-                  time_of_death: d.time_of_death,
-                  death_type: d.death_type,
-                }}
-              />
-            </TabsContent>
-          )}
+
+
 
           {/* Logistics Tab */}
           <TabsContent value="logistics" className="space-y-5 mt-5">

@@ -8,6 +8,7 @@ import DocumentUpload from '@/components/DocumentUpload';
 import ShipmentTracking from '@/components/ShipmentTracking';
 import CallTranscript from '@/components/CallTranscript';
 import TissueRecoveryForm from '@/components/TissueRecoveryForm';
+import PlasmaDilutionForm from '@/components/PlasmaDilutionForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -124,6 +125,9 @@ const DonorDetail = () => {
             <TabsTrigger value="clinical" className={tabTriggerClass}>Clinical</TabsTrigger>
             {donor.status === 'approved' && (
               <TabsTrigger value="recovery" className={tabTriggerClass}>Recovery (7033F)</TabsTrigger>
+            )}
+            {donor.status !== 'draft' && (
+              <TabsTrigger value="plasma_dilution" className={tabTriggerClass}>Plasma Dilution (7059F)</TabsTrigger>
             )}
             <TabsTrigger value="logistics" className={tabTriggerClass}>Logistics</TabsTrigger>
             <TabsTrigger value="documents" className={tabTriggerClass}>Documents</TabsTrigger>
@@ -244,6 +248,24 @@ const DonorDetail = () => {
           {donor.status === 'approved' && (
             <TabsContent value="recovery" className="space-y-5 mt-5">
               <TissueRecoveryForm donorId={donor.id} donorInfo={{ donor_code: donor.donor_code, donor_age: d.donor_age, gender: donor.gender, death_date: donor.death_date, time_of_death: d.time_of_death, death_type: d.death_type, death_timezone: d.death_timezone, external_donor_id: d.external_donor_id, partner_name: null, din: d.din }} />
+            </TabsContent>
+          )}
+
+          {/* Plasma Dilution Tab */}
+          {donor.status !== 'draft' && (
+            <TabsContent value="plasma_dilution" className="space-y-5 mt-5">
+              <PlasmaDilutionForm
+                donorId={donor.id}
+                donorInfo={{
+                  din: d.din,
+                  external_donor_id: d.external_donor_id,
+                  weight_kgs: d.weight_kgs,
+                  gender: donor.gender,
+                  death_date: donor.death_date,
+                  time_of_death: d.time_of_death,
+                  death_type: d.death_type,
+                }}
+              />
             </TabsContent>
           )}
 

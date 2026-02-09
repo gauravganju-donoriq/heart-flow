@@ -1,109 +1,68 @@
 
 
-# Follow-Up Call: Donor Identification and Update Flow
+# Shorten Test Questions + Optimize Retell AI Agent Quality
 
-## Problem
+## Overview
 
-Currently, every phone call creates a brand new donor record. When a partner calls back to update an existing donor (e.g., add courier info, update medical history), the system has no way to link that call to the existing donor -- it just creates a duplicate.
+Two changes: (1) reduce the agent's question set to just 5 questions for faster testing, and (2) apply Retell AI best practices for voice quality, transcription accuracy, and data extraction.
 
-## Identification Strategy
+## Important Note
 
-We'll use a **two-key match**: `partner_code` + `external_donor_id` (the partner's own donor number, Q23). This is the most natural identifier because:
+The Retell agent and LLM were already created via the setup flow. To apply these changes, the `setup-retell` function needs to **update the existing agent and LLM** rather than creating new ones. We will add an `"update"` action to the function.
 
-- Partners always know their own donor ID
-- Combined with the partner code, it's guaranteed unique
-- The system `donor_code` (DN-XXXXXXXX) is auto-generated and partners may not remember it
+---
 
-As a fallback, we'll also try matching by `donor_code` if the caller provides it instead.
+## Part 1: Shortened 5-Question Test Prompt
 
-## Flow for Follow-Up Calls
+The new prompt will ask only these 5 questions for initial screening:
 
-```text
-Caller dials in
-  |
-  v
-Q1: "What type of call is this?"
-  |
-  +--> "initial screening" --> Full 25 questions --> CREATE new donor
-  |
-  +--> "prescreen update" / "courier update" / "update"
-        |
-        v
-      "Do you have the donor ID or donor number?"
-        |
-        v
-      "Which recovery group?" (partner code)
-        |
-        v
-      Webhook receives transcript
-        |
-        v
-      AI extracts: is_update=true, external_donor_id, partner_code
-        |
-        v
-      Lookup donor by (partner_id + external_donor_id) OR donor_code
-        |
-        +--> FOUND + status is "draft" --> UPDATE donor fields (merge, don't overwrite nulls)
-        |
-        +--> FOUND + status is NOT "draft" --> CREATE new donor, flag as linked update
-        |
-        +--> NOT FOUND --> CREATE new donor (treat as new screening)
-```
+1. "What type of call is this?" (initial screening vs update)
+2. "May I have your name?" (caller name)
+3. "Which recovery group are you calling from?" (partner code)
+4. "What is the donor's age?"
+5. "What was the donor's sex at birth?" (male/female)
 
-## Changes Required
+The update flow stays the same (ask for donor ID, then collect updates).
 
-### 1. Update AI Agent Prompt (setup-retell)
+---
 
-Modify the conversational flow so the agent:
-- When Q1 answer is "update" / "prescreen update" / "courier update", immediately asks for the donor ID (Q23) and partner code (Q3) first
-- Then asks only the fields the caller wants to update (rather than all 25 questions again)
-- At the end, confirms what was updated
+## Part 2: Retell AI Best Practices Applied
 
-### 2. Update AI Extraction Schema (retell-webhook)
+Based on Retell's documentation, these optimizations will be applied:
 
-Add a new extraction field:
-- `is_update` (boolean) -- explicitly extracted: did the caller say this is an update to an existing donor?
+### Agent-Level Settings (create-agent API)
 
-### 3. Update Webhook Logic (retell-webhook)
+| Parameter | Value | Why |
+|-----------|-------|-----|
+| `voice_temperature` | `0.5` | More stable, consistent voice (default 1 is too variable for medical intake) |
+| `voice_speed` | `0.9` | Slightly slower for clarity when collecting medical data |
+| `responsiveness` | `0.8` | Adds ~0.1s wait time, reduces cutting off callers mid-sentence |
+| `interruption_sensitivity` | `0.6` | Lower sensitivity to prevent background noise from interrupting the agent |
+| `enable_backchannel` | `true` | Natural "uh-huh", "I see" during caller speech |
+| `backchannel_frequency` | `0.8` | Frequent enough to feel natural |
+| `backchannel_words` | `["yeah", "I see", "okay", "got it", "mhmm"]` | Professional acknowledgment words |
+| `ambient_sound` | `"office"` | Professional office environment sound |
+| `ambient_sound_volume` | `0.3` | Subtle background, not distracting |
+| `boosted_keywords` | Medical/domain terms | Improves transcription accuracy for specialized vocabulary |
+| `enable_voicemail_detection` | `true` | Avoid wasting time on voicemail |
 
-Replace the current "always insert" logic with:
+### Boosted Keywords (improves ASR accuracy)
 
 ```
-IF is_update AND (external_donor_id OR donor_code provided):
-  1. Look up partner by partner_code
-  2. Search donors table for match:
-     - First try: partner_id + external_donor_id
-     - Fallback: donor_code (if provided)
-  3. IF match found AND status = 'draft':
-     - MERGE extracted fields into existing record (only update non-null extracted values)
-     - Save transcript linked to existing donor
-     - Notify partner: "Donor XYZ updated from phone call"
-  4. IF match found AND status != 'draft':
-     - Cannot edit (already submitted/reviewed)
-     - Create new donor record anyway, marked as linked
-     - Notify partner: "Update received but donor already submitted. New record created."
-  5. IF no match:
-     - Create new donor (treat as initial screening)
-     - Notify partner: "Donor ID not found. New record created."
-ELSE:
-  - Create new donor (current behavior)
+["LeMaitre", "aorto iliac", "saphenous vein", "femoral", "heart valves", 
+ "cardiac death", "brain death", "DCD", "prescreen", "autopsy", 
+ "pathology", "donor", "tissue recovery", "clinical course", "deferred"]
 ```
 
-### 4. Loopholes Blocked
+### Prompt Structure (Retell best practice: sectional prompts with XML-like headers)
 
-| Loophole | How It's Blocked |
-|----------|-----------------|
-| Caller says "update" but gives no donor ID | System creates a new donor and notifies the partner |
-| Caller gives wrong partner code | Partner lookup fails, returns 404 -- no data leakage |
-| Caller gives donor ID belonging to a different partner | Query filters by `partner_id`, so no cross-partner access |
-| Donor already submitted/approved | System refuses to modify, creates a new linked record instead |
-| Null fields in update overwriting real data | Merge logic only updates fields where extracted value is non-null |
-| Duplicate external_donor_id within same partner | First match is used; uniqueness constraint added to DB |
+Restructure the prompt using Retell's recommended format with clear sections:
+- **Identity**: Who the agent is
+- **Style Guardrails**: Concise, professional, confirm details
+- **Task**: The 5 questions in order
+- **Rules**: Edge cases and important behaviors
 
-### 5. Database Changes
-
-- Add a **unique constraint** on `(partner_id, external_donor_id)` where `external_donor_id IS NOT NULL` to prevent duplicates
-- Add a `linked_donor_id` column (uuid, nullable, FK to donors.id) for cases where an update call creates a new record because the original was already submitted
+---
 
 ## Technical Details
 
@@ -111,13 +70,20 @@ ELSE:
 
 | File | Change |
 |------|--------|
-| **DB Migration** | Add unique partial index on `(partner_id, external_donor_id)`, add `linked_donor_id` column |
-| `supabase/functions/setup-retell/index.ts` | Update agent prompt with update-aware conversational flow |
-| `supabase/functions/retell-webhook/index.ts` | Add donor lookup + merge logic, add `is_update` extraction field |
+| `supabase/functions/setup-retell/index.ts` | Add `"update"` action that PATCHes the existing LLM prompt and agent settings. Restructure the prompt to 5 questions. Apply all agent-level optimizations. |
+
+### How the Update Works
+
+1. The `"update"` action will:
+   - List existing agents to find "HeartStream Donor Intake"
+   - Get the agent's `llm_id` from its response engine config
+   - PATCH the LLM with the new shortened prompt via `PATCH /update-retell-llm/{llm_id}`
+   - PATCH the agent with optimized voice/interaction settings via `PATCH /update-agent/{agent_id}`
+2. The admin dashboard's RetellSetup component will get a new "Update Agent Settings" button that triggers this action
 
 ### Implementation Sequence
 
-1. Database migration (unique index + linked_donor_id column)
-2. Update setup-retell prompt for update-aware flow
-3. Rewrite retell-webhook with lookup/merge/create branching logic
+1. Add the `"update"` action to `setup-retell/index.ts` with the new 5-question prompt and all agent parameters
+2. Add an "Update Settings" button to the `RetellSetup.tsx` component so the admin can trigger it
+3. Deploy and test
 

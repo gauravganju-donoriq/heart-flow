@@ -46,10 +46,28 @@ interface Guideline {
 }
 
 const starterTemplates: Partial<Guideline>[] = [
-  { title: 'Age Criteria', content: 'Donors under age 2 should be rejected. Donors over age 80 should be flagged for review.', category: 'eligibility' },
-  { title: 'High-Risk Exclusions', content: 'Donors with active systemic infection, HIV, Hepatitis B/C, or CJD should be rejected.', category: 'medical' },
-  { title: 'Cause of Death Considerations', content: 'Donors whose cause of death involves unknown etiology should be flagged for review. Deaths from poisoning or drug overdose require careful evaluation of tissue viability.', category: 'medical' },
-  { title: 'Consent Requirements', content: 'Consent must be obtained before tissue recovery can proceed. If consent is not documented, mark as needs_review.', category: 'eligibility' },
+  // Eligibility
+  { title: 'Age Criteria (Q4)', content: 'Evaluate the donor age (Q4). Donors under age 2 should be rejected. Donors over age 80 require careful review — consider cause of death and overall clinical picture before recommending acceptance. Age between 2-80 is generally acceptable if other factors are favorable.', category: 'eligibility' },
+  { title: 'Consent Requirements', content: 'Consent must be obtained before tissue recovery can proceed. If consent_obtained is false or missing, the donor cannot be accepted — mark as needs_review and flag missing consent as a critical concern.', category: 'eligibility' },
+  { title: 'Sex at Birth (Q5)', content: 'Sex at birth (Q5) must be documented (male or female). If missing, flag as missing data but do not reject solely on this basis.', category: 'eligibility' },
+
+  // Medical
+  { title: 'Cause of Death Evaluation (Q10)', content: 'Carefully evaluate the cause of death (Q10). Deaths involving unknown etiology should be flagged for review. Deaths from poisoning, drug overdose, or suspected infectious disease require careful evaluation of tissue viability. Deaths from trauma, cardiac arrest, or stroke are generally acceptable if other factors are favorable.', category: 'medical' },
+  { title: 'Type of Death (Q8)', content: 'Evaluate the type of death (Q8) — cardiac death vs brain death. Brain death donors may have better tissue viability due to maintained circulation. Consider type of death in conjunction with time of death (Q7) and clinical course (Q11).', category: 'medical' },
+  { title: 'Clinical Course (Q11)', content: 'Review the clinical course (Q11) for any signs of prolonged infection, sepsis, multi-organ failure, or conditions that could compromise tissue quality. Extended ICU stays with vasopressors or multiple antibiotics should be flagged as concerns.', category: 'medical' },
+  { title: 'Medical History (Q14)', content: 'Review the medical history (Q14) for exclusionary conditions: active systemic infection, HIV, Hepatitis B/C, CJD/prion disease, active cancer with metastasis, or autoimmune conditions affecting vascular tissue. History of IV drug use, incarceration, or high-risk sexual behavior should be flagged per FDA guidelines.', category: 'medical' },
+  { title: 'High Risk Notes (Q15)', content: 'High risk / additional notes (Q15) should be carefully evaluated. Any mention of communicable diseases, recent tattoos/piercings (within 12 months), recent travel to endemic areas, or other risk factors should be flagged with appropriate severity.', category: 'medical' },
+  { title: 'Height & Weight (Q12, Q13)', content: 'Height in inches (Q12) and weight in kgs (Q13) should be documented. Extreme values may indicate data entry errors — flag for review. BMI extremes (very low or morbidly obese) may affect tissue quality and should be noted as concerns.', category: 'medical' },
+
+  // Logistics
+  { title: 'Death Timing (Q6, Q7, Q9)', content: 'Date of death (Q6), time of death (Q7), and timezone (Q9) must all be documented for ischemia time calculations. If any are missing, flag as missing data. Excessive time since death (generally >24 hours without refrigeration) should be flagged as a concern for tissue viability.', category: 'logistics' },
+  { title: 'Tissue Recovery Decisions (Q16-Q21)', content: 'If the donor is marked as deferred in Q16, the screening should reflect that. For accepted donors, note which tissues are requested: Heart Valves (Q17), Aorto Iliac (Q19), Femoral (Q20), Saphenous Vein (Q21). If HV pathology request (Q18) is specified, note it in the evaluation.', category: 'logistics' },
+  { title: 'Autopsy Status (Q22)', content: 'If an autopsy (Q22) is scheduled or has been performed, note this in the evaluation. Autopsy findings may affect tissue acceptability. If autopsy is pending, recommend needs_review until results are available.', category: 'logistics' },
+  { title: 'Prescreen vs Update (Q24)', content: 'If this is a prescreen or update on a pre-existing donor (Q24 = true), evaluate whether the new information changes any previous screening assessment. Focus on what has changed rather than re-evaluating everything from scratch.', category: 'logistics' },
+
+  // General
+  { title: 'Data Completeness', content: 'A complete donor profile should include at minimum: age (Q4), sex (Q5), cause of death (Q10), date/time of death (Q6/Q7), and medical history (Q14). If more than 2 critical fields are missing, the donor cannot be accepted — mark as needs_review.', category: 'general' },
+  { title: 'Conservative Approach', content: 'When in doubt, always recommend needs_review rather than accept. It is better to have a human review a borderline case than to accept a donor that should have been flagged. The AI evaluation is advisory only — a human admin makes the final decision.', category: 'general' },
 ];
 
 const ScreeningSettings = () => {

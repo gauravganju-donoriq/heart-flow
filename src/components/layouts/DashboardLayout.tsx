@@ -35,7 +35,7 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-60 bg-background border-r transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static",
+        "fixed inset-y-0 left-0 z-50 w-60 bg-background border-r transform transition-transform duration-200 ease-in-out lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex flex-col h-full">
@@ -58,7 +58,7 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-4 space-y-0.5">
+          <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -103,7 +103,7 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-60">
         {/* Top bar */}
         <header className="h-14 border-b bg-background flex items-center px-4 lg:px-8">
           <Button

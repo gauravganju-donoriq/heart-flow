@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { LayoutDashboard, Users, FileText, Bell, ArrowLeft, Save, Send, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, ScrollText, ArrowLeft, Save, Send, Shield } from 'lucide-react';
 
 interface Partner {
   id: string;
@@ -27,7 +27,7 @@ const navItems = [
   { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
   { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
   { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
-  { label: 'Notifications', href: '/admin/notifications', icon: <Bell className="h-4 w-4" /> },
+  { label: 'Audit Log', href: '/admin/audit-log', icon: <ScrollText className="h-4 w-4" /> },
 ];
 
 const AdminDonorForm = () => {

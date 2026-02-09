@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
-import { LayoutDashboard, Users, FileText, Bell, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, ScrollText, Shield } from 'lucide-react';
 import CreatePartnerDialog from '@/components/admin/CreatePartnerDialog';
 import EditPartnerDialog from '@/components/admin/EditPartnerDialog';
 import PartnersTable from '@/components/admin/PartnersTable';
@@ -30,7 +30,7 @@ const navItems = [
   { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
   { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
   { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
-  { label: 'Notifications', href: '/admin/notifications', icon: <Bell className="h-4 w-4" /> },
+  { label: 'Audit Log', href: '/admin/audit-log', icon: <ScrollText className="h-4 w-4" /> },
 ];
 
 const PartnersList = () => {

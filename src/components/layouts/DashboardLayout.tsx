@@ -16,9 +16,10 @@ interface DashboardLayoutProps {
   children: ReactNode;
   navItems: NavItem[];
   title: string;
+  sidebarFooterExtra?: ReactNode;
 }
 
-const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) => {
+const DashboardLayout = ({ children, navItems, title, sidebarFooterExtra }: DashboardLayoutProps) => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -76,6 +77,13 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
               </Link>
             ))}
           </nav>
+
+          {/* Extra sidebar content */}
+          {sidebarFooterExtra && (
+            <div className="px-3 pb-2">
+              {sidebarFooterExtra}
+            </div>
+          )}
 
           {/* User section */}
           <div className="p-3 border-t">

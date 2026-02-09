@@ -25,6 +25,7 @@ import AdminDonorReview from "./pages/admin/AdminDonorReview";
 import AdminDonorForm from "./pages/admin/AdminDonorForm";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import ScreeningSettings from "./pages/admin/ScreeningSettings";
+import StyleGuide from "./pages/admin/StyleGuide";
 
 import NotFound from "./pages/NotFound";
 
@@ -155,6 +156,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminNotifications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/style-guide"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <StyleGuide />
                 </ProtectedRoute>
               }
             />

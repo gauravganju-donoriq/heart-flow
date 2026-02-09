@@ -3,10 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
-import { Brain, ChevronDown, ChevronUp, RefreshCw, AlertTriangle, CheckCircle, XCircle, Clock, Info } from 'lucide-react';
+import { RefreshCw, AlertTriangle, CheckCircle, XCircle, Clock, ChevronDown } from 'lucide-react';
 
 interface ScreeningResult {
   id: string;
@@ -25,17 +23,17 @@ interface AIScreeningPanelProps {
   donorId: string;
 }
 
-const verdictConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  accept: { label: 'Accept', color: 'bg-emerald-50 text-emerald-600 border border-emerald-100', icon: <CheckCircle className="h-5 w-5 text-emerald-600" /> },
-  reject: { label: 'Reject', color: 'bg-red-50 text-red-500 border border-red-100', icon: <XCircle className="h-5 w-5 text-red-500" /> },
-  needs_review: { label: 'Needs Review', color: 'bg-amber-50 text-amber-600 border border-amber-100', icon: <Clock className="h-5 w-5 text-amber-600" /> },
+const verdictConfig: Record<string, { label: string; style: string; icon: React.ReactNode }> = {
+  accept: { label: 'Accept', style: 'text-emerald-600', icon: <CheckCircle className="h-4 w-4" /> },
+  reject: { label: 'Reject', style: 'text-red-500', icon: <XCircle className="h-4 w-4" /> },
+  needs_review: { label: 'Needs Review', style: 'text-amber-600', icon: <Clock className="h-4 w-4" /> },
 };
 
-const severityColors: Record<string, string> = {
-  low: 'bg-blue-50 text-blue-600 border border-blue-100',
-  medium: 'bg-amber-50 text-amber-600 border border-amber-100',
-  high: 'bg-orange-50 text-orange-600 border border-orange-100',
-  critical: 'bg-red-50 text-red-500 border border-red-100',
+const severityDot: Record<string, string> = {
+  low: 'bg-blue-400',
+  medium: 'bg-amber-400',
+  high: 'bg-orange-500',
+  critical: 'bg-red-500',
 };
 
 const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
@@ -43,7 +41,7 @@ const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
   const [result, setResult] = useState<ScreeningResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [screening, setScreening] = useState(false);
-  const [reasoningOpen, setReasoningOpen] = useState(false);
+  const [showReasoning, setShowReasoning] = useState(false);
 
   useEffect(() => { fetchLatestResult(); }, [donorId]);
 
@@ -101,114 +99,132 @@ const AIScreeningPanel = ({ donorId }: AIScreeningPanelProps) => {
 
   if (loading) return null;
 
+  const vc = result ? verdictConfig[result.verdict] : null;
+
   return (
-    <Card className="border border-border">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-primary" />
-            <p className="text-sm font-medium">AI Screening</p>
+    <div className="space-y-5">
+      {/* Verdict & Actions */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">AI Recommendation</p>
+            {result && (
+              <Button variant="outline" size="sm" className="h-8 text-[13px]" onClick={runScreening} disabled={screening}>
+                <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${screening ? 'animate-spin' : ''}`} />
+                Re-run
+              </Button>
+            )}
           </div>
-          {result ? (
-            <Button variant="outline" size="sm" onClick={runScreening} disabled={screening}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${screening ? 'animate-spin' : ''}`} />
-              Re-run
-            </Button>
-          ) : null}
-        </div>
-        <p className="text-[13px] text-muted-foreground flex items-center gap-1">
-          <Info className="h-3 w-3" /> AI Recommendation — Final decision is yours
-        </p>
-      </CardHeader>
-      <CardContent>
-        {!result && !screening && (
-          <div className="text-center py-6 space-y-3">
-            <p className="text-muted-foreground text-[13px]">No screening has been run for this donor yet.</p>
-            <Button onClick={runScreening}><Brain className="h-4 w-4 mr-2" />Run AI Screening</Button>
-          </div>
-        )}
-
-        {screening && (
-          <div className="text-center py-8 space-y-3">
-            <RefreshCw className="h-8 w-8 animate-spin mx-auto text-primary" />
-            <p className="text-[13px] text-muted-foreground">Agent is evaluating donor profile...</p>
-          </div>
-        )}
-
-        {result && !screening && (
-          <div className="space-y-4">
-            {/* Verdict + Confidence */}
-            <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-2 px-4 py-2 rounded-md ${verdictConfig[result.verdict]?.color || 'bg-muted'}`}>
-                {verdictConfig[result.verdict]?.icon}
-                <span className="font-semibold text-lg">{verdictConfig[result.verdict]?.label || result.verdict}</span>
-              </div>
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center justify-between text-[13px]">
-                  <span className="text-muted-foreground">Confidence</span>
-                  <span className="font-medium">{Math.round(result.confidence * 100)}%</span>
-                </div>
-                <Progress value={result.confidence * 100} className="h-2" />
-              </div>
+        </CardHeader>
+        <CardContent>
+          {!result && !screening && (
+            <div className="text-center py-8">
+              <p className="text-[13px] text-muted-foreground mb-3">No screening has been run yet</p>
+              <Button onClick={runScreening} size="sm" className="h-9 text-[13px]">Run AI Screening</Button>
             </div>
+          )}
 
-            {/* Concerns */}
-            {result.concerns.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-[13px] font-medium">Concerns ({result.concerns.length})</h4>
-                <div className="space-y-2">
-                  {result.concerns.map((c, i) => (
-                    <div key={i} className="flex items-start gap-2 p-2 rounded border bg-muted/30">
-                      <AlertTriangle className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                      <div className="flex-1 text-[13px]">
-                        <p>{c.concern}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge className={`text-xs rounded-md ${severityColors[c.severity] || 'bg-muted'}`}>{c.severity}</Badge>
-                          <span className="text-xs text-muted-foreground">Ref: {c.guideline_ref}</span>
-                        </div>
-                      </div>
+          {screening && (
+            <div className="text-center py-8">
+              <RefreshCw className="h-5 w-5 animate-spin mx-auto text-muted-foreground mb-2" />
+              <p className="text-[13px] text-muted-foreground">Evaluating donor profile…</p>
+            </div>
+          )}
+
+          {result && !screening && vc && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className={`flex items-center gap-2 ${vc.style}`}>
+                  {vc.icon}
+                  <span className="text-base font-semibold">{vc.label}</span>
+                </div>
+                <span className="text-[13px] text-muted-foreground">{Math.round(result.confidence * 100)}% confidence</span>
+              </div>
+
+              {/* Confidence bar */}
+              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    result.verdict === 'accept' ? 'bg-emerald-500' :
+                    result.verdict === 'reject' ? 'bg-red-400' : 'bg-amber-400'
+                  }`}
+                  style={{ width: `${result.confidence * 100}%` }}
+                />
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Advisory only — final decision is yours · {result.model_used} · {new Date(result.created_at).toLocaleString()}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Concerns */}
+      {result && !screening && result.concerns.length > 0 && (
+        <Card>
+          <CardHeader>
+            <p className="text-sm font-medium">Concerns ({result.concerns.length})</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-0 divide-y divide-border">
+              {result.concerns.map((c, i) => (
+                <div key={i} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                  <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${severityDot[c.severity] || 'bg-muted-foreground'}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px]">{c.concern}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[11px] text-muted-foreground capitalize">{c.severity}</span>
+                      {c.guideline_ref && (
+                        <>
+                          <span className="text-[11px] text-muted-foreground">·</span>
+                          <span className="text-[11px] text-muted-foreground">{c.guideline_ref}</span>
+                        </>
+                      )}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
-            )}
-
-            {/* Missing Data */}
-            {result.missing_data.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-[13px] font-medium text-amber-600">Missing Data</h4>
-                <div className="flex flex-wrap gap-1">
-                  {result.missing_data.map((field, i) => (
-                    <Badge key={i} variant="outline" className="text-amber-600 border-amber-200">{field}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Reasoning (collapsible) */}
-            <Collapsible open={reasoningOpen} onOpenChange={setReasoningOpen}>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="w-full justify-between" size="sm">
-                  <span>Agent Reasoning</span>
-                  {reasoningOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="p-4 rounded border bg-muted/20 text-[13px] whitespace-pre-wrap mt-2">
-                  {result.reasoning}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-
-            {/* Meta */}
-            <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
-              <span>Model: {result.model_used}</span>
-              <span>{new Date(result.created_at).toLocaleString()}</span>
+              ))}
             </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Missing Data */}
+      {result && !screening && result.missing_data.length > 0 && (
+        <Card>
+          <CardHeader>
+            <p className="text-sm font-medium">Missing Data</p>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-1.5">
+              {result.missing_data.map((field, i) => (
+                <Badge key={i} variant="outline" className="text-[12px] font-normal">{field}</Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Reasoning */}
+      {result && !screening && result.reasoning && (
+        <Card>
+          <button
+            type="button"
+            className="w-full flex items-center justify-between px-6 py-4 cursor-pointer"
+            onClick={() => setShowReasoning(v => !v)}
+          >
+            <p className="text-sm font-medium">Agent Reasoning</p>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showReasoning ? 'rotate-180' : ''}`} />
+          </button>
+          {showReasoning && (
+            <CardContent className="pt-0">
+              <p className="text-[13px] text-muted-foreground whitespace-pre-wrap leading-relaxed">{result.reasoning}</p>
+            </CardContent>
+          )}
+        </Card>
+      )}
+    </div>
   );
 };
 

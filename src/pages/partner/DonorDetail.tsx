@@ -6,6 +6,7 @@ import DashboardLayout from '@/components/layouts/DashboardLayout';
 import DocumentUpload from '@/components/DocumentUpload';
 import ShipmentTracking from '@/components/ShipmentTracking';
 import CallTranscript from '@/components/CallTranscript';
+import TissueRecoveryForm from '@/components/TissueRecoveryForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -206,6 +207,11 @@ const DonorDetail = () => {
             </dl>
           </CardContent>
         </Card>
+
+        {/* 7033F Tissue Recovery Form — only for accepted donors */}
+        {donor.status === 'approved' && (
+          <TissueRecoveryForm donorId={donor.id} readOnly={false} />
+        )}
 
         {/* Logistics */}
         <Card>

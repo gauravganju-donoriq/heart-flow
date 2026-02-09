@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,16 +14,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 
 interface DocumentRequirement {
-  id: string;
-  name: string;
-  description: string | null;
-  is_required: boolean;
-  is_active: boolean;
-  sort_order: number;
-  category: string;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
+  id: string; name: string; description: string | null; is_required: boolean;
+  is_active: boolean; sort_order: number; category: string;
+  created_by: string; created_at: string; updated_at: string;
 }
 
 const CATEGORIES = [
@@ -62,40 +54,25 @@ const DocumentChecklistSettings = () => {
   useEffect(() => { fetchRequirements(); }, []);
 
   const fetchRequirements = async () => {
-    const { data, error } = await supabase
-      .from('document_requirements')
-      .select('*')
-      .order('sort_order', { ascending: true });
+    const { data, error } = await supabase.from('document_requirements').select('*').order('sort_order', { ascending: true });
     if (!error && data) setRequirements(data as DocumentRequirement[]);
     setLoading(false);
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Name is required' });
-      return;
-    }
+    if (!form.name.trim()) { toast({ variant: 'destructive', title: 'Error', description: 'Name is required' }); return; }
     setSaving(true);
-
     if (editing) {
-      const { error } = await supabase
-        .from('document_requirements')
-        .update({ name: form.name, description: form.description || null, is_required: form.is_required, category: form.category } as any)
-        .eq('id', editing.id);
+      const { error } = await supabase.from('document_requirements').update({ name: form.name, description: form.description || null, is_required: form.is_required, category: form.category } as any).eq('id', editing.id);
       if (error) toast({ variant: 'destructive', title: 'Error', description: error.message });
       else toast({ title: 'Updated', description: 'Requirement updated' });
     } else {
       const maxOrder = requirements.length > 0 ? Math.max(...requirements.map(r => r.sort_order)) + 1 : 0;
-      const { error } = await supabase
-        .from('document_requirements')
-        .insert({ name: form.name, description: form.description || null, is_required: form.is_required, sort_order: maxOrder, created_by: user!.id, category: form.category } as any);
+      const { error } = await supabase.from('document_requirements').insert({ name: form.name, description: form.description || null, is_required: form.is_required, sort_order: maxOrder, created_by: user!.id, category: form.category } as any);
       if (error) toast({ variant: 'destructive', title: 'Error', description: error.message });
       else toast({ title: 'Created', description: 'Requirement added' });
     }
-
-    setSaving(false);
-    setDialogOpen(false);
-    setEditing(null);
+    setSaving(false); setDialogOpen(false); setEditing(null);
     setForm({ name: '', description: '', is_required: true, category: 'other' });
     fetchRequirements();
   };
@@ -117,106 +94,100 @@ const DocumentChecklistSettings = () => {
   };
 
   const handleAddStarters = async () => {
-    const inserts = starterTemplates.map((t, i) => ({
-      name: t.name,
-      description: t.description,
-      is_required: t.is_required,
-      sort_order: i,
-      created_by: user!.id,
-      category: t.category,
-    }));
+    const inserts = starterTemplates.map((t, i) => ({ name: t.name, description: t.description, is_required: t.is_required, sort_order: i, created_by: user!.id, category: t.category }));
     const { error } = await supabase.from('document_requirements').insert(inserts as any);
     if (!error) { toast({ title: 'Templates Added', description: 'Starter document requirements loaded' }); fetchRequirements(); }
   };
 
-  // Group requirements by category
   const grouped = CATEGORIES.map(cat => ({
     ...cat,
     items: requirements.filter(r => (r.category || 'other') === cat.value),
   })).filter(g => g.items.length > 0);
 
-  if (loading) return <div className="text-center py-4 text-muted-foreground text-[13px]">Loading...</div>;
+  if (loading) return <div className="text-center py-12 text-[13px] text-muted-foreground">Loading…</div>;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Toolbar */}
       <div className="flex items-center justify-end">
         <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) { setEditing(null); setForm({ name: '', description: '', is_required: true, category: 'other' }); } }}>
           <DialogTrigger asChild>
-            <Button className="h-9 text-[13px]"><Plus className="h-4 w-4 mr-2" />Add Requirement</Button>
+            <Button size="sm" className="h-9 text-[13px]"><Plus className="h-3.5 w-3.5 mr-1.5" />Add Requirement</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>{editing ? 'Edit Requirement' : 'Add Requirement'}</DialogTitle>
-              <DialogDescription>Define a document type that partners must upload for each donor referral.</DialogDescription>
+              <DialogTitle className="text-base">{editing ? 'Edit Requirement' : 'Add Requirement'}</DialogTitle>
+              <DialogDescription className="text-[13px]">Define a document type that partners must upload for each donor.</DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Document Name</Label>
-                <Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Consent Form" />
+            <div className="space-y-3 py-2">
+              <div className="space-y-1">
+                <Label className="text-[13px]">Document Name</Label>
+                <Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Consent Form" className="h-9 text-[13px]" />
               </div>
-              <div className="space-y-2">
-                <Label>Category</Label>
+              <div className="space-y-1">
+                <Label className="text-[13px]">Category</Label>
                 <Select value={form.category} onValueChange={v => setForm(p => ({ ...p, category: v }))}>
-                  <SelectTrigger className="h-9 text-[13px]">
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger className="h-9 text-[13px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map(c => (
-                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                    ))}
+                    {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label>Description / Instructions</Label>
-                <Textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Guidance for partners on what to upload..." rows={3} />
+              <div className="space-y-1">
+                <Label className="text-[13px]">Description</Label>
+                <Textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Guidance for partners on what to upload..." rows={3} className="text-[13px]" />
               </div>
               <div className="flex items-center gap-2">
                 <Checkbox id="is_required" checked={form.is_required} onCheckedChange={(v) => setForm(p => ({ ...p, is_required: !!v }))} />
                 <Label htmlFor="is_required" className="text-[13px]">Required document</Label>
               </div>
             </div>
-            <DialogFooter>
-              <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : editing ? 'Update' : 'Add'}</Button>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} className="h-9 text-[13px]">Cancel</Button>
+              <Button size="sm" onClick={handleSave} disabled={saving} className="h-9 text-[13px]">{saving ? 'Saving…' : editing ? 'Update' : 'Add'}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
+      {/* Empty state */}
       {requirements.length === 0 && (
-        <Card className="border-dashed">
-          <CardContent className="py-8 text-center space-y-4">
-            <p className="text-muted-foreground text-[13px]">No document requirements configured yet.</p>
-            <Button variant="outline" onClick={handleAddStarters}>Load Starter Templates</Button>
-          </CardContent>
-        </Card>
+        <div className="border border-dashed border-border rounded-lg py-12 text-center">
+          <p className="text-[13px] text-muted-foreground mb-3">No document requirements configured yet</p>
+          <Button variant="outline" size="sm" onClick={handleAddStarters} className="h-9 text-[13px]">Load Starter Templates</Button>
+        </div>
       )}
 
+      {/* Grouped list */}
       {grouped.map(group => (
         <div key={group.value} className="space-y-2">
-          <div className="flex items-center gap-2 px-1">
-            <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wide">{group.label}</p>
-            <Badge variant="secondary" className="text-[11px]">{group.items.length}</Badge>
-          </div>
-          {group.items.map(r => (
-            <Card key={r.id} className={!r.is_active ? 'opacity-60' : ''}>
-              <CardContent className="py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <p className="text-sm font-medium">{r.name}</p>
-                    {r.is_required ? <Badge variant="default" className="text-[11px]">Required</Badge> : <Badge variant="secondary" className="text-[11px]">Optional</Badge>}
-                    {!r.is_active && <Badge variant="outline" className="text-[11px]">Inactive</Badge>}
+          <p className="text-xs uppercase tracking-wider text-muted-foreground px-1">{group.label}</p>
+          <div className="border border-border rounded-lg divide-y divide-border overflow-hidden">
+            {group.items.map(r => (
+              <div key={r.id} className={`flex items-start justify-between gap-4 px-5 py-4 ${!r.is_active ? 'opacity-50' : ''}`}>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="text-[13px] font-medium">{r.name}</p>
+                    {r.is_required
+                      ? <Badge variant="default" className="text-[11px] font-normal">Required</Badge>
+                      : <Badge variant="secondary" className="text-[11px] font-normal">Optional</Badge>
+                    }
+                    {!r.is_active && <Badge variant="outline" className="text-[11px] font-normal">Inactive</Badge>}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Switch checked={r.is_active} onCheckedChange={v => handleToggleActive(r.id, v)} />
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(r)}><Pencil className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                  </div>
+                  {r.description && <p className="text-[13px] text-muted-foreground">{r.description}</p>}
                 </div>
-                {r.description && <p className="text-[13px] text-muted-foreground mt-1">{r.description}</p>}
-              </CardContent>
-            </Card>
-          ))}
+                <div className="flex items-center gap-1 shrink-0">
+                  <Switch checked={r.is_active} onCheckedChange={v => handleToggleActive(r.id, v)} />
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(r)}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(r.id)}>
+                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ))}
     </div>

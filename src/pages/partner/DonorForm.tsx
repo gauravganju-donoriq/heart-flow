@@ -239,9 +239,9 @@ const DonorForm = () => {
         </div>
 
         <Tabs defaultValue="info" className="w-full">
-          <TabsList>
-            <TabsTrigger value="info">Donor Information</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-0 mb-5">
+            <TabsTrigger value="info" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Donor Information</TabsTrigger>
+            <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Documents</TabsTrigger>
           </TabsList>
 
           <TabsContent value="info" className="space-y-6">
@@ -252,10 +252,10 @@ const DonorForm = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="call_type">Type of Call</Label>
+                  <div className="space-y-1">
+                    <Label htmlFor="call_type" className="text-[13px]">Type of Call</Label>
                     <Select value={formData.call_type} onValueChange={(v) => handleChange('call_type', v)}>
-                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="h-9 text-[13px]"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="initial_screening">Initial Screening</SelectItem>
                         <SelectItem value="prescreen_update">Prescreen Update</SelectItem>
@@ -264,14 +264,14 @@ const DonorForm = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="caller_name">Caller's Name</Label>
-                    <Input id="caller_name" value={formData.caller_name} onChange={(e) => handleChange('caller_name', e.target.value)} placeholder="Name of person calling" />
+                  <div className="space-y-1">
+                    <Label htmlFor="caller_name" className="text-[13px]">Caller's Name</Label>
+                    <Input id="caller_name" value={formData.caller_name} onChange={(e) => handleChange('caller_name', e.target.value)} placeholder="Name of person calling" className="h-9 text-[13px]" />
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch id="is_prescreen_update" checked={formData.is_prescreen_update} onCheckedChange={(c) => handleChange('is_prescreen_update', c)} />
-                  <Label htmlFor="is_prescreen_update">Prescreen / Update on pre-existing donor</Label>
+                  <Label htmlFor="is_prescreen_update" className="text-[13px]">Prescreen / Update on pre-existing donor</Label>
                 </div>
               </CardContent>
             </Card>
@@ -550,14 +550,12 @@ const DonorForm = () => {
           </TabsContent>
         </Tabs>
 
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => handleSave(false)} disabled={saving}>
-            <Save className="h-4 w-4 mr-2" />
-            Save as Draft
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" onClick={() => handleSave(false)} disabled={saving} className="h-9 text-[13px]">
+            <Save className="h-3.5 w-3.5 mr-1.5" />Save as Draft
           </Button>
-          <Button onClick={() => handleSave(true)} disabled={saving}>
-            <Send className="h-4 w-4 mr-2" />
-            Submit for Review
+          <Button size="sm" onClick={() => handleSave(true)} disabled={saving} className="h-9 text-[13px]">
+            <Send className="h-3.5 w-3.5 mr-1.5" />Submit for Review
           </Button>
         </div>
       </div>

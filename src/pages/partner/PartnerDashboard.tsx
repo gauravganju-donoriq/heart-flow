@@ -72,7 +72,7 @@ const PartnerDashboard = () => {
         {/* Header */}
         <div className="flex items-center justify-end">
           <Link to="/partner/donors/new">
-            <Button className="h-9 text-[13px]"><Plus className="h-4 w-4 mr-2" />Add Donor</Button>
+            <Button size="sm" className="h-9 text-[13px]"><Plus className="h-3.5 w-3.5 mr-1.5" />Add Donor</Button>
           </Link>
         </div>
 
@@ -86,17 +86,16 @@ const PartnerDashboard = () => {
 
         {/* Phone Intake */}
         {intakePhone && (
-          <Card className="border border-border bg-muted/30">
+          <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Phone className="h-5 w-5 text-primary" />
+                <Phone className="h-4 w-4 text-primary" />
                 <p className="text-sm font-medium">Phone Intake Line</p>
               </div>
-              <p className="text-[13px] text-muted-foreground">Call to submit or update donor information by phone</p>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-mono font-bold tracking-wide">{intakePhone}</p>
-              <p className="text-[13px] text-muted-foreground mt-2">Our AI agent will walk you through the screening questions and automatically create or update a donor record.</p>
+              <p className="text-2xl font-mono font-semibold tracking-wide">{intakePhone}</p>
+              <p className="text-[13px] text-muted-foreground mt-2">Call to submit or update donor information by phone. Our AI agent will walk you through the screening questions.</p>
             </CardContent>
           </Card>
         )}
@@ -114,14 +113,14 @@ const PartnerDashboard = () => {
               </div>
             ) : (
               <Table>
-                <TableHeader><TableRow><TableHead>Donor Code</TableHead><TableHead>Name</TableHead><TableHead>Status</TableHead><TableHead>Created</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow className="hover:bg-transparent"><TableHead>Code</TableHead><TableHead>Name</TableHead><TableHead>Status</TableHead><TableHead>Created</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {donors.map((donor) => (
                     <TableRow key={donor.id} className="cursor-pointer hover:bg-muted/30" onClick={() => navigate(`/partner/donors/${donor.id}`)}>
                       <TableCell className="font-mono text-[13px] py-3.5">{donor.donor_code}</TableCell>
                       <TableCell className="text-[13px] py-3.5">{donor.first_name && donor.last_name ? `${donor.first_name} ${donor.last_name}` : '—'}</TableCell>
-                      <TableCell className="py-3.5"><Badge className={`rounded-md ${statusStyles[donor.status]}`}>{statusLabels[donor.status]}</Badge></TableCell>
-                      <TableCell className="text-[13px] py-3.5">{new Date(donor.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell className="py-3.5"><span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${statusStyles[donor.status]}`}>{statusLabels[donor.status]}</span></TableCell>
+                      <TableCell className="text-[13px] text-muted-foreground py-3.5">{new Date(donor.created_at).toLocaleDateString()}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

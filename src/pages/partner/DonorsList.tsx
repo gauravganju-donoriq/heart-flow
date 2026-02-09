@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LayoutDashboard, FileText, Bell, Plus, Edit, Phone } from 'lucide-react';
+import { LayoutDashboard, FileText, Bell, Plus, Phone } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -38,25 +38,23 @@ const DonorsList = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  useEffect(() => {
-    if (partnerId) { fetchDonors(); }
-  }, [partnerId, statusFilter]);
+  useEffect(() => { if (partnerId) fetchDonors(); }, [partnerId, statusFilter]);
 
   const fetchDonors = async () => {
     if (!partnerId) return;
+    setLoading(true);
     let query = supabase.from('donors').select('*').eq('partner_id', partnerId).order('created_at', { ascending: false });
-    if (statusFilter !== 'all') { query = query.eq('status', statusFilter as DonorStatus); }
+    if (statusFilter !== 'all') query = query.eq('status', statusFilter as DonorStatus);
     const { data, error } = await query;
-    if (!error && data) { setDonors(data); }
+    if (!error && data) setDonors(data);
     setLoading(false);
   };
 
   return (
     <DashboardLayout navItems={navItems} title="Atlas">
-      <div className="space-y-5">
-        {/* Filter + Add */}
+      <div className="space-y-5 max-w-6xl">
         <div className="flex items-center justify-between">
-          <div className="w-48">
+          <div className="w-44">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="h-9 text-[13px]"><SelectValue placeholder="Filter by status" /></SelectTrigger>
               <SelectContent>
@@ -70,37 +68,36 @@ const DonorsList = () => {
             </Select>
           </div>
           <Link to="/partner/donors/new">
-            <Button className="h-9 text-[13px]"><Plus className="h-4 w-4 mr-2" />Add Donor</Button>
+            <Button size="sm" className="h-9 text-[13px]"><Plus className="h-3.5 w-3.5 mr-1.5" />Add Donor</Button>
           </Link>
         </div>
 
-        {/* Donors Table */}
-        <div className="border border-border rounded-lg">
+        <div className="border border-border rounded-lg overflow-hidden">
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground text-[13px]">Loading...</div>
+            <div className="text-center py-12 text-[13px] text-muted-foreground">Loading…</div>
           ) : donors.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground text-[13px] mb-4">No donors found</p>
-              <Link to="/partner/donors/new"><Button variant="outline">Add Your First Donor</Button></Link>
-            </div>
+            <div className="text-center py-12 text-[13px] text-muted-foreground">No donors found</div>
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Donor Code</TableHead>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead>Code</TableHead>
                   <TableHead>DIN</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Source</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Submitted</TableHead>
                   <TableHead>Created</TableHead>
-                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {donors.map((donor) => (
-                  <TableRow key={donor.id} className="cursor-pointer hover:bg-muted/30" onClick={() => navigate(`/partner/donors/${donor.id}`)}>
-                    <TableCell className="font-mono text-[13px] py-3.5">{donor.donor_code}</TableCell>
+                  <TableRow
+                    key={donor.id}
+                    className="cursor-pointer hover:bg-muted/30"
+                    onClick={() => navigate(donor.status === 'draft' ? `/partner/donors/${donor.id}/edit` : `/partner/donors/${donor.id}`)}
+                  >
+                    <TableCell className="font-mono text-[13px] py-3.5">{donor.donor_code || '—'}</TableCell>
                     <TableCell className="font-mono text-[13px] py-3.5 text-muted-foreground">{(donor as any).din || '—'}</TableCell>
                     <TableCell className="text-[13px] py-3.5">{donor.first_name && donor.last_name ? `${donor.first_name} ${donor.last_name}` : '—'}</TableCell>
                     <TableCell className="py-3.5">
@@ -109,21 +106,14 @@ const DonorsList = () => {
                           <Phone className="h-3 w-3" />Phone
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border bg-gray-50 text-gray-500 border-gray-200">
-                          Manual
-                        </span>
+                        <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border bg-gray-50 text-gray-500 border-gray-200">Manual</span>
                       )}
                     </TableCell>
-                    <TableCell className="py-3.5"><Badge className={`rounded-md ${statusStyles[donor.status]}`}>{statusLabels[donor.status]}</Badge></TableCell>
-                    <TableCell className="text-[13px] py-3.5">{donor.submitted_at ? new Date(donor.submitted_at).toLocaleDateString() : '—'}</TableCell>
-                    <TableCell className="text-[13px] py-3.5">{new Date(donor.created_at).toLocaleDateString()}</TableCell>
                     <TableCell className="py-3.5">
-                      {donor.status === 'draft' && (
-                        <Link to={`/partner/donors/${donor.id}/edit`} onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="sm"><Edit className="h-4 w-4" /></Button>
-                        </Link>
-                      )}
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${statusStyles[donor.status]}`}>{statusLabels[donor.status]}</span>
                     </TableCell>
+                    <TableCell className="text-[13px] text-muted-foreground py-3.5">{donor.submitted_at ? new Date(donor.submitted_at).toLocaleDateString() : '—'}</TableCell>
+                    <TableCell className="text-[13px] text-muted-foreground py-3.5">{new Date(donor.created_at).toLocaleDateString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

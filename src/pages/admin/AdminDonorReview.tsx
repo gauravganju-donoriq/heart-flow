@@ -7,6 +7,7 @@ import DocumentUpload from '@/components/DocumentUpload';
 import ShipmentTracking from '@/components/ShipmentTracking';
 import CallTranscript from '@/components/CallTranscript';
 import TissueRecoveryForm from '@/components/TissueRecoveryForm';
+import HeartRequestForm from '@/components/HeartRequestForm';
 import PlasmaDilutionForm from '@/components/PlasmaDilutionForm';
 import PendingDonorUpdates from '@/components/admin/PendingDonorUpdates';
 import { Button } from '@/components/ui/button';
@@ -310,6 +311,23 @@ const AdminDonorReview = () => {
                   sv_saphenous_vein: d.sv_saphenous_vein,
                 }}
               />
+              {d.hv_heart_valves && (
+                <HeartRequestForm
+                  donorId={donor.id}
+                  donorInfo={{
+                    first_name: donor.first_name,
+                    last_name: donor.last_name,
+                    gender: donor.gender,
+                    donor_age: d.donor_age,
+                    height_inches: d.height_inches,
+                    weight_kgs: d.weight_kgs,
+                    cause_of_death: donor.cause_of_death,
+                    external_donor_id: d.external_donor_id,
+                    din: d.din,
+                    partner_name: donor.partners?.organization_name || null,
+                  }}
+                />
+              )}
             </TabsContent>
           )}
 

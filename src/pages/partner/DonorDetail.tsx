@@ -105,19 +105,23 @@ const DonorDetail = () => {
           </div>
           {isDraft && (
             <div className="flex items-center gap-2">
-              <Link to={`/partner/donors/${id}/edit`}><Button variant="outline" className="h-9 text-[13px]"><Edit className="h-4 w-4 mr-2" />Edit</Button></Link>
-              <Button onClick={handleSubmit} className="h-9 text-[13px]"><Send className="h-4 w-4 mr-2" />Submit</Button>
+              <Link to={`/partner/donors/${id}/edit`}><Button variant="outline" size="sm" className="h-9 text-[13px]"><Edit className="h-3.5 w-3.5 mr-1.5" />Edit</Button></Link>
+              <Button onClick={handleSubmit} size="sm" className="h-9 text-[13px]"><Send className="h-3.5 w-3.5 mr-1.5" />Submit</Button>
             </div>
           )}
         </div>
 
         {/* Review Notes */}
         {donor.review_notes && (
-          <div className={`p-4 border-l-4 rounded-r-lg ${donor.status === 'rejected' ? 'border-l-red-400 bg-muted/30' : 'border-l-emerald-400 bg-muted/30'}`}>
-            <p className="text-sm font-medium mb-1">Review Notes</p>
-            <p className="text-[13px]">{donor.review_notes}</p>
-            {donor.reviewed_at && <p className="text-xs text-muted-foreground mt-2">Reviewed on {new Date(donor.reviewed_at).toLocaleString()}</p>}
-          </div>
+          <Card>
+            <CardHeader><p className="text-sm font-medium">Review Notes</p></CardHeader>
+            <CardContent>
+              <p className="text-[13px]">{donor.review_notes}</p>
+              {donor.reviewed_at && (
+                <p className="text-[12px] text-muted-foreground mt-2">Reviewed on {new Date(donor.reviewed_at).toLocaleString()}</p>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* Tabbed Content */}
@@ -278,7 +282,7 @@ const DonorDetail = () => {
           {/* Logistics Tab */}
           <TabsContent value="logistics" className="space-y-5 mt-5">
             <Card>
-              <CardHeader><p className="text-sm font-medium">Logistics</p></CardHeader>
+              <CardHeader><p className="text-sm font-medium">Shipping & Courier</p></CardHeader>
               <CardContent>
                 <dl className="grid gap-4 md:grid-cols-2">
                   <Field label="External Donor ID" value={d.external_donor_id} />
@@ -287,15 +291,17 @@ const DonorDetail = () => {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader><p className="text-sm font-medium">Tissue Info</p></CardHeader>
-              <CardContent>
-                <dl className="grid gap-4 md:grid-cols-2">
-                  <Field label="Tissue Type" value={donor.tissue_type} />
-                  <Field label="Tissue Condition" value={donor.tissue_condition} />
-                </dl>
-              </CardContent>
-            </Card>
+            {(donor.tissue_type || donor.tissue_condition) && (
+              <Card>
+                <CardHeader><p className="text-sm font-medium">Tissue Info</p></CardHeader>
+                <CardContent>
+                  <dl className="grid gap-4 md:grid-cols-2">
+                    <Field label="Tissue Type" value={donor.tissue_type} />
+                    <Field label="Tissue Condition" value={donor.tissue_condition} />
+                  </dl>
+                </CardContent>
+              </Card>
+            )}
 
             <ShipmentTracking donorId={donor.id} canAdd={isDraft} />
           </TabsContent>

@@ -104,15 +104,12 @@ const AdminDonorForm = () => {
   };
 
   const handleSave = async (submit = false) => {
-    if (!selectedPartnerId) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Please select a partner' });
-      return;
-    }
+    const partnerId = selectedPartnerId && selectedPartnerId !== 'none' ? selectedPartnerId : null;
 
     setSaving(true);
 
     const donorData: DonorInsert = {
-      partner_id: selectedPartnerId,
+      partner_id: partnerId as any,
       first_name: formData.first_name || null,
       last_name: formData.last_name || null,
       date_of_birth: formData.date_of_birth || null,
@@ -179,7 +176,7 @@ const AdminDonorForm = () => {
         <Card>
           <CardHeader>
             <CardTitle>Partner Assignment</CardTitle>
-            <CardDescription>Select which partner this donor belongs to</CardDescription>
+            <CardDescription>Optionally assign this donor to a partner organization</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2 max-w-sm">
@@ -193,6 +190,7 @@ const AdminDonorForm = () => {
                   <SelectValue placeholder="Select a partner" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">None (Direct Admin Entry)</SelectItem>
                   {partners.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.organization_name}

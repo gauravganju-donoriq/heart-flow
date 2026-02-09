@@ -1,0 +1,1 @@
+ALTER TABLE public.donors ALTER COLUMN partner_id DROP NOT NULL;

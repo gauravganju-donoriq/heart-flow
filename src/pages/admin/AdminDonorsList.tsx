@@ -167,7 +167,7 @@ const AdminDonorsList = () => {
                           ? `${donor.first_name} ${donor.last_name}`
                           : '—'}
                       </TableCell>
-                      <TableCell>{donor.partners?.organization_name || 'Unassigned'}</TableCell>
+                      <TableCell>{donor.partners?.organization_name || '—'}</TableCell>
                       <TableCell className="capitalize">{donor.tissue_type || '—'}</TableCell>
                       <TableCell>
                         <Badge className={statusColors[donor.status]}>

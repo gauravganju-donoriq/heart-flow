@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LayoutDashboard, Users, FileText, Bell, Eye } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Bell, Eye, Shield } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type DonorStatus = Database['public']['Enums']['donor_status'];
@@ -45,6 +45,7 @@ const navItems = [
   { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
   { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
+  { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
   { label: 'Notifications', href: '/admin/notifications', icon: <Bell className="h-4 w-4" /> },
 ];
 

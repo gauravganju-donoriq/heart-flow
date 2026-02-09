@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, Users, FileText, Bell, Check, Eye } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Bell, Check, Eye, Shield } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type Notification = Database['public']['Tables']['notifications']['Row'];
@@ -14,6 +14,7 @@ const navItems = [
   { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
   { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
+  { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
   { label: 'Notifications', href: '/admin/notifications', icon: <Bell className="h-4 w-4" /> },
 ];
 

@@ -53,12 +53,9 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
         <div className="flex flex-col h-full">
           {/* Logo & Portal */}
           <div className="flex items-center justify-between h-14 px-5 border-b">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="flex items-center gap-2">
               <img src={lemaitreIcon} alt="LeMaitre" className="h-6 w-auto shrink-0" />
               <span className="text-base font-bold tracking-tight text-foreground leading-none">Atlas</span>
-              <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
-                {navItems.some(item => item.href.startsWith('/admin')) ? 'Admin' : 'Partner'}
-              </span>
             </div>
             <Button
               variant="ghost"
@@ -141,6 +138,9 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
             <Menu className="h-4 w-4" />
           </Button>
           <div className="flex-1" />
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-1 rounded">
+            {navItems.some(item => item.href.startsWith('/admin')) ? 'Admin' : 'Partner'}
+          </span>
         </header>
 
         {/* Page content */}

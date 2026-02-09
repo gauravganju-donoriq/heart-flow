@@ -126,6 +126,9 @@ const DonorDetail = () => {
             {donor.status === 'approved' && (
               <TabsTrigger value="recovery" className={tabTriggerClass}>Recovery (7033F)</TabsTrigger>
             )}
+            {donor.status === 'approved' && d.hv_heart_valves && (
+              <TabsTrigger value="heart_request" className={tabTriggerClass}>Heart Request (7117F)</TabsTrigger>
+            )}
             <TabsTrigger value="logistics" className={tabTriggerClass}>Logistics</TabsTrigger>
             <TabsTrigger value="documents" className={tabTriggerClass}>Documents</TabsTrigger>
           </TabsList>
@@ -245,27 +248,29 @@ const DonorDetail = () => {
           {donor.status === 'approved' && (
             <TabsContent value="recovery" className="space-y-5 mt-5">
               <TissueRecoveryForm donorId={donor.id} donorInfo={{ donor_code: donor.donor_code, donor_age: d.donor_age, gender: donor.gender, death_date: donor.death_date, time_of_death: d.time_of_death, death_type: d.death_type, death_timezone: d.death_timezone, external_donor_id: d.external_donor_id, partner_name: null, din: d.din, hv_heart_valves: d.hv_heart_valves, ai_aorto_iliac: d.ai_aorto_iliac, fm_femoral: d.fm_femoral, sv_saphenous_vein: d.sv_saphenous_vein }} />
-              {d.hv_heart_valves && (
-                <HeartRequestForm
-                  donorId={donor.id}
-                  donorInfo={{
-                    first_name: donor.first_name,
-                    last_name: donor.last_name,
-                    gender: donor.gender,
-                    donor_age: d.donor_age,
-                    height_inches: d.height_inches,
-                    weight_kgs: d.weight_kgs,
-                    cause_of_death: donor.cause_of_death,
-                    external_donor_id: d.external_donor_id,
-                    din: d.din,
-                    partner_name: null,
-                  }}
-                />
-              )}
             </TabsContent>
           )}
 
-
+          {/* Heart Request Tab */}
+          {donor.status === 'approved' && d.hv_heart_valves && (
+            <TabsContent value="heart_request" className="space-y-5 mt-5">
+              <HeartRequestForm
+                donorId={donor.id}
+                donorInfo={{
+                  first_name: donor.first_name,
+                  last_name: donor.last_name,
+                  gender: donor.gender,
+                  donor_age: d.donor_age,
+                  height_inches: d.height_inches,
+                  weight_kgs: d.weight_kgs,
+                  cause_of_death: donor.cause_of_death,
+                  external_donor_id: d.external_donor_id,
+                  din: d.din,
+                  partner_name: null,
+                }}
+              />
+            </TabsContent>
+          )}
 
 
           {/* Logistics Tab */}

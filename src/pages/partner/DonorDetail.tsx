@@ -7,6 +7,7 @@ import DashboardLayout from '@/components/layouts/DashboardLayout';
 import DocumentUpload from '@/components/DocumentUpload';
 import ShipmentTracking from '@/components/ShipmentTracking';
 import CallTranscript from '@/components/CallTranscript';
+import PartnerPendingUpdates from '@/components/PartnerPendingUpdates';
 import TissueRecoveryForm from '@/components/TissueRecoveryForm';
 import HeartRequestForm from '@/components/HeartRequestForm';
 import { Button } from '@/components/ui/button';
@@ -72,6 +73,16 @@ const DonorDetail = () => {
   const handleSubmit = async () => {
     const { error } = await supabase.from('donors').update({ status: 'submitted', submitted_at: new Date().toISOString() }).eq('id', id);
     if (error) { toast({ variant: 'destructive', title: 'Error', description: error.message }); return; }
+    // Audit log
+    if (user) {
+      await (supabase.from as any)('audit_logs').insert({
+        donor_id: id!,
+        action: 'status_change',
+        changed_by: user.id,
+        changed_fields: { status: { old: 'draft', new: 'submitted' } },
+        metadata: { source: 'manual' },
+      });
+    }
     toast({ title: 'Submitted', description: 'Donor has been submitted for review' });
     if (id) triggerAutoScreening(id);
     fetchDonor();
@@ -103,12 +114,16 @@ const DonorDetail = () => {
               <p className="text-[13px] text-muted-foreground">{donor.first_name && donor.last_name ? `${donor.first_name} ${donor.last_name}` : 'Unnamed donor'}</p>
             </div>
           </div>
-          {isDraft && (
-            <div className="flex items-center gap-2">
-              <Link to={`/partner/donors/${id}/edit`}><Button variant="outline" size="sm" className="h-9 text-[13px]"><Edit className="h-3.5 w-3.5 mr-1.5" />Edit</Button></Link>
+          <div className="flex items-center gap-2">
+            <Link to={`/partner/donors/${id}/edit`}>
+              <Button variant="outline" size="sm" className="h-9 text-[13px]">
+                <Edit className="h-3.5 w-3.5 mr-1.5" />{isDraft ? 'Edit' : 'Propose Changes'}
+              </Button>
+            </Link>
+            {isDraft && (
               <Button onClick={handleSubmit} size="sm" className="h-9 text-[13px]"><Send className="h-3.5 w-3.5 mr-1.5" />Submit</Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Review Notes */}
@@ -123,6 +138,9 @@ const DonorDetail = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Pending Updates (read-only for partner) */}
+        {!isDraft && id && <PartnerPendingUpdates donorId={id} />}
 
         {/* Tabbed Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          changed_by: string
+          changed_fields: Json | null
+          created_at: string
+          donor_id: string
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          action: string
+          changed_by: string
+          changed_fields?: Json | null
+          created_at?: string
+          donor_id: string
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          action?: string
+          changed_by?: string
+          changed_fields?: Json | null
+          created_at?: string
+          donor_id?: string
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_donor_id_fkey"
+            columns: ["donor_id"]
+            isOneToOne: false
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_transcripts: {
         Row: {
           call_duration_seconds: number | null
@@ -469,6 +507,7 @@ export type Database = {
           review_notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          source: string
           status: string
           updated_at: string
         }
@@ -481,6 +520,7 @@ export type Database = {
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source?: string
           status?: string
           updated_at?: string
         }
@@ -493,6 +533,7 @@ export type Database = {
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source?: string
           status?: string
           updated_at?: string
         }

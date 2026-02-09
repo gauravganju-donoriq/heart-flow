@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { ClipboardList, Plus, Trash2, Save } from 'lucide-react';
+import { ClipboardList, Plus, Trash2, Save, Download } from 'lucide-react';
+import { generate7033fPdf } from '@/lib/generate7033fPdf';
 
 const VASCULAR_TISSUE_OPTIONS = [
   'RIGHT Saphenous Vein',
@@ -53,12 +54,25 @@ const emptyRecovery: RecoveryData = {
   lemaitre_donor_number: '',
 };
 
+interface DonorInfo {
+  donor_code: string | null;
+  donor_age: number | null;
+  gender: string | null;
+  death_date: string | null;
+  time_of_death: string | null;
+  death_type: string | null;
+  death_timezone: string | null;
+  external_donor_id: string | null;
+  partner_name: string | null;
+}
+
 interface Props {
   donorId: string;
+  donorInfo?: DonorInfo;
   readOnly?: boolean;
 }
 
-const TissueRecoveryForm = ({ donorId, readOnly = false }: Props) => {
+const TissueRecoveryForm = ({ donorId, donorInfo, readOnly = false }: Props) => {
   const { toast } = useToast();
   const [recovery, setRecovery] = useState<RecoveryData>(emptyRecovery);
   const [tissues, setTissues] = useState<TissueRow[]>([]);
@@ -195,6 +209,18 @@ const TissueRecoveryForm = ({ donorId, readOnly = false }: Props) => {
     }
   };
 
+  const handleDownloadPdf = () => {
+    generate7033fPdf(
+      donorInfo || {
+        donor_code: null, donor_age: null, gender: null, death_date: null,
+        time_of_death: null, death_type: null, death_timezone: null,
+        external_donor_id: null, partner_name: null,
+      },
+      recovery,
+      tissues
+    );
+  };
+
   if (loading) return null;
 
   const vascularTissues = tissues.filter(t => t.tissue_category === 'vascular');
@@ -205,11 +231,20 @@ const TissueRecoveryForm = ({ donorId, readOnly = false }: Props) => {
     return (
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5 text-primary" />
-            <CardTitle>7033F — Tissue Recovery Form</CardTitle>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <ClipboardList className="h-5 w-5 text-primary" />
+                <CardTitle>7033F — Tissue Recovery Form</CardTitle>
+              </div>
+              <CardDescription>LeMaitre Cardiovascular recovery details</CardDescription>
+            </div>
+            {exists && (
+              <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
+                <Download className="h-4 w-4 mr-1" />Download PDF
+              </Button>
+            )}
           </div>
-          <CardDescription>LeMaitre Cardiovascular recovery details</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {!exists ? (
@@ -323,7 +358,14 @@ const TissueRecoveryForm = ({ donorId, readOnly = false }: Props) => {
               <CardDescription>LeMaitre Cardiovascular — complete after tissue recovery</CardDescription>
             </div>
           </div>
-          {exists && <Badge variant="outline" className="text-green-700 border-green-300">Saved</Badge>}
+          <div className="flex items-center gap-2">
+            {exists && (
+              <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
+                <Download className="h-4 w-4 mr-1" />PDF
+              </Button>
+            )}
+            {exists && <Badge variant="outline" className="text-green-700 border-green-300">Saved</Badge>}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-8">

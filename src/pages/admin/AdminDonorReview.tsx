@@ -261,7 +261,20 @@ const AdminDonorReview = () => {
 
         {/* 7033F Tissue Recovery Form — only for accepted donors */}
         {donor.status === 'approved' && (
-          <TissueRecoveryForm donorId={donor.id} readOnly={false} />
+          <TissueRecoveryForm
+            donorId={donor.id}
+            donorInfo={{
+              donor_code: donor.donor_code,
+              donor_age: d.donor_age,
+              gender: donor.gender,
+              death_date: donor.death_date,
+              time_of_death: d.time_of_death,
+              death_type: d.death_type,
+              death_timezone: d.death_timezone,
+              external_donor_id: d.external_donor_id,
+              partner_name: donor.partners?.organization_name || null,
+            }}
+          />
         )}
 
         {/* Logistics (Q23, Q25) */}

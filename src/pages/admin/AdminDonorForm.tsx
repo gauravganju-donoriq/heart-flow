@@ -254,7 +254,7 @@ const AdminDonorForm = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="Admin Panel">
+      <DashboardLayout navItems={navItems} title="DonorIQ">
         <div className="flex items-center justify-center py-12">
           <div className="text-muted-foreground">Loading...</div>
         </div>
@@ -263,16 +263,13 @@ const AdminDonorForm = () => {
   }
 
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
-      <div className="space-y-6 max-w-3xl">
+    <DashboardLayout navItems={navItems} title="DonorIQ">
+      <div className="space-y-5 max-w-3xl">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/admin/donors')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">{isEdit ? 'Edit Donor' : 'New Donor'}</h1>
-            <p className="text-muted-foreground">Enter donor screening information (25-question format)</p>
-          </div>
+          <p className="text-lg font-semibold">{isEdit ? 'Edit Donor' : 'New Donor'}</p>
         </div>
 
         <Tabs defaultValue="info" className="w-full">
@@ -285,8 +282,7 @@ const AdminDonorForm = () => {
             {/* Partner Selector */}
             <Card>
               <CardHeader>
-                <CardTitle>Partner Assignment</CardTitle>
-                <CardDescription>Optionally assign this donor to a partner organization</CardDescription>
+                <p className="text-sm font-medium">Partner Assignment</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 max-w-sm">
@@ -307,8 +303,7 @@ const AdminDonorForm = () => {
             {/* Call Information (Q1, Q2, Q24) */}
             <Card>
               <CardHeader>
-                <CardTitle>Call Information</CardTitle>
-                <CardDescription>Q1, Q2, Q24 — Type of call, caller identity, prescreen flag</CardDescription>
+                <p className="text-sm font-medium">Call Information</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
@@ -339,8 +334,7 @@ const AdminDonorForm = () => {
             {/* Demographics (Q4, Q5, Q12, Q13 + legacy) */}
             <Card>
               <CardHeader>
-                <CardTitle>Demographics</CardTitle>
-                <CardDescription>Q4, Q5, Q12, Q13 — Age, sex, height, weight</CardDescription>
+                <p className="text-sm font-medium">Demographics</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
@@ -408,8 +402,7 @@ const AdminDonorForm = () => {
             {/* Death Details (Q6-Q10) */}
             <Card>
               <CardHeader>
-                <CardTitle>Death Details</CardTitle>
-                <CardDescription>Q6–Q10 — Date, time, type, timezone, cause of death</CardDescription>
+                <p className="text-sm font-medium">Death Details</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-3">
@@ -462,8 +455,7 @@ const AdminDonorForm = () => {
             {/* Clinical (Q11, Q14, Q15) */}
             <Card>
               <CardHeader>
-                <CardTitle>Clinical Information</CardTitle>
-                <CardDescription>Q11, Q14, Q15 — Clinical course, medical history, high-risk notes</CardDescription>
+                <p className="text-sm font-medium">Clinical Information</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -484,8 +476,7 @@ const AdminDonorForm = () => {
             {/* Tissue Recovery (Q16-Q22) */}
             <Card>
               <CardHeader>
-                <CardTitle>Tissue Recovery</CardTitle>
-                <CardDescription>Q16–Q22 — Acceptance, tissue types, autopsy</CardDescription>
+                <p className="text-sm font-medium">Tissue Recovery</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2 max-w-sm">
@@ -561,8 +552,7 @@ const AdminDonorForm = () => {
             {/* Logistics (Q23, Q25) */}
             <Card>
               <CardHeader>
-                <CardTitle>Logistics</CardTitle>
-                <CardDescription>Q23, Q25 — External donor ID, courier updates</CardDescription>
+                <p className="text-sm font-medium">Logistics</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
@@ -581,8 +571,7 @@ const AdminDonorForm = () => {
             {/* Compliance */}
             <Card>
               <CardHeader>
-                <CardTitle>Compliance</CardTitle>
-                <CardDescription>Required documentation checks</CardDescription>
+                <p className="text-sm font-medium">Compliance</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-2">

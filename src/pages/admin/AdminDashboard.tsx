@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import RetellSetup from '@/components/admin/RetellSetup';
@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LayoutDashboard, Users, FileText, Bell, Eye, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Bell, Shield } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type DonorStatus = Database['public']['Enums']['donor_status'];
@@ -25,12 +25,12 @@ interface DonorWithPartner {
   } | null;
 }
 
-const statusColors: Record<DonorStatus, string> = {
-  draft: 'bg-muted text-muted-foreground',
-  submitted: 'bg-blue-100 text-blue-800',
-  under_review: 'bg-yellow-100 text-yellow-800',
-  approved: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
+const statusStyles: Record<DonorStatus, string> = {
+  draft: 'bg-gray-50 text-gray-500 border border-gray-200',
+  submitted: 'bg-blue-50 text-blue-600 border border-blue-100',
+  under_review: 'bg-amber-50 text-amber-600 border border-amber-100',
+  approved: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+  rejected: 'bg-red-50 text-red-500 border border-red-100',
 };
 
 const statusLabels: Record<DonorStatus, string> = {
@@ -50,6 +50,7 @@ const navItems = [
 ];
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [pendingDonors, setPendingDonors] = useState<DonorWithPartner[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -124,60 +125,49 @@ const AdminDashboard = () => {
   };
 
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Overview of partner submissions</p>
-        </div>
-
+    <DashboardLayout navItems={navItems} title="DonorIQ">
+      <div className="space-y-5">
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Active Partners</CardDescription>
-              <CardTitle className="text-3xl">{stats.totalPartners}</CardTitle>
+              <p className="text-[13px] text-muted-foreground">Active Partners</p>
+              <p className="text-2xl font-semibold">{stats.totalPartners}</p>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Pending Review</CardDescription>
-              <CardTitle className="text-3xl text-yellow-600">{stats.pendingReview}</CardTitle>
+              <p className="text-[13px] text-muted-foreground">Pending Review</p>
+              <p className="text-2xl font-semibold text-amber-600">{stats.pendingReview}</p>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Approved This Month</CardDescription>
-              <CardTitle className="text-3xl text-green-600">{stats.approvedThisMonth}</CardTitle>
+              <p className="text-[13px] text-muted-foreground">Approved This Month</p>
+              <p className="text-2xl font-semibold text-emerald-600">{stats.approvedThisMonth}</p>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Rejected This Month</CardDescription>
-              <CardTitle className="text-3xl text-red-600">{stats.rejectedThisMonth}</CardTitle>
+              <p className="text-[13px] text-muted-foreground">Rejected This Month</p>
+              <p className="text-2xl font-semibold text-red-500">{stats.rejectedThisMonth}</p>
             </CardHeader>
           </Card>
         </div>
 
         {/* Pending Donors */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Pending Review</CardTitle>
-                <CardDescription>Donors awaiting your review</CardDescription>
-              </div>
-              <Link to="/admin/donors">
-                <Button variant="outline">View All</Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">Pending Review</p>
+            <Link to="/admin/donors">
+              <Button variant="outline" className="h-9 text-[13px]">View All</Button>
+            </Link>
+          </div>
+          <div className="border border-border rounded-lg">
             {loading ? (
-              <div className="text-center py-8 text-muted-foreground">Loading...</div>
+              <div className="text-center py-8 text-muted-foreground text-[13px]">Loading...</div>
             ) : pendingDonors.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-muted-foreground text-[13px]">
                 No donors pending review
               </div>
             ) : (
@@ -189,43 +179,40 @@ const AdminDashboard = () => {
                     <TableHead>Partner</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Submitted</TableHead>
-                    <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pendingDonors.map((donor) => (
-                    <TableRow key={donor.id}>
-                      <TableCell className="font-mono">{donor.donor_code}</TableCell>
-                      <TableCell>
+                    <TableRow
+                      key={donor.id}
+                      className="cursor-pointer hover:bg-muted/30"
+                      onClick={() => navigate(`/admin/donors/${donor.id}`)}
+                    >
+                      <TableCell className="font-mono text-[13px] py-3.5">{donor.donor_code}</TableCell>
+                      <TableCell className="text-[13px] py-3.5">
                         {donor.first_name && donor.last_name
                           ? `${donor.first_name} ${donor.last_name}`
                           : '—'}
                       </TableCell>
-                      <TableCell>{donor.partners?.organization_name || '—'}</TableCell>
-                      <TableCell>
-                        <Badge className={statusColors[donor.status]}>
+                      <TableCell className="text-[13px] text-muted-foreground py-3.5">{donor.partners?.organization_name || '—'}</TableCell>
+                      <TableCell className="py-3.5">
+                        <Badge className={`rounded-md ${statusStyles[donor.status]}`}>
                           {statusLabels[donor.status]}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-[13px] py-3.5">
                         {donor.submitted_at
                           ? new Date(donor.submitted_at).toLocaleDateString()
                           : '—'}
-                      </TableCell>
-                      <TableCell>
-                        <Link to={`/admin/donors/${donor.id}`}>
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </Link>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
         {/* Retell AI Phone Intake */}
         <RetellSetup />
       </div>

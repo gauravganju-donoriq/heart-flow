@@ -9,7 +9,7 @@ import CallTranscript from '@/components/CallTranscript';
 import TissueRecoveryForm from '@/components/TissueRecoveryForm';
 import PendingDonorUpdates from '@/components/admin/PendingDonorUpdates';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -25,12 +25,12 @@ interface DonorWithPartner extends Donor {
   partners: { organization_name: string; user_id: string } | null;
 }
 
-const statusColors: Record<DonorStatus, string> = {
-  draft: 'bg-muted text-muted-foreground',
-  submitted: 'bg-blue-100 text-blue-800',
-  under_review: 'bg-yellow-100 text-yellow-800',
-  approved: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
+const statusStyles: Record<DonorStatus, string> = {
+  draft: 'bg-gray-50 text-gray-500 border border-gray-200',
+  submitted: 'bg-blue-50 text-blue-600 border border-blue-100',
+  under_review: 'bg-amber-50 text-amber-600 border border-amber-100',
+  approved: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+  rejected: 'bg-red-50 text-red-500 border border-red-100',
 };
 
 const statusLabels: Record<DonorStatus, string> = {
@@ -51,8 +51,8 @@ const navItems = [
 
 const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <div>
-    <dt className="text-sm text-muted-foreground">{label}</dt>
-    <dd className="font-medium">{value || '—'}</dd>
+    <dt className="text-[13px] text-muted-foreground">{label}</dt>
+    <dd className="text-[13px]">{value || '—'}</dd>
   </div>
 );
 
@@ -121,20 +121,20 @@ const AdminDonorReview = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="Admin Panel">
-        <div className="flex items-center justify-center py-12"><div className="text-muted-foreground">Loading...</div></div>
+      <DashboardLayout navItems={navItems} title="DonorIQ">
+        <div className="flex items-center justify-center py-12"><div className="text-muted-foreground text-[13px]">Loading...</div></div>
       </DashboardLayout>
     );
   }
 
   if (!donor) return null;
 
-  const d = donor as any; // for new fields not yet in generated types
+  const d = donor as any;
   const canReview = donor.status === 'submitted' || donor.status === 'under_review';
 
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
-      <div className="space-y-6 max-w-4xl">
+    <DashboardLayout navItems={navItems} title="DonorIQ">
+      <div className="space-y-5 max-w-4xl">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -143,13 +143,13 @@ const AdminDonorReview = () => {
             </Button>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold font-mono">{donor.donor_code}</h1>
-                <Badge className={statusColors[donor.status]}>{statusLabels[donor.status]}</Badge>
+                <h1 className="text-lg font-semibold font-mono">{donor.donor_code}</h1>
+                <Badge className={`rounded-md ${statusStyles[donor.status]}`}>{statusLabels[donor.status]}</Badge>
                 {d.intake_method === 'phone' && (
                   <Badge variant="outline" className="gap-1"><Phone className="h-3 w-3" />Phone Intake</Badge>
                 )}
               </div>
-              <p className="text-muted-foreground">From: {donor.partners?.organization_name || 'Direct Admin Entry'}</p>
+              <p className="text-[13px] text-muted-foreground">From: {donor.partners?.organization_name || 'Direct Admin Entry'}</p>
             </div>
           </div>
         </div>
@@ -159,32 +159,30 @@ const AdminDonorReview = () => {
 
         {/* Review Actions */}
         {canReview && (
-          <Card className="border-primary/20 bg-primary/5">
-            <CardHeader><CardTitle>Review Actions</CardTitle><CardDescription>Approve or reject this donor submission</CardDescription></CardHeader>
+          <Card className="border border-border bg-muted/30">
+            <CardHeader><p className="text-sm font-medium">Review Actions</p></CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="reviewNotes">Review Notes</Label>
+                <Label htmlFor="reviewNotes" className="text-[13px]">Review Notes</Label>
                 <Textarea id="reviewNotes" placeholder="Add notes about your decision (visible to partner)" value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} rows={3} />
               </div>
               <div className="flex items-center gap-3">
                 {donor.status === 'submitted' && (
-                  <Button variant="outline" onClick={() => handleStatusChange('under_review')} disabled={saving}><Clock className="h-4 w-4 mr-2" />Mark Under Review</Button>
+                  <Button variant="outline" onClick={() => handleStatusChange('under_review')} disabled={saving} className="h-9 text-[13px]"><Clock className="h-4 w-4 mr-2" />Mark Under Review</Button>
                 )}
-                <Button variant="destructive" onClick={() => handleStatusChange('rejected')} disabled={saving}><X className="h-4 w-4 mr-2" />Reject</Button>
-                <Button onClick={() => handleStatusChange('approved')} disabled={saving} className="bg-green-600 hover:bg-green-700"><Check className="h-4 w-4 mr-2" />Approve</Button>
+                <Button variant="destructive" onClick={() => handleStatusChange('rejected')} disabled={saving} className="h-9 text-[13px]"><X className="h-4 w-4 mr-2" />Reject</Button>
+                <Button onClick={() => handleStatusChange('approved')} disabled={saving} className="bg-green-600 hover:bg-green-700 h-9 text-[13px]"><Check className="h-4 w-4 mr-2" />Approve</Button>
               </div>
             </CardContent>
           </Card>
         )}
 
         {!canReview && donor.review_notes && (
-          <Card className={donor.status === 'rejected' ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'}>
-            <CardHeader><CardTitle>Review Notes</CardTitle></CardHeader>
-            <CardContent>
-              <p className="text-sm">{donor.review_notes}</p>
-              {donor.reviewed_at && <p className="text-xs text-muted-foreground mt-2">Reviewed on {new Date(donor.reviewed_at).toLocaleString()}</p>}
-            </CardContent>
-          </Card>
+          <div className={`p-4 border-l-4 rounded-r-lg ${donor.status === 'rejected' ? 'border-l-red-400 bg-muted/30' : 'border-l-emerald-400 bg-muted/30'}`}>
+            <p className="text-sm font-medium mb-1">Review Notes</p>
+            <p className="text-[13px]">{donor.review_notes}</p>
+            {donor.reviewed_at && <p className="text-xs text-muted-foreground mt-2">Reviewed on {new Date(donor.reviewed_at).toLocaleString()}</p>}
+          </div>
         )}
 
         {/* Pending Updates from Follow-Up Calls */}
@@ -192,7 +190,7 @@ const AdminDonorReview = () => {
 
         {/* Call Information (Q1, Q2, Q24) */}
         <Card>
-          <CardHeader><CardTitle>Call Information</CardTitle></CardHeader>
+          <CardHeader><p className="text-sm font-medium">Call Information</p></CardHeader>
           <CardContent>
             <dl className="grid gap-4 md:grid-cols-3">
               <Field label="Type of Call (Q1)" value={d.call_type} />
@@ -204,7 +202,7 @@ const AdminDonorReview = () => {
 
         {/* Demographics (Q4, Q5, Q12, Q13) */}
         <Card>
-          <CardHeader><CardTitle>Demographics</CardTitle></CardHeader>
+          <CardHeader><p className="text-sm font-medium">Demographics</p></CardHeader>
           <CardContent>
             <dl className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <Field label="First Name" value={donor.first_name} />
@@ -221,7 +219,7 @@ const AdminDonorReview = () => {
 
         {/* Death Details (Q6-Q10) */}
         <Card>
-          <CardHeader><CardTitle>Death Details</CardTitle></CardHeader>
+          <CardHeader><p className="text-sm font-medium">Death Details</p></CardHeader>
           <CardContent>
             <dl className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <Field label="Date of Death (Q6)" value={donor.death_date ? new Date(donor.death_date).toLocaleDateString() : null} />
@@ -235,26 +233,26 @@ const AdminDonorReview = () => {
 
         {/* Clinical (Q11, Q14, Q15) */}
         <Card>
-          <CardHeader><CardTitle>Clinical Information</CardTitle></CardHeader>
+          <CardHeader><p className="text-sm font-medium">Clinical Information</p></CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <dt className="text-sm text-muted-foreground">Clinical Course (Q11)</dt>
-              <dd className="font-medium whitespace-pre-wrap">{d.clinical_course || '—'}</dd>
+              <dt className="text-[13px] text-muted-foreground">Clinical Course (Q11)</dt>
+              <dd className="text-[13px] whitespace-pre-wrap">{d.clinical_course || '—'}</dd>
             </div>
             <div>
-              <dt className="text-sm text-muted-foreground">Medical History (Q14)</dt>
-              <dd className="font-medium whitespace-pre-wrap">{d.medical_history || '—'}</dd>
+              <dt className="text-[13px] text-muted-foreground">Medical History (Q14)</dt>
+              <dd className="text-[13px] whitespace-pre-wrap">{d.medical_history || '—'}</dd>
             </div>
             <div>
-              <dt className="text-sm text-muted-foreground">High Risk / Additional Notes (Q15)</dt>
-              <dd className="font-medium whitespace-pre-wrap">{d.high_risk_notes || '—'}</dd>
+              <dt className="text-[13px] text-muted-foreground">High Risk / Additional Notes (Q15)</dt>
+              <dd className="text-[13px] whitespace-pre-wrap">{d.high_risk_notes || '—'}</dd>
             </div>
           </CardContent>
         </Card>
 
         {/* Tissue Recovery (Q16-Q22) */}
         <Card>
-          <CardHeader><CardTitle>Tissue Recovery</CardTitle></CardHeader>
+          <CardHeader><p className="text-sm font-medium">Tissue Recovery</p></CardHeader>
           <CardContent>
             <dl className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <Field label="Donor Accepted/Deferred (Q16)" value={d.donor_accepted} />
@@ -288,7 +286,7 @@ const AdminDonorReview = () => {
 
         {/* Logistics (Q23, Q25) */}
         <Card>
-          <CardHeader><CardTitle>Logistics</CardTitle></CardHeader>
+          <CardHeader><p className="text-sm font-medium">Logistics</p></CardHeader>
           <CardContent>
             <dl className="grid gap-4 md:grid-cols-2">
               <Field label="External Donor ID (Q23)" value={d.external_donor_id} />
@@ -299,7 +297,7 @@ const AdminDonorReview = () => {
 
         {/* Legacy Tissue fields */}
         <Card>
-          <CardHeader><CardTitle>Legacy Tissue Info</CardTitle></CardHeader>
+          <CardHeader><p className="text-sm font-medium">Legacy Tissue Info</p></CardHeader>
           <CardContent>
             <dl className="grid gap-4 md:grid-cols-2">
               <Field label="Tissue Type" value={donor.tissue_type} />
@@ -310,7 +308,7 @@ const AdminDonorReview = () => {
 
         {/* Compliance */}
         <Card>
-          <CardHeader><CardTitle>Compliance</CardTitle></CardHeader>
+          <CardHeader><p className="text-sm font-medium">Compliance</p></CardHeader>
           <CardContent>
             <dl className="grid gap-4 md:grid-cols-2">
               <BoolField label="Consent Obtained" value={donor.consent_obtained} />
@@ -327,7 +325,7 @@ const AdminDonorReview = () => {
 
         {/* Timeline */}
         <Card>
-          <CardHeader><CardTitle>Timeline</CardTitle></CardHeader>
+          <CardHeader><p className="text-sm font-medium">Timeline</p></CardHeader>
           <CardContent>
             <dl className="grid gap-4 md:grid-cols-3">
               <Field label="Created" value={new Date(donor.created_at).toLocaleString()} />

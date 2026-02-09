@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LayoutDashboard, Users, FileText, Bell, Shield } from 'lucide-react';
 import CreatePartnerDialog from '@/components/admin/CreatePartnerDialog';
 import EditPartnerDialog from '@/components/admin/EditPartnerDialog';
@@ -60,7 +59,6 @@ const PartnersList = () => {
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      // Fetch profile and donor counts for each partner
       const partnersWithDetails = await Promise.all(
         data.map(async (partner) => {
           const { count } = await supabase
@@ -92,31 +90,22 @@ const PartnersList = () => {
   };
 
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
-      <div className="space-y-6">
+    <DashboardLayout navItems={navItems} title="DonorIQ">
+      <div className="space-y-5">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Partners</h1>
-            <p className="text-muted-foreground">Manage recovery partner accounts</p>
-          </div>
+        <div className="flex items-center justify-end">
           <CreatePartnerDialog onSuccess={fetchPartners} />
         </div>
 
         {/* Partners Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>All Partners</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <PartnersTable
-              partners={partners}
-              loading={loading}
-              onEdit={handleEdit}
-              onRefresh={fetchPartners}
-            />
-          </CardContent>
-        </Card>
+        <div className="border border-border rounded-lg">
+          <PartnersTable
+            partners={partners}
+            loading={loading}
+            onEdit={handleEdit}
+            onRefresh={fetchPartners}
+          />
+        </div>
 
         {/* Edit Dialog */}
         <EditPartnerDialog

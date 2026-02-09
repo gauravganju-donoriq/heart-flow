@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -155,16 +155,12 @@ const ScreeningSettings = () => {
   const filtered = activeTab === 'all' ? guidelines : guidelines.filter(g => g.category === activeTab);
 
   return (
-    <DashboardLayout navItems={navItems} title="Admin Panel">
-      <div className="space-y-6 max-w-4xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Screening Guidelines</h1>
-            <p className="text-muted-foreground">Define the policy document the AI agent uses to evaluate donors</p>
-          </div>
+    <DashboardLayout navItems={navItems} title="DonorIQ">
+      <div className="space-y-5 max-w-4xl">
+        <div className="flex items-center justify-end">
           <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) { setEditingGuideline(null); setForm({ title: '', content: '', category: 'general' }); } }}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" />Add Guideline</Button>
+              <Button className="h-9 text-[13px]"><Plus className="h-4 w-4 mr-2" />Add Guideline</Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader>
@@ -200,7 +196,7 @@ const ScreeningSettings = () => {
         {guidelines.length === 0 && !loading && (
           <Card className="border-dashed">
             <CardContent className="py-8 text-center space-y-4">
-              <p className="text-muted-foreground">No screening guidelines configured yet.</p>
+              <p className="text-muted-foreground text-[13px]">No screening guidelines configured yet.</p>
               <Button variant="outline" onClick={handleAddStarters}>Load Starter Templates</Button>
             </CardContent>
           </Card>
@@ -222,7 +218,7 @@ const ScreeningSettings = () => {
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <CardTitle className="text-lg">{g.title}</CardTitle>
+                        <p className="text-sm font-medium">{g.title}</p>
                         <Badge variant="outline">{categoryLabels[g.category as Category] || g.category}</Badge>
                         {!g.is_active && <Badge variant="secondary">Inactive</Badge>}
                       </div>
@@ -234,7 +230,7 @@ const ScreeningSettings = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm whitespace-pre-wrap">{g.content}</p>
+                    <p className="text-[13px] whitespace-pre-wrap">{g.content}</p>
                   </CardContent>
                 </Card>
               ))}

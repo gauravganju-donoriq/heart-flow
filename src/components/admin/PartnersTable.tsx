@@ -84,11 +84,9 @@ const PartnersTable = ({ partners, loading, onEdit, onRefresh }: PartnersTablePr
 
   const handleSwitchChange = (partner: Partner) => {
     if (partner.is_active) {
-      // Show confirmation before deactivating
       setPartnerToDeactivate(partner);
       setConfirmDialogOpen(true);
     } else {
-      // Activate immediately without confirmation
       handleToggleActive(partner, true);
     }
   };
@@ -102,11 +100,11 @@ const PartnersTable = ({ partners, loading, onEdit, onRefresh }: PartnersTablePr
   };
 
   if (loading) {
-    return <div className="text-center py-8 text-muted-foreground">Loading...</div>;
+    return <div className="text-center py-8 text-muted-foreground text-[13px]">Loading...</div>;
   }
 
   if (partners.length === 0) {
-    return <div className="text-center py-8 text-muted-foreground">No partners yet</div>;
+    return <div className="text-center py-8 text-muted-foreground text-[13px]">No partners yet</div>;
   }
 
   return (
@@ -127,14 +125,14 @@ const PartnersTable = ({ partners, loading, onEdit, onRefresh }: PartnersTablePr
         </TableHeader>
         <TableBody>
           {partners.map((partner) => (
-            <TableRow key={partner.id} className={!partner.is_active ? 'opacity-60' : ''}>
-              <TableCell className="font-medium">
+            <TableRow key={partner.id} className={`hover:bg-muted/30 ${!partner.is_active ? 'opacity-60' : ''}`}>
+              <TableCell className="font-medium text-[13px] py-3.5">
                 {partner.organization_name}
                 {!partner.is_active && (
                   <Badge variant="secondary" className="ml-2">Inactive</Badge>
                 )}
               </TableCell>
-              <TableCell>
+              <TableCell className="py-3.5">
                 <div className="flex items-center gap-1">
                   <code className="text-xs text-muted-foreground truncate max-w-[140px]">/login/{partner.slug}</code>
                   <Tooltip>
@@ -147,24 +145,24 @@ const PartnersTable = ({ partners, loading, onEdit, onRefresh }: PartnersTablePr
                   </Tooltip>
                 </div>
               </TableCell>
-              <TableCell>{partner.profiles?.full_name || '—'}</TableCell>
-              <TableCell>{partner.profiles?.email || '—'}</TableCell>
-              <TableCell>{partner.contact_phone || '—'}</TableCell>
-              <TableCell>{partner._count?.donors || 0}</TableCell>
-              <TableCell>
+              <TableCell className="text-[13px] py-3.5">{partner.profiles?.full_name || '—'}</TableCell>
+              <TableCell className="text-[13px] py-3.5">{partner.profiles?.email || '—'}</TableCell>
+              <TableCell className="text-[13px] py-3.5">{partner.contact_phone || '—'}</TableCell>
+              <TableCell className="text-[13px] py-3.5">{partner._count?.donors || 0}</TableCell>
+              <TableCell className="py-3.5">
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={partner.is_active}
                     onCheckedChange={() => handleSwitchChange(partner)}
                     aria-label={`Toggle ${partner.organization_name} active status`}
                   />
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-[13px] text-muted-foreground">
                     {partner.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
               </TableCell>
-              <TableCell>{new Date(partner.created_at).toLocaleDateString()}</TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-[13px] py-3.5">{new Date(partner.created_at).toLocaleDateString()}</TableCell>
+              <TableCell className="text-right py-3.5">
                 <Button
                   variant="ghost"
                   size="sm"

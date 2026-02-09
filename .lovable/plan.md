@@ -1,53 +1,106 @@
 
 
-# Rebrand to Atlas + Document Upload UI Polish
+# Section-Wise Document Upload + Domain-Specific Checklist
 
 ## Overview
 
-Two changes: (1) rename the app from "DonorIQ" to "Atlas" across the entire UI, and (2) refine the document upload experience so the checklist is more prominent and the UI is consistent with the rest of the app's design language (compact text sizes, border styling, card patterns).
+Two improvements: (1) add a `category` field to document requirements so they can be grouped into logical sections like "Consent & Authorization", "Lab & Serology", "Recovery & Packaging", and (2) restructure the upload UI so partners see documents organized by section rather than a flat list -- making it intuitive to find what's missing and upload against the right category.
 
-## 1. Rebrand: DonorIQ to Atlas
+## What Changes
 
-Every instance of "DonorIQ" in the sidebar title will be changed to "Atlas". The HTML page title and meta tags will also be updated.
+### 1. Add `category` column to `document_requirements`
 
-### Files affected
+A new TEXT column `category` on the `document_requirements` table. Admins assign each requirement to a section when creating/editing it. Categories:
 
-- **`index.html`** -- update `<title>` and og/twitter meta tags from "testing" to "Atlas"
-- **`src/pages/admin/AdminDashboard.tsx`** -- `title="Atlas"`
-- **`src/pages/admin/AdminDonorReview.tsx`** -- `title="Atlas"` (2 instances: loading + main)
-- **`src/pages/admin/AdminDonorForm.tsx`** -- `title="Atlas"` (2 instances)
-- **`src/pages/admin/AdminDonorsList.tsx`** -- `title="Atlas"`
-- **`src/pages/admin/AdminNotifications.tsx`** -- `title="Atlas"`
-- **`src/pages/admin/PartnersList.tsx`** -- `title="Atlas"`
-- **`src/pages/admin/ScreeningSettings.tsx`** -- `title="Atlas"`
-- **`src/pages/admin/StyleGuide.tsx`** -- heading text update
-- **`src/pages/partner/PartnerDashboard.tsx`** -- `title="Atlas"`
-- **`src/pages/partner/DonorDetail.tsx`** -- `title="Atlas"` (2 instances)
-- **`src/pages/partner/DonorForm.tsx`** -- `title="Atlas"` (2 instances)
-- **`src/pages/partner/DonorsList.tsx`** -- `title="Atlas"`
-- **`src/pages/partner/Notifications.tsx`** -- `title="Atlas"`
+- **Consent & Authorization** -- Consent Form, Next of Kin Authorization
+- **Medical & Clinical** -- Medical Examiner Report, DRAI Questionnaire, Clinical Summary
+- **Lab & Serology** -- Serology / Infectious Disease Results, Blood Typing Report
+- **Recovery & Packaging** -- Tissue Recovery Report, Packaging Checklist, Hemodilution Worksheet
+- **Other** -- catch-all for anything not in the above
 
-Total: ~17 string replacements of `"DonorIQ"` to `"Atlas"` across 14 files.
+### 2. Update Admin Settings UI
 
-## 2. Document Upload UI Refinements
+In `DocumentChecklistSettings.tsx`:
+- Add a category dropdown (select from the five categories above) when creating/editing a requirement
+- Display requirements grouped by category with section headers
+- Update starter templates to include category assignments
 
-The current `DocumentUpload.tsx` component already has the checklist and upload flow. The refinements will bring it in line with the app's design system:
+### 3. Restructure Partner/Admin Document Upload UI
 
-- Use consistent `text-[13px]` sizing on file names and metadata (currently `text-sm` / `text-xs` -- slightly inconsistent)
-- Match the card header pattern used elsewhere (plain `<p className="text-sm font-medium">` instead of `<CardTitle>` which renders larger)
-- Tighten padding on file rows to match the compact style used in tables throughout the app
-- Ensure the checklist section uses the same `<p className="text-sm font-medium">` header pattern as other cards
+In `DocumentUpload.tsx`, instead of a flat checklist followed by a flat file list:
 
-### Files affected
+**New layout per category section:**
 
-- **`src/components/DocumentUpload.tsx`** -- UI consistency tweaks:
-  - Replace `<CardTitle>` with `<p className="text-sm font-medium">` in both card headers (checklist card and documents card)
-  - Standardize file name to `text-[13px]` and metadata to `text-[12px]`
-  - Use `py-2.5` padding on file rows instead of `p-3` for tighter spacing
+```
+[Consent & Authorization]              2 of 2 uploaded
+  [x] Consent Form                     view-file.pdf
+  [x] Next of Kin Authorization        nok-auth.pdf
 
-These are purely visual/cosmetic changes -- no logic changes needed.
+[Lab & Serology]                       0 of 1 uploaded  (!)
+  [ ] Serology Results                 [Upload]
+
+[Recovery & Packaging]                 1 of 2 uploaded  (!)
+  [x] Hemodilution Worksheet           hemo.pdf
+  [ ] Tissue Recovery Report           [Upload]
+
+[Other Documents]
+  invoice-scan.pdf  |  misc-notes.pdf
+```
+
+Each section:
+- Shows its own progress (e.g., "1 of 2 uploaded")
+- Lists requirements with status indicators (check / warning)
+- Shows the uploaded file inline next to the fulfilled requirement (with download button)
+- Has an upload button next to unfulfilled requirements
+- Uncategorized documents appear in an "Other Documents" section at the bottom
+
+### 4. Improved Starter Templates
+
+Update the starter templates to cover the actual tissue banking workflow:
+
+| Document | Category | Required |
+|----------|----------|----------|
+| Consent Form | Consent & Authorization | Yes |
+| Next of Kin Authorization | Consent & Authorization | Yes |
+| Medical Examiner / Coroner Report | Medical & Clinical | Yes |
+| Donor Risk Assessment Interview (DRAI) | Medical & Clinical | Yes |
+| Serology / Infectious Disease Results | Lab & Serology | Yes |
+| Blood Typing Report | Lab & Serology | No |
+| Tissue Recovery Report | Recovery & Packaging | Yes |
+| Hemodilution Worksheet | Recovery & Packaging | No |
+| Packaging & Shipping Checklist | Recovery & Packaging | No |
 
 ## Technical Details
 
-All changes are simple string replacements. No database changes, no new components, no new dependencies.
+### Database Migration
+
+```sql
+ALTER TABLE document_requirements
+ADD COLUMN category TEXT NOT NULL DEFAULT 'other';
+```
+
+No new RLS policies needed -- existing policies cover this column.
+
+### Files Modified
+
+**`supabase/migrations/` (new migration)**
+- Add `category` column to `document_requirements`
+
+**`src/components/admin/DocumentChecklistSettings.tsx`**
+- Add category select dropdown to the create/edit dialog (options: Consent & Authorization, Medical & Clinical, Lab & Serology, Recovery & Packaging, Other)
+- Group the requirements list by category with section headers
+- Update starter templates array to include category values
+
+**`src/components/DocumentUpload.tsx`**
+- Group requirements by category
+- Render each category as a collapsible section with its own progress indicator
+- Show uploaded files inline next to their matched requirement
+- Show uncategorized uploads in an "Other Documents" section
+- Each unfulfilled requirement has a direct upload button
+- Overall compliance summary remains at the top
+
+**`src/integrations/supabase/types.ts`**
+- Will auto-update after migration to include `category` on `document_requirements`
+
+No changes needed to `AdminDonorReview.tsx` or `DonorDetail.tsx` -- they already render `<DocumentUpload>` which will pick up the new grouped layout automatically.
 

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LayoutDashboard, Users, FileText, Bell, Eye } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Bell, Eye, Plus } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type DonorStatus = Database['public']['Enums']['donor_status'];
@@ -97,9 +97,17 @@ const AdminDonorsList = () => {
     <DashboardLayout navItems={navItems} title="Admin Panel">
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold">All Donors</h1>
-          <p className="text-muted-foreground">Review and manage donor submissions</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">All Donors</h1>
+            <p className="text-muted-foreground">Review and manage donor submissions</p>
+          </div>
+          <Link to="/admin/donors/new">
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Donor
+            </Button>
+          </Link>
         </div>
 
         {/* Filters */}

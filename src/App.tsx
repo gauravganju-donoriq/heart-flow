@@ -22,6 +22,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import PartnersList from "./pages/admin/PartnersList";
 import AdminDonorsList from "./pages/admin/AdminDonorsList";
 import AdminDonorReview from "./pages/admin/AdminDonorReview";
+import AdminDonorForm from "./pages/admin/AdminDonorForm";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 
 import NotFound from "./pages/NotFound";
@@ -117,10 +118,26 @@ const App = () => (
               }
             />
             <Route
+              path="/admin/donors/new"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminDonorForm />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/admin/donors/:id"
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminDonorReview />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/donors/:id/edit"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminDonorForm />
                 </ProtectedRoute>
               }
             />

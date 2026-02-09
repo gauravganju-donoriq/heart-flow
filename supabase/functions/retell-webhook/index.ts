@@ -170,7 +170,31 @@ Deno.serve(async (req) => {
     if (!RETELL_API_KEY) throw new Error("RETELL_API_KEY is not configured");
 
     const signature = req.headers.get("x-retell-signature");
-    if (!signature || signature !== RETELL_API_KEY) {
+    const bodyText = await req.text();
+
+    if (!signature) {
+      console.error("Missing retell signature header");
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Verify HMAC SHA256 signature
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(RETELL_API_KEY),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["verify"]
+    );
+
+    // Retell signature is hex-encoded HMAC
+    const sigBytes = new Uint8Array(signature.match(/.{1,2}/g)!.map(b => parseInt(b, 16)));
+    const isValid = await crypto.subtle.verify("HMAC", key, sigBytes, encoder.encode(bodyText));
+
+    if (!isValid) {
       console.error("Invalid retell signature");
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -178,7 +202,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const payload = await req.json();
+    const payload = JSON.parse(bodyText);
     const { event, call } = payload;
 
     if (event !== "call_ended") {

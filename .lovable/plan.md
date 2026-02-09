@@ -1,67 +1,98 @@
 
 
-# Smart Pre-Fill Across All Forms
+# Document Checklist Module
 
 ## Overview
 
-Maximize auto-population of the Plasma Dilution (7059F) and Recovery (7033F) forms using data already captured during the donor intake (the 25 screening questions). This reduces admin workload by eliminating redundant data entry.
+Add an admin-configurable document checklist that defines which documents are required for each donor referral. When partners view a donor, they see which documents are still missing. Admins also see a compliance summary so missing documents are immediately flagged.
 
-## What Gets Pre-Filled
+## How It Works
 
-### Plasma Dilution (7059F) -- Current vs. Proposed
+### Admin Side: Settings
 
-| Field | Currently | Proposed |
-|-------|-----------|----------|
-| DIN | Pre-filled | No change |
-| Recovery Agency Donor # | Pre-filled | No change |
-| Donor Weight (kg) | Pre-filled | No change |
-| Sex at Birth | Pre-filled | No change |
-| **Sample Date/Time** | Manual entry | **Auto-fill from death_date + time_of_death, default to Post Mortem** |
-| **Death Type** | Manual entry | **Auto-fill from donor's death_type (Q8): map "Cardiac" to "asystole", "Neurological" to "cct"** |
+A new "Document Checklist" section inside the existing **Screening Settings** page (as a second tab alongside the existing screening guidelines). Admins can:
 
-### Recovery (7033F) -- Current vs. Proposed
+- Add required document types (e.g., "Consent Form", "Medical Examiner Report", "Serology Results", "Next of Kin Authorization")
+- Mark each as required or optional
+- Reorder them by priority
+- Toggle active/inactive
+- Add a description so partners know what to upload
 
-| Field | Currently | Proposed |
-|-------|-----------|----------|
-| DIN | Pre-filled | No change |
-| Recovery Agency | Pre-filled | No change |
-| Donor Age, Gender, Death Date/Time/Type/Timezone | Pre-filled (read-only header) | No change |
-| **LeMaitre Donor #** | Editable, blank by default | **Already pre-fills from DIN -- no change needed** |
-| **Tissue rows** | Manual entry | **Auto-create rows based on Q17-Q21 answers** |
+### Partner Side: Documents Tab
 
-### Tissue Recovery Auto-Rows (New)
+When a partner views a donor's Documents tab, they see:
 
-When opening the Recovery (7033F) form for the first time (no existing record), pre-populate tissue rows based on the donor's intake answers:
+- A checklist showing all required document types with checkboxes
+- Green check for documents that have been uploaded (matched by document type tag)
+- Red/amber indicator for missing required documents
+- Upload button next to each checklist item so they can upload directly against that requirement
 
-- If **HV Heart Valves (Q17)** is true: add a cardiac row for "Heart for Valves"
-- If **AI Aorto Iliac (Q19)** is true: add a cardiac row for "Aortoiliac Artery"
-- If **FM Femoral (Q20)** is true: add vascular rows for "RIGHT Femoral Vessels" and "LEFT Femoral Vessels"
-- If **SV Saphenous Vein (Q21)** is true: add vascular rows for "RIGHT Saphenous Vein" and "LEFT Saphenous Vein"
+### Admin Side: Donor Review Documents Tab
 
-The admin can still add/remove/edit rows -- these are just pre-populated defaults.
+When an admin reviews a donor, the Documents tab shows:
 
-## Bug Fix
+- Same checklist view with completion status
+- A summary badge: "3 of 5 required documents uploaded" (or similar)
+- Missing documents highlighted in red
 
-The last edit introduced a **duplicate "Logistics" tab** in the partner DonorDetail page (lines 128-129). This will be fixed by removing the duplicate.
+### Upload Flow Change
+
+When uploading, the user picks which checklist item the document satisfies (via a dropdown/select). Documents can also be uploaded as "Other" for items not on the checklist.
 
 ## Technical Details
 
+### New Database Table
+
+**`document_requirements`** -- the admin-configured checklist template
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | Primary key |
+| name | TEXT | e.g., "Consent Form" |
+| description | TEXT | Optional guidance for partners |
+| is_required | BOOLEAN | Default true |
+| is_active | BOOLEAN | Default true |
+| sort_order | INTEGER | Default 0 |
+| created_by | UUID | Admin who created it |
+| created_at | TIMESTAMPTZ | Default now() |
+| updated_at | TIMESTAMPTZ | Default now() |
+
+**RLS Policies:**
+- Admins: full CRUD
+- Partners + anon: SELECT only (they need to read the checklist to know what to upload)
+
+### Schema Change to `documents` Table
+
+Add a new nullable column:
+
+- `document_requirement_id UUID` -- links an uploaded file to a specific checklist item (nullable for legacy/uncategorized uploads)
+
 ### Files Modified
 
-**`src/components/PlasmaDilutionForm.tsx`**
-- On initial load (no saved worksheet), auto-set `sample_type` to `'post_mortem'`
-- Auto-set `sample_datetime` from `donorInfo.death_date` + `donorInfo.time_of_death` (combine into datetime-local value)
-- Auto-set `death_type` by mapping donor's `death_type`: "Cardiac" maps to "asystole", "Neurological" maps to "cct", otherwise leave blank
-- These pre-fills only apply when creating a new worksheet (not when loading an existing saved one)
+**`src/pages/admin/ScreeningSettings.tsx`**
+- Add a second tab: "Screening Guidelines" (existing) and "Document Checklist" (new)
+- Document Checklist tab has the same CRUD pattern as guidelines: add/edit/delete/toggle/reorder
 
-**`src/components/TissueRecoveryForm.tsx`**
-- Add `donorInfo` fields for tissue flags: `hv_heart_valves`, `ai_aorto_iliac`, `fm_femoral`, `sv_saphenous_vein`
-- On initial load when no recovery record exists, auto-populate `tissues` array based on these flags
-- Pre-populated rows will have empty timestamp and technician fields (to be filled by admin)
+**`src/components/DocumentUpload.tsx`**
+- Fetch `document_requirements` on load
+- Show a checklist view above the file list: each requirement with its status (uploaded or missing)
+- When uploading, prompt user to select which requirement the document satisfies
+- Highlight missing required documents with a warning indicator
 
 **`src/pages/admin/AdminDonorReview.tsx`**
-- Pass additional donor fields (`hv_heart_valves`, `ai_aorto_iliac`, `fm_femoral`, `sv_saphenous_vein`) to `TissueRecoveryForm` via `donorInfo`
+- Pass a `showChecklist` prop to DocumentUpload so it renders the compliance summary
+- Optionally show a badge on the Documents tab trigger indicating missing count
 
 **`src/pages/partner/DonorDetail.tsx`**
-- Remove duplicate "Logistics" tab trigger (line 128 or 129)
+- Same checklist integration via DocumentUpload component
+
+### Starter Templates
+
+Pre-load common LeMaitre document requirements when the list is empty:
+- Consent Form
+- Medical Examiner / Coroner Report
+- Serology / Infectious Disease Test Results
+- Next of Kin Authorization
+- Donor Medical / Social History Questionnaire (DRAI)
+- Hemodilution Worksheet
 

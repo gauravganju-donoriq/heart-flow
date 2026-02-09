@@ -151,9 +151,30 @@ const AdminDonorForm = () => {
 
   const handleChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear validation error for this field when user changes it
+    if (validationErrors[field]) {
+      setValidationErrors((prev) => { const next = { ...prev }; delete next[field]; return next; });
+    }
+  };
+
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  const validateForSubmission = (): boolean => {
+    const errors: Record<string, string> = {};
+    if (!formData.donor_age) errors.donor_age = 'Age is required';
+    if (!formData.gender) errors.gender = 'Sex at birth is required';
+    if (!formData.death_date) errors.death_date = 'Date of death is required';
+    if (!formData.cause_of_death.trim()) errors.cause_of_death = 'Cause of death is required';
+    setValidationErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      toast({ variant: 'destructive', title: 'Validation Error', description: 'Please fill in all required fields before submitting.' });
+      return false;
+    }
+    return true;
   };
 
   const handleSave = async (submit = false) => {
+    if (submit && !validateForSubmission()) return;
     const partnerId = selectedPartnerId && selectedPartnerId !== 'none' ? selectedPartnerId : null;
     setSaving(true);
 
@@ -328,18 +349,20 @@ const AdminDonorForm = () => {
                 </div>
                 <div className="grid gap-4 md:grid-cols-4">
                   <div className="space-y-2">
-                    <Label htmlFor="donor_age">Age (Q4)</Label>
-                    <Input id="donor_age" type="number" value={formData.donor_age} onChange={(e) => handleChange('donor_age', e.target.value)} />
+                    <Label htmlFor="donor_age" className={validationErrors.donor_age ? 'text-destructive' : ''}>Age (Q4) *</Label>
+                    <Input id="donor_age" type="number" value={formData.donor_age} onChange={(e) => handleChange('donor_age', e.target.value)} className={validationErrors.donor_age ? 'border-destructive' : ''} />
+                    {validationErrors.donor_age && <p className="text-sm text-destructive">{validationErrors.donor_age}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="gender">Sex at Birth (Q5)</Label>
+                    <Label htmlFor="gender" className={validationErrors.gender ? 'text-destructive' : ''}>Sex at Birth (Q5) *</Label>
                     <Select value={formData.gender} onValueChange={(v) => handleChange('gender', v)}>
-                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className={validationErrors.gender ? 'border-destructive' : ''}><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="male">Male</SelectItem>
                         <SelectItem value="female">Female</SelectItem>
                       </SelectContent>
                     </Select>
+                    {validationErrors.gender && <p className="text-sm text-destructive">{validationErrors.gender}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="height_inches">Height — Inches (Q12)</Label>
@@ -385,8 +408,9 @@ const AdminDonorForm = () => {
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
-                    <Label htmlFor="death_date">Date of Death (Q6)</Label>
-                    <Input id="death_date" type="date" value={formData.death_date} onChange={(e) => handleChange('death_date', e.target.value)} />
+                    <Label htmlFor="death_date" className={validationErrors.death_date ? 'text-destructive' : ''}>Date of Death (Q6) *</Label>
+                    <Input id="death_date" type="date" value={formData.death_date} onChange={(e) => handleChange('death_date', e.target.value)} className={validationErrors.death_date ? 'border-destructive' : ''} />
+                    {validationErrors.death_date && <p className="text-sm text-destructive">{validationErrors.death_date}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="time_of_death">Time of Death (Q7)</Label>
@@ -421,8 +445,9 @@ const AdminDonorForm = () => {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="cause_of_death">Cause of Death (Q10)</Label>
-                    <Input id="cause_of_death" value={formData.cause_of_death} onChange={(e) => handleChange('cause_of_death', e.target.value)} />
+                    <Label htmlFor="cause_of_death" className={validationErrors.cause_of_death ? 'text-destructive' : ''}>Cause of Death (Q10) *</Label>
+                    <Input id="cause_of_death" value={formData.cause_of_death} onChange={(e) => handleChange('cause_of_death', e.target.value)} className={validationErrors.cause_of_death ? 'border-destructive' : ''} />
+                    {validationErrors.cause_of_death && <p className="text-sm text-destructive">{validationErrors.cause_of_death}</p>}
                   </div>
                 </div>
               </CardContent>

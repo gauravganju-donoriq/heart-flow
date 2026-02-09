@@ -24,6 +24,7 @@ import AdminDonorsList from "./pages/admin/AdminDonorsList";
 import AdminDonorReview from "./pages/admin/AdminDonorReview";
 import AdminDonorForm from "./pages/admin/AdminDonorForm";
 import AdminNotifications from "./pages/admin/AdminNotifications";
+import ScreeningSettings from "./pages/admin/ScreeningSettings";
 
 import NotFound from "./pages/NotFound";
 
@@ -138,6 +139,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminDonorForm />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/screening-settings"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <ScreeningSettings />
                 </ProtectedRoute>
               }
             />

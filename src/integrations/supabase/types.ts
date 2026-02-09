@@ -445,6 +445,89 @@ export type Database = {
           },
         ]
       }
+      screening_guidelines: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      screening_results: {
+        Row: {
+          concerns: Json
+          confidence: number
+          created_at: string
+          donor_id: string
+          guidelines_snapshot: Json
+          id: string
+          missing_data: Json
+          model_used: string
+          reasoning: string
+          verdict: string
+        }
+        Insert: {
+          concerns?: Json
+          confidence?: number
+          created_at?: string
+          donor_id: string
+          guidelines_snapshot?: Json
+          id?: string
+          missing_data?: Json
+          model_used?: string
+          reasoning?: string
+          verdict: string
+        }
+        Update: {
+          concerns?: Json
+          confidence?: number
+          created_at?: string
+          donor_id?: string
+          guidelines_snapshot?: Json
+          id?: string
+          missing_data?: Json
+          model_used?: string
+          reasoning?: string
+          verdict?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "screening_results_donor_id_fkey"
+            columns: ["donor_id"]
+            isOneToOne: false
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shipments: {
         Row: {
           created_at: string

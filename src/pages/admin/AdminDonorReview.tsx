@@ -14,7 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { LayoutDashboard, Users, FileText, Bell, ArrowLeft, Check, X, Clock, Phone } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Bell, ArrowLeft, Check, X, Clock, Phone, Shield } from 'lucide-react';
+import AIScreeningPanel from '@/components/admin/AIScreeningPanel';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -44,6 +45,7 @@ const navItems = [
   { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
   { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
+  { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
   { label: 'Notifications', href: '/admin/notifications', icon: <Bell className="h-4 w-4" /> },
 ];
 
@@ -151,6 +153,9 @@ const AdminDonorReview = () => {
             </div>
           </div>
         </div>
+
+        {/* AI Screening Panel */}
+        <AIScreeningPanel donorId={donor.id} />
 
         {/* Review Actions */}
         {canReview && (

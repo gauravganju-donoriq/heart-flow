@@ -304,6 +304,10 @@ const AdminDonorReview = () => {
                   external_donor_id: d.external_donor_id,
                   partner_name: donor.partners?.organization_name || null,
                   din: d.din,
+                  hv_heart_valves: d.hv_heart_valves,
+                  ai_aorto_iliac: d.ai_aorto_iliac,
+                  fm_femoral: d.fm_femoral,
+                  sv_saphenous_vein: d.sv_saphenous_vein,
                 }}
               />
             </TabsContent>

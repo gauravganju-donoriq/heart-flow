@@ -98,6 +98,24 @@ const PlasmaDilutionForm = ({ donorId, donorInfo }: Props) => {
         reviewed_at: d.reviewed_at ? new Date(d.reviewed_at).toISOString().slice(0, 10) : '',
       });
       setExists(true);
+    } else {
+      // Pre-fill defaults for new worksheet from donor info
+      const deathTypeMap: Record<string, string> = { 'Cardiac': 'asystole', 'Neurological': 'cct' };
+      let sampleDatetime = '';
+      if (donorInfo?.death_date) {
+        const deathDate = new Date(donorInfo.death_date);
+        if (donorInfo.time_of_death) {
+          const [h, m] = donorInfo.time_of_death.split(':');
+          if (h && m) { deathDate.setHours(parseInt(h, 10), parseInt(m, 10)); }
+        }
+        sampleDatetime = deathDate.toISOString().slice(0, 16);
+      }
+      setWs(prev => ({
+        ...prev,
+        sample_type: 'post_mortem',
+        sample_datetime: sampleDatetime,
+        death_type: (donorInfo?.death_type && deathTypeMap[donorInfo.death_type]) || '',
+      }));
     }
     setLoading(false);
   };

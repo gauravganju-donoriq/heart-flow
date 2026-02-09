@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import DocumentUpload from '@/components/DocumentUpload';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -318,6 +319,11 @@ const AdminDonorForm = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Documents - only shown when editing an existing donor */}
+        {isEdit && id && (
+          <DocumentUpload donorId={id} canUpload={true} />
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-4">

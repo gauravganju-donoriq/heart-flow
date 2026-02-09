@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LayoutDashboard, Users, FileText, Bell, Eye, Plus } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Bell, Eye, Plus, Phone } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type DonorStatus = Database['public']['Enums']['donor_status'];
@@ -21,6 +21,7 @@ interface DonorWithPartner {
   status: DonorStatus;
   submitted_at: string | null;
   created_at: string;
+  intake_method: string | null;
   partners: {
     organization_name: string;
   } | null;
@@ -72,6 +73,7 @@ const AdminDonorsList = () => {
         status,
         submitted_at,
         created_at,
+        intake_method,
         partners (
           organization_name
         )
@@ -161,7 +163,16 @@ const AdminDonorsList = () => {
                 <TableBody>
                   {donors.map((donor) => (
                     <TableRow key={donor.id}>
-                      <TableCell className="font-mono">{donor.donor_code}</TableCell>
+                      <TableCell className="font-mono">
+                        <span className="flex items-center gap-1.5">
+                          {donor.donor_code}
+                          {donor.intake_method === 'phone' && (
+                            <span title="Phone intake">
+                              <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                            </span>
+                          )}
+                        </span>
+                      </TableCell>
                       <TableCell>
                         {donor.first_name && donor.last_name
                           ? `${donor.first_name} ${donor.last_name}`

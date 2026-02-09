@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import RetellSetup from '@/components/admin/RetellSetup';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -224,6 +225,8 @@ const AdminDashboard = () => {
             )}
           </CardContent>
         </Card>
+        {/* Retell AI Phone Intake */}
+        <RetellSetup />
       </div>
     </DashboardLayout>
   );

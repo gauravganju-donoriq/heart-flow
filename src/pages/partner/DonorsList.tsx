@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LayoutDashboard, FileText, Bell, Plus, Eye, Edit } from 'lucide-react';
+import { LayoutDashboard, FileText, Bell, Plus, Eye, Edit, Phone } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -141,7 +141,16 @@ const DonorsList = () => {
                 <TableBody>
                   {donors.map((donor) => (
                     <TableRow key={donor.id}>
-                      <TableCell className="font-mono">{donor.donor_code}</TableCell>
+                      <TableCell className="font-mono">
+                        <span className="flex items-center gap-1.5">
+                          {donor.donor_code}
+                          {donor.intake_method === 'phone' && (
+                            <span title="Phone intake">
+                              <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                            </span>
+                          )}
+                        </span>
+                      </TableCell>
                       <TableCell>
                         {donor.first_name && donor.last_name
                           ? `${donor.first_name} ${donor.last_name}`

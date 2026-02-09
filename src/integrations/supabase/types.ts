@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      call_transcripts: {
+        Row: {
+          call_duration_seconds: number | null
+          caller_phone: string | null
+          created_at: string
+          donor_id: string | null
+          extracted_data: Json | null
+          id: string
+          partner_id: string
+          retell_call_id: string
+          transcript: string
+        }
+        Insert: {
+          call_duration_seconds?: number | null
+          caller_phone?: string | null
+          created_at?: string
+          donor_id?: string | null
+          extracted_data?: Json | null
+          id?: string
+          partner_id: string
+          retell_call_id: string
+          transcript: string
+        }
+        Update: {
+          call_duration_seconds?: number | null
+          caller_phone?: string | null
+          created_at?: string
+          donor_id?: string | null
+          extracted_data?: Json | null
+          id?: string
+          partner_id?: string
+          retell_call_id?: string
+          transcript?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_transcripts_donor_id_fkey"
+            columns: ["donor_id"]
+            isOneToOne: false
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_transcripts_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           created_at: string
@@ -67,6 +118,7 @@ export type Database = {
           first_name: string | null
           gender: string | null
           id: string
+          intake_method: string | null
           last_name: string | null
           medical_history_reviewed: boolean | null
           partner_id: string | null
@@ -90,6 +142,7 @@ export type Database = {
           first_name?: string | null
           gender?: string | null
           id?: string
+          intake_method?: string | null
           last_name?: string | null
           medical_history_reviewed?: boolean | null
           partner_id?: string | null
@@ -113,6 +166,7 @@ export type Database = {
           first_name?: string | null
           gender?: string | null
           id?: string
+          intake_method?: string | null
           last_name?: string | null
           medical_history_reviewed?: boolean | null
           partner_id?: string | null

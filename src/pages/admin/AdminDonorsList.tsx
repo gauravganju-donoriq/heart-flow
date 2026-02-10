@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import TableSkeleton from '@/components/TableSkeleton';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Phone } from 'lucide-react';
-import { adminNavItems } from '@/lib/navItems';
+import { getAdminNavItems } from '@/lib/navItems';
 import type { Database } from '@/integrations/supabase/types';
 
 type DonorStatus = Database['public']['Enums']['donor_status'];
@@ -49,6 +50,7 @@ const statusLabels: Record<DonorStatus, string> = {
 
 
 const AdminDonorsList = () => {
+  const { role } = useAuth();
   const [donors, setDonors] = useState<DonorWithPartner[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -100,7 +102,7 @@ const AdminDonorsList = () => {
   };
 
   return (
-    <DashboardLayout navItems={adminNavItems} title="Atlas">
+    <DashboardLayout navItems={getAdminNavItems(role)} title="Atlas">
       <div className="space-y-5 max-w-6xl">
         {/* Toolbar */}
         <div className="flex items-center justify-between">

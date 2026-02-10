@@ -6,8 +6,15 @@ type AppRole = Database['public']['Enums']['app_role'];
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: AppRole;
+  /** 
+   * 'admin' = admin only
+   * 'partner' = partner only
+   * 'internal' = admin OR user (internal staff)
+   */
+  requiredRole?: AppRole | 'internal';
 }
+
+const INTERNAL_ROLES: AppRole[] = ['admin', 'user'];
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { user, role, loading } = useAuth();
@@ -25,7 +32,6 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   }
 
   if (!role) {
-    // User is logged in but has no role assigned
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
@@ -38,9 +44,20 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     );
   }
 
-  if (requiredRole && role !== requiredRole) {
-    // Redirect to appropriate dashboard based on role
-    return <Navigate to={role === 'admin' ? '/admin' : '/partner'} replace />;
+  if (requiredRole) {
+    if (requiredRole === 'internal') {
+      // Allow admin or user roles
+      if (!INTERNAL_ROLES.includes(role)) {
+        return <Navigate to="/partner" replace />;
+      }
+    } else if (role !== requiredRole) {
+      // For admin-only routes, user role should go to /admin (limited nav)
+      if (requiredRole === 'admin' && role === 'user') {
+        return <Navigate to="/admin" replace />;
+      }
+      // Redirect to appropriate dashboard
+      return <Navigate to={INTERNAL_ROLES.includes(role) ? '/admin' : '/partner'} replace />;
+    }
   }
 
   return <>{children}</>;

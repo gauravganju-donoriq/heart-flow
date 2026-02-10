@@ -16,7 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Save, Send, FileText } from 'lucide-react';
-import { adminNavItems } from '@/lib/navItems';
+import { getAdminNavItems } from '@/lib/navItems';
 
 interface Partner {
   id: string;
@@ -26,7 +26,7 @@ interface Partner {
 const AdminDonorForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -270,7 +270,7 @@ const AdminDonorForm = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={adminNavItems} title="Atlas">
+      <DashboardLayout navItems={getAdminNavItems(role)} title="Atlas">
         <div className="flex items-center justify-center py-12">
           <div className="text-muted-foreground">Loading...</div>
         </div>
@@ -279,7 +279,7 @@ const AdminDonorForm = () => {
   }
 
   return (
-    <DashboardLayout navItems={adminNavItems} title="Atlas">
+    <DashboardLayout navItems={getAdminNavItems(role)} title="Atlas">
       <div className="space-y-5 max-w-3xl">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/admin/donors')}>

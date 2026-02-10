@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import TableSkeleton from '@/components/TableSkeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { adminNavItems } from '@/lib/navItems';
+import { getAdminNavItems } from '@/lib/navItems';
 import type { Database } from '@/integrations/supabase/types';
 
 type DonorStatus = Database['public']['Enums']['donor_status'];
@@ -45,6 +46,7 @@ const statusLabels: Record<DonorStatus, string> = {
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { role, isAdmin } = useAuth();
   const [pendingDonors, setPendingDonors] = useState<DonorWithPartner[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -120,16 +122,18 @@ const AdminDashboard = () => {
   };
 
   return (
-    <DashboardLayout navItems={adminNavItems} title="Atlas">
+    <DashboardLayout navItems={getAdminNavItems(role)} title="Atlas">
       <div className="space-y-5">
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <p className="text-[13px] text-muted-foreground">Active Partners</p>
-              <p className="text-2xl font-semibold">{stats.totalPartners}</p>
-            </CardHeader>
-          </Card>
+          {isAdmin && (
+            <Card>
+              <CardHeader className="pb-2">
+                <p className="text-[13px] text-muted-foreground">Active Partners</p>
+                <p className="text-2xl font-semibold">{stats.totalPartners}</p>
+              </CardHeader>
+            </Card>
+          )}
           <Card>
             <CardHeader className="pb-2">
               <p className="text-[13px] text-muted-foreground">Pending Review</p>

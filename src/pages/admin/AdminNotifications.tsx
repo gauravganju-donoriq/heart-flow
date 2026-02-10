@@ -5,13 +5,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Check, Eye } from 'lucide-react';
-import { adminNavItems } from '@/lib/navItems';
+import { getAdminNavItems } from '@/lib/navItems';
 import type { Database } from '@/integrations/supabase/types';
 
 type Notification = Database['public']['Tables']['notifications']['Row'];
 
 const AdminNotifications = () => {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,7 +41,7 @@ const AdminNotifications = () => {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <DashboardLayout navItems={adminNavItems} title="Atlas">
+    <DashboardLayout navItems={getAdminNavItems(role)} title="Atlas">
       <div className="space-y-5 max-w-4xl">
         {/* Toolbar */}
         <div className="flex items-center justify-between">

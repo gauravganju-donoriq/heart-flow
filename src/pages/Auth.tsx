@@ -24,7 +24,7 @@ const Auth = () => {
 
   // Redirect if already logged in
   if (!loading && user && role) {
-    return <Navigate to={role === 'admin' ? '/admin' : '/partner'} replace />;
+    return <Navigate to={role === 'admin' || role === 'user' ? '/admin' : '/partner'} replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

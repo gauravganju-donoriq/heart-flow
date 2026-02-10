@@ -26,6 +26,7 @@ import AdminDonorForm from "./pages/admin/AdminDonorForm";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import ScreeningSettings from "./pages/admin/ScreeningSettings";
 import AdminSettings from "./pages/admin/AdminSettings";
+import TeamManagement from "./pages/admin/TeamManagement";
 import StyleGuide from "./pages/admin/StyleGuide";
 
 import NotFound from "./pages/NotFound";
@@ -96,12 +97,62 @@ const App = () => (
               }
             />
 
-            {/* Admin routes */}
+            {/* Admin routes - internal (admin + user) */}
             <Route
               path="/admin"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="internal">
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/donors"
+              element={
+                <ProtectedRoute requiredRole="internal">
+                  <AdminDonorsList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/donors/new"
+              element={
+                <ProtectedRoute requiredRole="internal">
+                  <AdminDonorForm />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/donors/:id"
+              element={
+                <ProtectedRoute requiredRole="internal">
+                  <AdminDonorReview />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/donors/:id/edit"
+              element={
+                <ProtectedRoute requiredRole="internal">
+                  <AdminDonorForm />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/audit-log"
+              element={
+                <ProtectedRoute requiredRole="internal">
+                  <AdminNotifications />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Admin-only routes */}
+            <Route
+              path="/admin/team"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <TeamManagement />
                 </ProtectedRoute>
               }
             />
@@ -114,50 +165,10 @@ const App = () => (
               }
             />
             <Route
-              path="/admin/donors"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDonorsList />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/donors/new"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDonorForm />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/donors/:id"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDonorReview />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/donors/:id/edit"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDonorForm />
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/admin/screening-settings"
               element={
                 <ProtectedRoute requiredRole="admin">
                   <ScreeningSettings />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/audit-log"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminNotifications />
                 </ProtectedRoute>
               }
             />

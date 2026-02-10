@@ -22,7 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { LayoutDashboard, Users, FileText, ScrollText, ArrowLeft, Check, X, Clock, Phone, Shield, Settings } from 'lucide-react';
 import AIScreeningPanel from '@/components/admin/AIScreeningPanel';
 import DonorDetailSkeleton from '@/components/DonorDetailSkeleton';
-import { adminNavItems } from '@/lib/navItems';
+import { getAdminNavItems } from '@/lib/navItems';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -76,7 +76,7 @@ const buildAdminTabs = (donor: DonorWithPartner, canReview: boolean): TabItem[] 
 const AdminDonorReview = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, role, isAdmin } = useAuth();
   const { toast } = useToast();
   const [donor, setDonor] = useState<DonorWithPartner | null>(null);
   const [loading, setLoading] = useState(true);
@@ -135,7 +135,7 @@ const AdminDonorReview = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={adminNavItems} title="Atlas">
+      <DashboardLayout navItems={getAdminNavItems(role)} title="Atlas">
         <DonorDetailSkeleton />
       </DashboardLayout>
     );
@@ -144,11 +144,11 @@ const AdminDonorReview = () => {
   if (!donor) return null;
 
   const d = donor as any;
-  const canReview = donor.status === 'submitted' || donor.status === 'under_review';
+  const canReview = isAdmin && (donor.status === 'submitted' || donor.status === 'under_review');
 
   return (
     <DashboardLayout
-      navItems={adminNavItems}
+      navItems={getAdminNavItems(role)}
       title="Atlas"
       scrollHeaderContent={
         <div className="flex items-center gap-3 min-w-0">

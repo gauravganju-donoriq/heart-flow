@@ -81,9 +81,9 @@ const Auth = () => {
       <div className="relative z-10 w-full max-w-sm animate-fade-in">
         {/* Logo & heading */}
         <div className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-2.5 mb-3">
-            <img src={lemaitreIcon} alt="LeMaitre" className="h-4 w-auto" />
-            <span className="text-lg font-bold uppercase tracking-[0.25em] text-foreground leading-none">Atlas</span>
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <img src={lemaitreIcon} alt="LeMaitre" className="h-7 w-auto" />
+            <span className="text-2xl font-bold uppercase tracking-[0.25em] text-foreground leading-none">Atlas</span>
           </div>
         </div>
 

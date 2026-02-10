@@ -28,6 +28,7 @@ import ScreeningSettings from "./pages/admin/ScreeningSettings";
 import AdminSettings from "./pages/admin/AdminSettings";
 import TeamManagement from "./pages/admin/TeamManagement";
 import StyleGuide from "./pages/admin/StyleGuide";
+import AuditLogPage from "./pages/admin/AuditLogPage";
 
 import NotFound from "./pages/NotFound";
 
@@ -142,7 +143,7 @@ const App = () => (
               path="/admin/audit-log"
               element={
                 <ProtectedRoute requiredRole="internal">
-                  <AdminNotifications />
+                  <AuditLogPage />
                 </ProtectedRoute>
               }
             />

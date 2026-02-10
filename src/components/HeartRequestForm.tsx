@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Save, Download } from 'lucide-react';
 import { generate7117fPdf } from '@/lib/generate7117fPdf';
+import { logActivity } from '@/lib/activityLog';
 
 interface DonorInfo {
   first_name?: string | null;
@@ -159,6 +160,7 @@ const HeartRequestForm = ({ donorId, donorInfo, readOnly = false }: Props) => {
 
   const handleDownloadPdf = () => {
     generate7117fPdf(donorInfo || {}, form);
+    logActivity('data_export', { export_type: '7117F PDF', donor_id: donorInfo?.din || undefined });
   };
 
   const update = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));

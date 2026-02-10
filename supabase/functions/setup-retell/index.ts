@@ -123,8 +123,8 @@ If they don't have a donor ID, let them know you'll create a new record.
       enable_backchannel: true,
       backchannel_frequency: 0.5,
       backchannel_words: ["okay", "got it", "mhmm", "understood", "noted"],
-      ambient_sound: "office",
-      ambient_sound_volume: 0.2,
+      ambient_sound: null,
+      ambient_sound_volume: 0,
       enable_dynamic_voice_speed: true,
       boosted_keywords: [
         "LeMaitre", "aorto iliac", "saphenous vein", "femoral", "heart valves",

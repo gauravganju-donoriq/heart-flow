@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,14 +17,33 @@ interface DashboardLayoutProps {
   children: ReactNode;
   navItems: NavItem[];
   title: string;
-  headerContent?: ReactNode;
+  /** Content shown in sticky top bar only when the inline header scrolls out of view */
+  scrollHeaderContent?: ReactNode;
 }
 
-const DashboardLayout = ({ children, navItems, title, headerContent }: DashboardLayoutProps) => {
+const DashboardLayout = ({ children, navItems, title, scrollHeaderContent }: DashboardLayoutProps) => {
   const { user, role, signOut } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [intakePhone, setIntakePhone] = useState<string | null>(null);
+  const [showScrollHeader, setShowScrollHeader] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // Observe a sentinel element to toggle scroll header
+  const sentinelCallbackRef = useCallback((node: HTMLDivElement | null) => {
+    if (!scrollHeaderContent) return;
+    if (sentinelRef.current) {
+      // cleanup old observer — handled by disconnect below
+    }
+    sentinelRef.current = node;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowScrollHeader(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [scrollHeaderContent]);
 
   const isPartner = role === 'partner' || navItems.some(item => !item.href.startsWith('/admin'));
 
@@ -138,9 +157,9 @@ const DashboardLayout = ({ children, navItems, title, headerContent }: Dashboard
           >
             <Menu className="h-4 w-4" />
           </Button>
-          {headerContent ? (
-            <div className="flex-1 flex items-center min-w-0">
-              {headerContent}
+          {scrollHeaderContent && showScrollHeader ? (
+            <div className="flex-1 flex items-center min-w-0 animate-in fade-in slide-in-from-top-1 duration-200">
+              {scrollHeaderContent}
             </div>
           ) : (
             <div className="flex-1" />
@@ -152,6 +171,8 @@ const DashboardLayout = ({ children, navItems, title, headerContent }: Dashboard
 
         {/* Page content */}
         <main className="flex-1 p-6 lg:p-8 overflow-auto">
+          {/* Sentinel for scroll header detection */}
+          {scrollHeaderContent && <div ref={sentinelCallbackRef} className="h-0 w-0" />}
           {children}
         </main>
       </div>

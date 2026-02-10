@@ -157,7 +157,7 @@ const AdminDonorReview = () => {
     <DashboardLayout
       navItems={navItems}
       title="Atlas"
-      headerContent={
+      scrollHeaderContent={
         <div className="flex items-center gap-3 min-w-0">
           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigate('/admin/donors')}>
             <ArrowLeft className="h-4 w-4" />
@@ -167,16 +167,30 @@ const AdminDonorReview = () => {
             <span className="text-sm text-muted-foreground truncate hidden sm:inline">{donor.first_name} {donor.last_name}</span>
           )}
           <Badge className={`rounded-md shrink-0 ${statusStyles[donor.status]}`}>{statusLabels[donor.status]}</Badge>
-          {d.intake_method === 'phone' && (
-            <Badge variant="outline" className="gap-1 shrink-0"><Phone className="h-3 w-3" />Phone</Badge>
-          )}
-          <span className="text-[11px] text-muted-foreground truncate hidden md:inline">
-            {donor.partners?.organization_name || 'Direct Admin Entry'}
-          </span>
         </div>
       }
     >
       <div className="space-y-5 max-w-4xl">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/admin/donors')}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-lg font-semibold font-mono">{donor.donor_code}</h1>
+                {(donor as any).din && <span className="text-sm text-muted-foreground font-mono">{(donor as any).din}</span>}
+                <Badge className={`rounded-md ${statusStyles[donor.status]}`}>{statusLabels[donor.status]}</Badge>
+                {d.intake_method === 'phone' && (
+                  <Badge variant="outline" className="gap-1"><Phone className="h-3 w-3" />Phone Intake</Badge>
+                )}
+              </div>
+              <p className="text-[13px] text-muted-foreground">From: {donor.partners?.organization_name || 'Direct Admin Entry'}</p>
+            </div>
+          </div>
+        </div>
+
         {/* Pending Updates */}
         <PendingDonorUpdates donorId={donor.id} onUpdated={fetchDonor} />
 

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
-import lemaitreLogo from '@/assets/lemaitre-logo.png';
+import lemaitreIcon from '@/assets/lemaitre-icon.png';
 import LoginBackground from '@/components/LoginBackground';
 
 const loginSchema = z.object({
@@ -81,8 +81,8 @@ const Auth = () => {
         {/* Logo & heading */}
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2.5 mb-3">
-            <img src={lemaitreLogo} alt="LeMaitre" className="h-5 w-auto" />
-            <span className="text-[22px] font-bold tracking-tight text-foreground">Atlas</span>
+            <img src={lemaitreIcon} alt="LeMaitre" className="h-4 w-auto" />
+            <span className="text-lg font-bold uppercase tracking-[0.25em] text-foreground leading-none">Atlas</span>
           </div>
           <p className="text-[13px] text-muted-foreground">
             Sign in to access your account

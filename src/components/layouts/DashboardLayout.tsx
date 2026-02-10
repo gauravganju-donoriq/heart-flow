@@ -75,7 +75,7 @@ const DashboardLayout = ({ children, navItems, title, scrollHeaderContent }: Das
           <div className="flex items-center justify-between h-14 px-5 border-b">
             <div className="flex items-center gap-2.5">
               <img src={lemaitreIcon} alt="LeMaitre" className="h-4 w-auto shrink-0" />
-              <span className="text-lg font-bold uppercase tracking-[0.15em] text-foreground leading-none">Atlas</span>
+              <span className="text-lg font-bold uppercase tracking-[0.25em] text-foreground leading-none">Atlas</span>
             </div>
             <Button
               variant="ghost"

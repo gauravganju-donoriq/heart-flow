@@ -159,11 +159,7 @@ const TeamManagement = () => {
   return (
     <DashboardLayout navItems={getAdminNavItems(role)} title="Atlas">
       <div className="space-y-5 max-w-4xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold">Team</h1>
-            <p className="text-[13px] text-muted-foreground">Manage internal users and their roles.</p>
-          </div>
+        <div className="flex items-center justify-end">
           <InviteUserDialog onSuccess={fetchTeam} />
         </div>
 

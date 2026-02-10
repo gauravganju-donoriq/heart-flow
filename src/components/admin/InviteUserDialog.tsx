@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus } from 'lucide-react';
+import { Plus, Copy, Check } from 'lucide-react';
 import { z } from 'zod';
 
 const userSchema = z.object({
@@ -20,12 +20,23 @@ interface InviteUserDialogProps {
   onSuccess: () => void;
 }
 
+interface CreatedUserInfo {
+  fullName: string;
+  email: string;
+  password: string;
+  role: string;
+}
+
 const InviteUserDialog = ({ onSuccess }: InviteUserDialogProps) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({ email: '', password: '', fullName: '', role: 'user' as 'admin' | 'user' });
+  const [createdUser, setCreatedUser] = useState<CreatedUserInfo | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const loginUrl = `${window.location.origin}/auth`;
 
   const handleCreate = async () => {
     setErrors({});
@@ -48,9 +59,12 @@ const InviteUserDialog = ({ onSuccess }: InviteUserDialogProps) => {
       if (response.error) throw new Error(response.error.message || 'Failed to create user');
       if (response.data?.error) throw new Error(response.data.error);
 
-      toast({ title: 'User Created', description: `${formData.fullName} has been invited as ${formData.role}.` });
-      setFormData({ email: '', password: '', fullName: '', role: 'user' });
-      setOpen(false);
+      setCreatedUser({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      });
       onSuccess();
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -59,8 +73,16 @@ const InviteUserDialog = ({ onSuccess }: InviteUserDialogProps) => {
     }
   };
 
+  const handleCopyUrl = async () => {
+    await navigator.clipboard.writeText(loginUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const handleClose = () => {
     setOpen(false);
+    setCreatedUser(null);
+    setCopied(false);
     setFormData({ email: '', password: '', fullName: '', role: 'user' });
     setErrors({});
   };
@@ -77,43 +99,85 @@ const InviteUserDialog = ({ onSuccess }: InviteUserDialogProps) => {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-base">Invite Team Member</DialogTitle>
-          <DialogDescription className="text-[13px]">Create a new internal user account with role assignment.</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-3 py-2">
-          <div className="space-y-1">
-            <Label htmlFor="fullName" className="text-[13px]">Full Name</Label>
-            <Input id="fullName" value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} className="h-9 text-[13px]" />
-            <FieldError field="fullName" />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="email" className="text-[13px]">Email</Label>
-            <Input id="email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="h-9 text-[13px]" />
-            <FieldError field="email" />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="password" className="text-[13px]">Password</Label>
-            <Input id="password" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="h-9 text-[13px]" />
-            <FieldError field="password" />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-[13px]">Role</Label>
-            <Select value={formData.role} onValueChange={(v) => setFormData({ ...formData, role: v as 'admin' | 'user' })}>
-              <SelectTrigger className="h-9 text-[13px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="user" className="text-[13px]">Staff — View & edit donors, run screening</SelectItem>
-                <SelectItem value="admin" className="text-[13px]">Admin — Full access including user & partner management</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter className="gap-2">
-          <Button variant="outline" size="sm" onClick={handleClose} className="h-9 text-[13px]">Cancel</Button>
-          <Button size="sm" onClick={handleCreate} disabled={creating} className="h-9 text-[13px]">{creating ? 'Creating…' : 'Create User'}</Button>
-        </DialogFooter>
+        {createdUser ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-base">User Created</DialogTitle>
+              <DialogDescription className="text-[13px]">
+                Share the login details below with {createdUser.fullName}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              <div className="space-y-1">
+                <Label className="text-[13px] text-muted-foreground">Login URL</Label>
+                <div className="flex items-center gap-2">
+                  <Input value={loginUrl} readOnly className="font-mono text-[13px] h-9" />
+                  <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={handleCopyUrl}>
+                    {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[13px] text-muted-foreground">Email</Label>
+                <Input value={createdUser.email} readOnly className="text-[13px] h-9" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[13px] text-muted-foreground">Password</Label>
+                <Input value={createdUser.password} readOnly className="text-[13px] h-9" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[13px] text-muted-foreground">Role</Label>
+                <Input value={createdUser.role === 'admin' ? 'Admin' : 'Staff'} readOnly className="text-[13px] h-9" />
+              </div>
+              <p className="text-[12px] text-muted-foreground">
+                Save these credentials now — the password cannot be retrieved later.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button size="sm" onClick={handleClose} className="h-9 text-[13px]">Done</Button>
+            </DialogFooter>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-base">Invite Team Member</DialogTitle>
+              <DialogDescription className="text-[13px]">Create a new internal user account with role assignment.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              <div className="space-y-1">
+                <Label htmlFor="fullName" className="text-[13px]">Full Name</Label>
+                <Input id="fullName" value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} className="h-9 text-[13px]" />
+                <FieldError field="fullName" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="email" className="text-[13px]">Email</Label>
+                <Input id="email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="h-9 text-[13px]" />
+                <FieldError field="email" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="password" className="text-[13px]">Password</Label>
+                <Input id="password" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="h-9 text-[13px]" />
+                <FieldError field="password" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[13px]">Role</Label>
+                <Select value={formData.role} onValueChange={(v) => setFormData({ ...formData, role: v as 'admin' | 'user' })}>
+                  <SelectTrigger className="h-9 text-[13px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user" className="text-[13px]">Staff — View & edit donors, run screening</SelectItem>
+                    <SelectItem value="admin" className="text-[13px]">Admin — Full access including user & partner management</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" size="sm" onClick={handleClose} className="h-9 text-[13px]">Cancel</Button>
+              <Button size="sm" onClick={handleCreate} disabled={creating} className="h-9 text-[13px]">{creating ? 'Creating…' : 'Create User'}</Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

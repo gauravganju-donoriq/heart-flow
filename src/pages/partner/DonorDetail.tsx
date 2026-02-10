@@ -101,7 +101,7 @@ const DonorDetail = () => {
           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigate('/partner/donors')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm font-semibold font-mono truncate">{(donor as any).din || donor.donor_code}</span>
+          <span className="text-sm font-semibold font-mono truncate">{(donor as any).din || '—'}</span>
           {donor.first_name && donor.last_name && (
             <span className="text-sm text-muted-foreground truncate hidden sm:inline">{donor.first_name} {donor.last_name}</span>
           )}
@@ -127,8 +127,7 @@ const DonorDetail = () => {
             <Button variant="ghost" size="icon" onClick={() => navigate('/partner/donors')}><ArrowLeft className="h-4 w-4" /></Button>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-lg font-semibold font-mono">{donor.donor_code}</h1>
-                {(donor as any).din && <span className="text-sm text-muted-foreground font-mono">{(donor as any).din}</span>}
+                <h1 className="text-lg font-semibold font-mono">{(donor as any).din || '—'}</h1>
                 <Badge className={`rounded-md ${statusStyles[donor.status]}`}>{statusLabels[donor.status]}</Badge>
                 {donor.intake_method === 'phone' && <Badge variant="outline" className="gap-1"><Phone className="h-3 w-3" />Phone Intake</Badge>}
               </div>
@@ -169,10 +168,9 @@ const DonorDetail = () => {
             <Card>
               <CardHeader><p className="text-sm font-medium">Identifiers</p></CardHeader>
               <CardContent>
-                <dl className="grid gap-4 md:grid-cols-3">
+                <dl className="grid gap-4 md:grid-cols-2">
                   <Field label="External Donor ID" value={d.external_donor_id} />
                   <Field label="DIN (Donor Identification Number)" value={d.din} />
-                  <Field label="System Code" value={donor.donor_code} />
                 </dl>
               </CardContent>
             </Card>

@@ -21,6 +21,7 @@ import { ResponsiveTabsList, type TabItem } from '@/components/ui/responsive-tab
 import { useToast } from '@/hooks/use-toast';
 import { LayoutDashboard, Users, FileText, ScrollText, ArrowLeft, Check, X, Clock, Phone, Shield, Settings } from 'lucide-react';
 import AIScreeningPanel from '@/components/admin/AIScreeningPanel';
+import DonorDetailSkeleton from '@/components/DonorDetailSkeleton';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -144,7 +145,7 @@ const AdminDonorReview = () => {
   if (loading) {
     return (
       <DashboardLayout navItems={navItems} title="Atlas">
-        <div className="flex items-center justify-center py-12"><div className="text-muted-foreground text-[13px]">Loading...</div></div>
+        <DonorDetailSkeleton />
       </DashboardLayout>
     );
   }

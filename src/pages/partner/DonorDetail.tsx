@@ -17,6 +17,7 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { ResponsiveTabsList, type TabItem } from '@/components/ui/responsive-tabs';
 import { useToast } from '@/hooks/use-toast';
 import { LayoutDashboard, FileText, ArrowLeft, Edit, Send, Phone } from 'lucide-react';
+import DonorDetailSkeleton from '@/components/DonorDetailSkeleton';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -88,7 +89,7 @@ const DonorDetail = () => {
   };
 
   if (loading) {
-    return (<DashboardLayout navItems={navItems} title="Atlas"><div className="flex items-center justify-center py-12"><div className="text-muted-foreground text-[13px]">Loading...</div></div></DashboardLayout>);
+    return (<DashboardLayout navItems={navItems} title="Atlas"><DonorDetailSkeleton /></DashboardLayout>);
   }
 
   if (!donor) return null;

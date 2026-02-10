@@ -151,21 +151,6 @@ const DonorDetail = () => {
           </div>
         </div>
 
-        {/* Review Notes */}
-        {donor.review_notes && (
-          <Card>
-            <CardHeader><p className="text-sm font-medium">Review Notes</p></CardHeader>
-            <CardContent>
-              <p className="text-[13px]">{donor.review_notes}</p>
-              {donor.reviewed_at && (
-                <p className="text-[12px] text-muted-foreground mt-2">Reviewed on {new Date(donor.reviewed_at).toLocaleString()}</p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Pending Updates (read-only for partner) */}
-        {!isDraft && id && <PartnerPendingUpdates donorId={id} />}
 
         {/* Tabbed Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -177,6 +162,7 @@ const DonorDetail = () => {
               ...(donor.status === 'approved' && d.hv_heart_valves ? [{ value: 'heart_request', label: 'Heart Request (7117F)' }] : []),
               { value: 'logistics', label: 'Logistics' },
               { value: 'documents', label: 'Documents' },
+              ...(!isDraft ? [{ value: 'changes', label: 'Changes' }] : []),
             ]}
             activeValue={activeTab}
             onValueChange={setActiveTab}
@@ -354,6 +340,24 @@ const DonorDetail = () => {
             {donor.intake_method === 'phone' && <CallTranscript donorId={donor.id} />}
             <DocumentUpload donorId={donor.id} canUpload={true} />
           </TabsContent>
+
+          {/* Changes Tab */}
+          {!isDraft && (
+            <TabsContent value="changes" className="space-y-5 mt-5">
+              {donor.review_notes && (
+                <Card>
+                  <CardHeader><p className="text-sm font-medium">Review Notes</p></CardHeader>
+                  <CardContent>
+                    <p className="text-[13px]">{donor.review_notes}</p>
+                    {donor.reviewed_at && (
+                      <p className="text-[12px] text-muted-foreground mt-2">Reviewed on {new Date(donor.reviewed_at).toLocaleString()}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+              {id && <PartnerPendingUpdates donorId={id} />}
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </DashboardLayout>

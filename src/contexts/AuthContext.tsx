@@ -71,6 +71,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             fetchUserRole(session.user.id);
             fetchPartnerId(session.user.id);
           }, 0);
+
+          // Log login/logout events
+          if (event === 'SIGNED_IN') {
+            setTimeout(() => {
+              (supabase.from as any)('user_activity_log').insert({
+                user_id: session.user.id,
+                action: 'login',
+                details: {},
+              });
+            }, 100);
+          }
         } else {
           setRole(null);
           setPartnerId(null);
@@ -99,6 +110,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    // Log logout before signing out
+    if (user) {
+      await (supabase.from as any)('user_activity_log').insert({
+        user_id: user.id,
+        action: 'logout',
+        details: {},
+      }).catch(() => {});
+    }
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);

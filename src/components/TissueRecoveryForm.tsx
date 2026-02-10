@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2, Save, Download } from 'lucide-react';
 import { generate7033fPdf } from '@/lib/generate7033fPdf';
+import { logActivity } from '@/lib/activityLog';
 
 const VASCULAR_TISSUE_OPTIONS = [
   'RIGHT Saphenous Vein',
@@ -240,6 +241,7 @@ const TissueRecoveryForm = ({ donorId, donorInfo, readOnly = false }: Props) => 
       recovery,
       tissues
     );
+    logActivity('data_export', { export_type: '7033F PDF', donor_id: donorInfo?.din || undefined });
   };
 
   if (loading) return null;

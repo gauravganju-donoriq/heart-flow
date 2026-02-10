@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { triggerAutoScreening } from '@/lib/autoScreen';
+import { logActivity } from '@/lib/activityLog';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import DocumentUpload from '@/components/DocumentUpload';
@@ -58,6 +59,13 @@ const DonorDetail = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => { fetchDonor(); }, [id]);
+
+  // Log donor view
+  useEffect(() => {
+    if (id && donor) {
+      logActivity('donor_view', { donor_id: id, donor_din: (donor as any).din || undefined });
+    }
+  }, [id, donor?.id]);
 
   const fetchDonor = async () => {
     const { data, error } = await supabase.from('donors').select('*').eq('id', id).single();

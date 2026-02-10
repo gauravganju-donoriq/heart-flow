@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { logActivity } from '@/lib/activityLog';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import DocumentUpload from '@/components/DocumentUpload';
 import ShipmentTracking from '@/components/ShipmentTracking';
@@ -85,6 +86,13 @@ const AdminDonorReview = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { fetchDonor(); }, [id]);
+
+  // Log donor view
+  useEffect(() => {
+    if (id && donor) {
+      logActivity('donor_view', { donor_id: id, donor_din: (donor as any).din || undefined });
+    }
+  }, [id, donor?.id]);
 
   const fetchDonor = async () => {
     const { data, error } = await supabase

@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import lemaitreLogo from '@/assets/lemaitre-logo.png';
+import LoginBackground from '@/components/LoginBackground';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -62,13 +63,16 @@ const PartnerLogin = () => {
 
   if (notFound) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Page Not Found</CardTitle>
-            <CardDescription>This partner login page does not exist or has been deactivated.</CardDescription>
-          </CardHeader>
-        </Card>
+      <div className="relative flex min-h-screen items-center justify-center bg-background px-4">
+        <LoginBackground />
+        <div className="relative z-10 w-full max-w-sm animate-fade-in">
+          <div className="rounded-xl border border-border/60 bg-card/80 backdrop-blur-xl p-8 text-center">
+            <h2 className="text-lg font-semibold text-foreground mb-2">Page Not Found</h2>
+            <p className="text-[13px] text-muted-foreground">
+              This partner login page does not exist or has been deactivated.
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -90,7 +94,6 @@ const PartnerLogin = () => {
 
     setIsLoading(true);
     const { error } = await signIn(email, password);
-
     if (error) {
       toast({
         variant: 'destructive',
@@ -104,19 +107,35 @@ const PartnerLogin = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <img src={lemaitreLogo} alt="LeMaitre" className="h-7 w-auto" />
-            <span className="text-2xl font-bold text-foreground">Atlas</span>
+    <div className="relative flex min-h-screen items-center justify-center bg-background px-4">
+      <LoginBackground />
+
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.03]"
+        style={{
+          backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 w-full max-w-sm animate-fade-in">
+        {/* Logo & partner name */}
+        <div className="mb-8 text-center">
+          <div className="flex items-center justify-center gap-2.5 mb-3">
+            <img src={lemaitreLogo} alt="LeMaitre" className="h-8 w-auto" />
+            <span className="text-[22px] font-bold tracking-tight text-foreground">Atlas</span>
           </div>
-          <CardDescription>{orgName} — Partner Portal</CardDescription>
-        </CardHeader>
-        <CardContent>
+          <p className="text-[13px] text-muted-foreground">
+            {orgName} — Partner Portal
+          </p>
+        </div>
+
+        {/* Form card */}
+        <div className="rounded-xl border border-border/60 bg-card/80 backdrop-blur-xl p-6 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-[13px]">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -124,11 +143,12 @@ const PartnerLogin = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
+                className="h-10"
               />
-              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+              {errors.email && <p className="text-[12px] text-destructive">{errors.email}</p>}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-[13px]">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -136,15 +156,16 @@ const PartnerLogin = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
+                className="h-10"
               />
-              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+              {errors.password && <p className="text-[12px] text-destructive">{errors.password}</p>}
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full h-10" disabled={isLoading}>
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

@@ -21,6 +21,7 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [loginType, setLoginType] = useState<'admin' | 'partner'>('admin');
 
   if (!loading && user && role) {
     return <Navigate to={role === 'admin' || role === 'user' ? '/admin' : '/partner'} replace />;
@@ -84,13 +85,41 @@ const Auth = () => {
             <img src={lemaitreIcon} alt="LeMaitre" className="h-4 w-auto" />
             <span className="text-lg font-bold uppercase tracking-[0.25em] text-foreground leading-none">Atlas</span>
           </div>
-          <p className="text-[13px] text-muted-foreground">
-            Sign in to access your account
-          </p>
+        </div>
+
+        {/* Role selector */}
+        <div className="flex rounded-lg border border-border/60 bg-card/60 backdrop-blur-xl p-1 mb-5">
+          <button
+            type="button"
+            onClick={() => setLoginType('admin')}
+            className={`flex-1 text-[13px] font-medium py-2 rounded-md transition-all ${
+              loginType === 'admin'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Admin / Staff
+          </button>
+          <button
+            type="button"
+            onClick={() => setLoginType('partner')}
+            className={`flex-1 text-[13px] font-medium py-2 rounded-md transition-all ${
+              loginType === 'partner'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Recovery Partner
+          </button>
         </div>
 
         {/* Form card */}
         <div className="rounded-xl border border-border/60 bg-card/80 backdrop-blur-xl p-6 shadow-sm">
+          <p className="text-[13px] text-muted-foreground mb-4">
+            {loginType === 'admin'
+              ? 'Sign in with your LeMaitre staff credentials.'
+              : 'Sign in with the credentials provided by your LeMaitre contact.'}
+          </p>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-[13px]">Email</Label>
@@ -126,12 +155,12 @@ const Auth = () => {
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-        </div>
 
-        {/* Footer text */}
-        <div className="mt-5 space-y-1 text-center text-[12px] text-muted-foreground">
-          <p>Partners can also use their custom login URL.</p>
-          <p>Contact your administrator if you need an account.</p>
+          {loginType === 'partner' && (
+            <p className="mt-4 text-center text-[12px] text-muted-foreground">
+              Need an account? Contact your LeMaitre administrator.
+            </p>
+          )}
         </div>
       </div>
     </div>

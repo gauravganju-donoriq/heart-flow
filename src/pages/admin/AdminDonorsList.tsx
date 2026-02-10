@@ -5,8 +5,7 @@ import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { LayoutDashboard, Users, FileText, ScrollText, Plus, Phone, Shield, CheckCircle, XCircle, AlertTriangle, Minus } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, ScrollText, Plus, Phone, Shield } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type DonorStatus = Database['public']['Enums']['donor_status'];
@@ -53,44 +52,6 @@ const navItems = [
   { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
   { label: 'Audit Log', href: '/admin/audit-log', icon: <ScrollText className="h-4 w-4" /> },
 ];
-
-const ScreeningBadge = ({ results }: { results: DonorWithPartner['screening_results'] }) => {
-  const latest = results && results.length > 0 ? results[results.length - 1] : null;
-
-  if (!latest) {
-    return (
-      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-        <Minus className="h-3 w-3" />
-        —
-      </span>
-    );
-  }
-
-  const config = {
-    accept: { icon: CheckCircle, label: 'Accept', className: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
-    reject: { icon: XCircle, label: 'Reject', className: 'text-red-500 bg-red-50 border-red-100' },
-    needs_review: { icon: AlertTriangle, label: 'Review', className: 'text-amber-600 bg-amber-50 border-amber-100' },
-  }[latest.verdict] || { icon: AlertTriangle, label: latest.verdict, className: 'text-muted-foreground bg-muted' };
-
-  const Icon = config.icon;
-  const confidence = Math.round(latest.confidence * 100);
-
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger>
-          <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border ${config.className}`}>
-            <Icon className="h-3 w-3" />
-            {config.label}
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>AI Verdict: {config.label} ({confidence}% confidence)</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-};
 
 const AdminDonorsList = () => {
   const [donors, setDonors] = useState<DonorWithPartner[]>([]);
@@ -183,14 +144,12 @@ const AdminDonorsList = () => {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead>Code</TableHead>
                   <TableHead>DIN</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Partner</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>AI</TableHead>
-                  <TableHead>Submitted</TableHead>
+                   <TableHead>Name</TableHead>
+                   <TableHead>Partner</TableHead>
+                   <TableHead>Source</TableHead>
+                   <TableHead>Status</TableHead>
+                   <TableHead>Submitted</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -201,11 +160,8 @@ const AdminDonorsList = () => {
                     onClick={() => navigate(`/admin/donors/${donor.id}`)}
                   >
                     <TableCell className="font-mono text-[13px] py-3.5">
-                      {donor.donor_code || '—'}
-                    </TableCell>
-                    <TableCell className="font-mono text-[13px] py-3.5 text-muted-foreground">
-                      {(donor as any).din || '—'}
-                    </TableCell>
+                       {(donor as any).din || '—'}
+                     </TableCell>
                     <TableCell className="text-[13px] py-3.5">
                       {donor.first_name && donor.last_name
                         ? `${donor.first_name} ${donor.last_name}`
@@ -229,9 +185,6 @@ const AdminDonorsList = () => {
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${statusStyles[donor.status]}`}>
                         {statusLabels[donor.status]}
                       </span>
-                    </TableCell>
-                    <TableCell className="py-3.5">
-                      <ScreeningBadge results={donor.screening_results} />
                     </TableCell>
                     <TableCell className="text-[13px] text-muted-foreground py-3.5">
                       {donor.submitted_at

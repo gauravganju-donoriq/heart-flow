@@ -279,7 +279,7 @@ Evaluate this donor holistically and return your structured assessment.`;
         reasoning: evaluation.reasoning,
         concerns: evaluation.concerns,
         missing_data: evaluation.missing_data,
-        model_used: "google/gemini-3-flash-preview",
+        model_used: "atlas-screening-v1",
         guidelines_snapshot: guidelinesSnapshot,
       })
       .select()

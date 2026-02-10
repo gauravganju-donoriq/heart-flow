@@ -10,22 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus } from 'lucide-react';
 import { partnerNavItems } from '@/lib/navItems';
+import { statusStyles, statusLabels } from '@/lib/donorStatus';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
-type DonorStatus = Database['public']['Enums']['donor_status'];
-
-const statusStyles: Record<DonorStatus, string> = {
-  draft: 'bg-gray-50 text-gray-500 border border-gray-200',
-  submitted: 'bg-blue-50 text-blue-600 border border-blue-100',
-  under_review: 'bg-amber-50 text-amber-600 border border-amber-100',
-  approved: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
-  rejected: 'bg-red-50 text-red-500 border border-red-100',
-};
-
-const statusLabels: Record<DonorStatus, string> = {
-  draft: 'Draft', submitted: 'Submitted', under_review: 'Under Review', approved: 'Approved', rejected: 'Rejected',
-};
 
 
 const PartnerDashboard = () => {
@@ -74,7 +62,12 @@ const PartnerDashboard = () => {
 
         {/* Recent Donors */}
         <div className="space-y-3">
-          <p className="text-sm font-medium">Recent Donors</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">Recent Donors</p>
+            <Link to="/partner/donors">
+              <Button variant="outline" className="h-9 text-[13px]">View All</Button>
+            </Link>
+          </div>
           <div className="border border-border rounded-lg">
             {loading ? (
               <TableSkeleton rows={3} cols={4} />

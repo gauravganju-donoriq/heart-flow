@@ -319,7 +319,7 @@ const DonorForm = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate('/partner/donors')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <p className="text-lg font-semibold">{isEdit ? 'Edit Donor' : 'New Donor'}</p>
+          
         </div>
 
         <Tabs defaultValue="info" className="w-full">
@@ -367,25 +367,25 @@ const DonorForm = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="first_name">First Name</Label>
-                    <Input id="first_name" value={formData.first_name} onChange={(e) => handleChange('first_name', e.target.value)} />
+                  <div className="space-y-1">
+                    <Label htmlFor="first_name" className="text-[13px]">First Name</Label>
+                    <Input id="first_name" value={formData.first_name} onChange={(e) => handleChange('first_name', e.target.value)} className="h-9 text-[13px]" />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="last_name">Last Name</Label>
-                    <Input id="last_name" value={formData.last_name} onChange={(e) => handleChange('last_name', e.target.value)} />
+                  <div className="space-y-1">
+                    <Label htmlFor="last_name" className="text-[13px]">Last Name</Label>
+                    <Input id="last_name" value={formData.last_name} onChange={(e) => handleChange('last_name', e.target.value)} className="h-9 text-[13px]" />
                   </div>
                 </div>
                 <div className="grid gap-4 md:grid-cols-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="donor_age" className={validationErrors.donor_age ? 'text-destructive' : ''}>Age *</Label>
-                    <Input id="donor_age" type="number" value={formData.donor_age} onChange={(e) => handleChange('donor_age', e.target.value)} className={validationErrors.donor_age ? 'border-destructive' : ''} />
+                  <div className="space-y-1">
+                    <Label htmlFor="donor_age" className={`text-[13px] ${validationErrors.donor_age ? 'text-destructive' : ''}`}>Age *</Label>
+                    <Input id="donor_age" type="number" value={formData.donor_age} onChange={(e) => handleChange('donor_age', e.target.value)} className={`h-9 text-[13px] ${validationErrors.donor_age ? 'border-destructive' : ''}`} />
                     {validationErrors.donor_age && <p className="text-sm text-destructive">{validationErrors.donor_age}</p>}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="gender" className={validationErrors.gender ? 'text-destructive' : ''}>Sex at Birth *</Label>
+                  <div className="space-y-1">
+                    <Label htmlFor="gender" className={`text-[13px] ${validationErrors.gender ? 'text-destructive' : ''}`}>Sex at Birth *</Label>
                     <Select value={formData.gender} onValueChange={(v) => handleChange('gender', v)}>
-                      <SelectTrigger className={validationErrors.gender ? 'border-destructive' : ''}><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className={`h-9 text-[13px] ${validationErrors.gender ? 'border-destructive' : ''}`}><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="male">Male</SelectItem>
                         <SelectItem value="female">Female</SelectItem>
@@ -393,24 +393,24 @@ const DonorForm = () => {
                     </Select>
                     {validationErrors.gender && <p className="text-sm text-destructive">{validationErrors.gender}</p>}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="height_inches">Height (in)</Label>
-                    <Input id="height_inches" type="number" step="0.1" value={formData.height_inches} onChange={(e) => handleChange('height_inches', e.target.value)} />
+                  <div className="space-y-1">
+                    <Label htmlFor="height_inches" className="text-[13px]">Height (in)</Label>
+                    <Input id="height_inches" type="number" step="0.1" value={formData.height_inches} onChange={(e) => handleChange('height_inches', e.target.value)} className="h-9 text-[13px]" />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="weight_kgs">Weight (kg)</Label>
-                    <Input id="weight_kgs" type="number" step="0.1" value={formData.weight_kgs} onChange={(e) => handleChange('weight_kgs', e.target.value)} />
+                  <div className="space-y-1">
+                    <Label htmlFor="weight_kgs" className="text-[13px]">Weight (kg)</Label>
+                    <Input id="weight_kgs" type="number" step="0.1" value={formData.weight_kgs} onChange={(e) => handleChange('weight_kgs', e.target.value)} className="h-9 text-[13px]" />
                   </div>
                 </div>
                 <div className="grid gap-4 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="date_of_birth">Date of Birth</Label>
-                    <Input id="date_of_birth" type="date" value={formData.date_of_birth} onChange={(e) => handleChange('date_of_birth', e.target.value)} />
+                  <div className="space-y-1">
+                    <Label htmlFor="date_of_birth" className="text-[13px]">Date of Birth</Label>
+                    <Input id="date_of_birth" type="date" value={formData.date_of_birth} onChange={(e) => handleChange('date_of_birth', e.target.value)} className="h-9 text-[13px]" />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="blood_type">Blood Type</Label>
+                  <div className="space-y-1">
+                    <Label htmlFor="blood_type" className="text-[13px]">Blood Type</Label>
                     <Select value={formData.blood_type} onValueChange={(v) => handleChange('blood_type', v)}>
-                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="h-9 text-[13px]"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="A+">A+</SelectItem>
                         <SelectItem value="A-">A-</SelectItem>

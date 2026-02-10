@@ -173,7 +173,7 @@ const DashboardLayout = ({ children, navItems, title, scrollHeaderContent }: Das
             <Menu className="h-4 w-4" />
           </Button>
           <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-1 rounded shrink-0 mr-3">
-            {navItems.some(item => item.href.startsWith('/admin')) ? 'Admin' : 'Partner'}
+            {role === 'admin' ? 'Admin' : role === 'user' ? 'Staff' : navItems.some(item => item.href.startsWith('/admin')) ? 'Admin' : 'Partner'}
           </span>
           {scrollHeaderContent && showScrollHeader ? (
             <div className="flex-1 flex items-center min-w-0 animate-in fade-in slide-in-from-top-1 duration-200">

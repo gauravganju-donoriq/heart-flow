@@ -11,6 +11,8 @@ interface AuthContextType {
   role: AppRole | null;
   partnerId: string | null;
   loading: boolean;
+  isAdmin: boolean;
+  isInternal: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
@@ -104,8 +106,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setPartnerId(null);
   };
 
+  const isAdmin = role === 'admin';
+  const isInternal = role === 'admin' || role === 'user';
+
   return (
-    <AuthContext.Provider value={{ user, session, role, partnerId, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, role, partnerId, loading, isAdmin, isInternal, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

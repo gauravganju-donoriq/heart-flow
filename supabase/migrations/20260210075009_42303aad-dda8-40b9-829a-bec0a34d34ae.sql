@@ -1,0 +1,4 @@
+
+-- Phase 1.1: Expand app_role enum
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'user';
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'super_admin';

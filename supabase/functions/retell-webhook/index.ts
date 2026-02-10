@@ -66,11 +66,11 @@ async function extractFromTranscript(transcriptText: string, lovableApiKey: stri
           {
             role: "system",
             content:
-              "You extract structured donor screening information from phone call transcripts between a tissue recovery partner and an AI intake agent. Extract all fields mentioned clearly. Use null for anything unclear or not mentioned. Pay special attention to whether this is an UPDATE call vs an initial screening.",
+              "You extract structured donor screening information from phone call transcripts. The calls are between tissue recovery partners (nurses, coordinators) and Sarah, an AI intake nurse at LeMaitre Vascular. The conversation is natural and unscripted — Sarah does not follow a numbered checklist. Listen for donor details mentioned organically throughout the conversation. Extract all fields mentioned clearly. Use null for anything unclear or not mentioned. Pay special attention to whether the caller indicated this is an update to an existing donor vs a new intake.",
           },
           {
             role: "user",
-            content: `Extract all donor screening information from this transcript. Map to the LeMaitre 25-question screening format:\n\n${transcriptText}`,
+            content: `Extract all donor screening information from this call transcript between Sarah (the AI intake nurse) and a tissue recovery partner:\n\n${transcriptText}`,
           },
         ],
         tools: [
@@ -370,13 +370,33 @@ Deno.serve(async (req) => {
         // Skip the transcript save at the end since we already saved it
         const skipTranscript = true;
 
-        // Send notification and return early
+        // Send notification to partner
         await supabase.from("notifications").insert({
           user_id: partner.user_id,
           title: notificationTitle,
           message: notificationMessage,
           donor_id: donorId,
         });
+
+        // Notify admins about pending update
+        const { data: adminUsersEarly } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin");
+
+        if (adminUsersEarly && adminUsersEarly.length > 0) {
+          const adminNotifs = adminUsersEarly
+            .filter(a => a.user_id !== partner.user_id)
+            .map(a => ({
+              user_id: a.user_id,
+              title: "Pending Phone Update Needs Review",
+              message: `Partner "${extracted.partner_code}" submitted a phone update for donor ${donorCode} (status: ${existingDonor.status}). Admin approval required.`,
+              donor_id: donorId,
+            }));
+          if (adminNotifs.length > 0) {
+            await supabase.from("notifications").insert(adminNotifs);
+          }
+        }
 
         console.log("Successfully saved pending update for donor:", donorId);
 
@@ -459,6 +479,34 @@ Deno.serve(async (req) => {
       message: notificationMessage,
       donor_id: donorId,
     });
+
+    // Notify all admins about the phone-created/updated donor
+    const { data: adminUsers } = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
+
+    if (adminUsers && adminUsers.length > 0) {
+      const adminNotifications = adminUsers
+        .filter(a => a.user_id !== partner.user_id)
+        .map(a => ({
+          user_id: a.user_id,
+          title: isUpdate ? "Phone Update Received" : "New Phone Intake",
+          message: isUpdate
+            ? `Partner "${extracted.partner_code}" submitted a phone update for donor ${donorCode}. Please review.`
+            : `Partner "${extracted.partner_code}" submitted a new donor (${donorCode}) via phone intake. Please review.`,
+          donor_id: donorId,
+        }));
+
+      if (adminNotifications.length > 0) {
+        const { error: adminNotifError } = await supabase
+          .from("notifications")
+          .insert(adminNotifications);
+        if (adminNotifError) {
+          console.error("Failed to notify admins:", adminNotifError);
+        }
+      }
+    }
 
     console.log("Successfully processed call. Donor:", donorId, "Update:", isUpdate);
 

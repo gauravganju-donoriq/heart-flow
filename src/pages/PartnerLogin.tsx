@@ -123,7 +123,7 @@ const PartnerLogin = () => {
         {/* Logo & partner name */}
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2.5 mb-3">
-            <img src={lemaitreLogo} alt="LeMaitre" className="h-8 w-auto" />
+            <img src={lemaitreLogo} alt="LeMaitre" className="h-5 w-auto" />
             <span className="text-[22px] font-bold tracking-tight text-foreground">Atlas</span>
           </div>
           <p className="text-[13px] text-muted-foreground">

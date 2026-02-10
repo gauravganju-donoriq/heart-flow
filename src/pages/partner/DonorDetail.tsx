@@ -100,7 +100,7 @@ const DonorDetail = () => {
     <DashboardLayout
       navItems={navItems}
       title="Atlas"
-      headerContent={
+      scrollHeaderContent={
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigate('/partner/donors')}>
             <ArrowLeft className="h-4 w-4" />
@@ -110,9 +110,6 @@ const DonorDetail = () => {
             <span className="text-sm text-muted-foreground truncate hidden sm:inline">{donor.first_name} {donor.last_name}</span>
           )}
           <Badge className={`rounded-md shrink-0 ${statusStyles[donor.status]}`}>{statusLabels[donor.status]}</Badge>
-          {donor.intake_method === 'phone' && (
-            <Badge variant="outline" className="gap-1 shrink-0"><Phone className="h-3 w-3" />Phone</Badge>
-          )}
           <div className="flex-1" />
           <div className="flex items-center gap-2 shrink-0">
             <Link to={`/partner/donors/${id}/edit`}>
@@ -128,6 +125,31 @@ const DonorDetail = () => {
       }
     >
       <div className="space-y-5 max-w-4xl">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/partner/donors')}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-lg font-semibold font-mono">{donor.donor_code}</h1>
+                {(donor as any).din && <span className="text-sm text-muted-foreground font-mono">{(donor as any).din}</span>}
+                <Badge className={`rounded-md ${statusStyles[donor.status]}`}>{statusLabels[donor.status]}</Badge>
+                {donor.intake_method === 'phone' && <Badge variant="outline" className="gap-1"><Phone className="h-3 w-3" />Phone Intake</Badge>}
+              </div>
+              <p className="text-[13px] text-muted-foreground">{donor.first_name && donor.last_name ? `${donor.first_name} ${donor.last_name}` : 'Unnamed donor'}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link to={`/partner/donors/${id}/edit`}>
+              <Button variant="outline" size="sm" className="h-9 text-[13px]">
+                <Edit className="h-3.5 w-3.5 mr-1.5" />{isDraft ? 'Edit' : 'Propose Changes'}
+              </Button>
+            </Link>
+            {isDraft && (
+              <Button onClick={handleSubmit} size="sm" className="h-9 text-[13px]"><Send className="h-3.5 w-3.5 mr-1.5" />Submit</Button>
+            )}
+          </div>
+        </div>
 
         {/* Review Notes */}
         {donor.review_notes && (

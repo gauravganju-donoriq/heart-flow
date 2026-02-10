@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
-import RetellSetup from '@/components/admin/RetellSetup';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LayoutDashboard, Users, FileText, ScrollText, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, ScrollText, Shield, Settings } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type DonorStatus = Database['public']['Enums']['donor_status'];
@@ -47,6 +46,7 @@ const navItems = [
   { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
   { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
   { label: 'Audit Log', href: '/admin/audit-log', icon: <ScrollText className="h-4 w-4" /> },
+  { label: 'Settings', href: '/admin/settings', icon: <Settings className="h-4 w-4" /> },
 ];
 
 const AdminDashboard = () => {
@@ -213,8 +213,8 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Retell AI Phone Intake */}
-        <RetellSetup />
+
+
       </div>
     </DashboardLayout>
   );

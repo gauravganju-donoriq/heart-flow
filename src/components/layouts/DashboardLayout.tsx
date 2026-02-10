@@ -88,8 +88,11 @@ const DashboardLayout = ({ children, navItems, title, scrollHeaderContent }: Das
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-            {navItems.map((item) => (
+          {(() => {
+            const bottomLabels = ['Settings', 'Audit Log'];
+            const mainItems = navItems.filter(item => !bottomLabels.includes(item.label));
+            const bottomItems = navItems.filter(item => bottomLabels.includes(item.label));
+            const renderLink = (item: NavItem) => (
               <Link
                 key={item.href}
                 to={item.href}
@@ -104,8 +107,20 @@ const DashboardLayout = ({ children, navItems, title, scrollHeaderContent }: Das
                 {item.icon}
                 {item.label}
               </Link>
-            ))}
-          </nav>
+            );
+            return (
+              <>
+                <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+                  {mainItems.map(renderLink)}
+                </nav>
+                {bottomItems.length > 0 && (
+                  <div className="px-3 pb-2 space-y-0.5">
+                    {bottomItems.map(renderLink)}
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           {/* Phone intake */}
           {intakePhone && (

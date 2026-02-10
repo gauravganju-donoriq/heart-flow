@@ -67,7 +67,7 @@ const DashboardLayout = ({ children, navItems, title, scrollHeaderContent }: Das
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-60 bg-background border-r transform transition-transform duration-200 ease-in-out lg:translate-x-0",
+        "fixed inset-y-0 left-0 z-50 w-48 bg-background border-r transform transition-transform duration-200 ease-in-out lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex flex-col h-full">
@@ -138,13 +138,13 @@ const DashboardLayout = ({ children, navItems, title, scrollHeaderContent }: Das
           {/* User section */}
           <div className="p-3 border-t">
             <div className="flex items-center gap-2.5 mb-2.5 px-1">
-              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-xs font-medium text-muted-foreground">
-                  {user?.email?.charAt(0).toUpperCase()}
+              <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  {user?.user_metadata?.full_name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] text-muted-foreground truncate">{user?.email}</p>
+                <p className="text-[12px] font-medium text-foreground truncate">{user?.user_metadata?.full_name || user?.email?.split('@')[0]}</p>
               </div>
             </div>
             <Button
@@ -161,7 +161,7 @@ const DashboardLayout = ({ children, navItems, title, scrollHeaderContent }: Das
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-60">
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-48">
         {/* Top bar */}
         <header className="h-14 border-b bg-background flex items-center px-4 lg:px-8 sticky top-0 z-30">
           <Button

@@ -89,7 +89,7 @@ const DashboardLayout = ({ children, navItems, title, scrollHeaderContent }: Das
 
           {/* Navigation */}
           {(() => {
-            const bottomLabels = ['Settings', 'Audit Log'];
+            const bottomLabels = ['Team', 'Audit Log', 'Settings'];
             const mainItems = navItems.filter(item => !bottomLabels.includes(item.label));
             const bottomItems = navItems.filter(item => bottomLabels.includes(item.label));
             const renderLink = (item: NavItem) => (

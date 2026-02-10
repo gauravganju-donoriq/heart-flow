@@ -17,9 +17,10 @@ interface DashboardLayoutProps {
   children: ReactNode;
   navItems: NavItem[];
   title: string;
+  headerContent?: ReactNode;
 }
 
-const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) => {
+const DashboardLayout = ({ children, navItems, title, headerContent }: DashboardLayoutProps) => {
   const { user, role, signOut } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -137,8 +138,14 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
           >
             <Menu className="h-4 w-4" />
           </Button>
-          <div className="flex-1" />
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-1 rounded">
+          {headerContent ? (
+            <div className="flex-1 flex items-center min-w-0">
+              {headerContent}
+            </div>
+          ) : (
+            <div className="flex-1" />
+          )}
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-1 rounded shrink-0">
             {navItems.some(item => item.href.startsWith('/admin')) ? 'Admin' : 'Partner'}
           </span>
         </header>

@@ -74,7 +74,7 @@ const DashboardLayout = ({ children, navItems, title, scrollHeaderContent }: Das
           {/* Logo & Portal */}
           <div className="flex items-center justify-between h-14 px-5 border-b">
             <div className="flex items-center gap-2.5">
-              <img src={lemaitreIcon} alt="LeMaitre" className="h-6 w-auto shrink-0" />
+              <img src={lemaitreIcon} alt="LeMaitre" className="h-4.5 w-auto shrink-0" />
               <span className="text-lg font-bold uppercase tracking-[0.15em] text-foreground leading-none">Atlas</span>
             </div>
             <Button

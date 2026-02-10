@@ -90,7 +90,7 @@ const RetellTestCall = () => {
       });
 
       client.on('error', (error: any) => {
-        console.error('Retell error:', error);
+        console.error('Call error:', error);
         toast({
           variant: 'destructive',
           title: 'Call Error',
@@ -151,7 +151,7 @@ const RetellTestCall = () => {
         {callStatus === 'idle' && (
           <div className="space-y-3">
             <p className="text-[13px] text-muted-foreground">
-              Start a web call to test the full intake experience — same agent, same webhook, same transcript processing. Uses WebRTC so no phone number is needed.
+              Start a browser-based call to test the full intake experience. No phone number needed.
             </p>
             <Button onClick={startCall}>
               <Mic className="h-4 w-4 mr-2" />
@@ -210,7 +210,7 @@ const RetellTestCall = () => {
             {callStatus === 'ended' && (
               <div className="space-y-2">
                 <p className="text-[13px] text-muted-foreground">
-                  The webhook will process this call like a real phone call — check the donors list for the new record.
+                  This call will be processed like a real phone call — check the donors list for the new record.
                 </p>
                 <Button variant="outline" size="sm" onClick={() => { setCallStatus('idle'); setTranscript([]); }}>
                   <PhoneCall className="h-4 w-4 mr-2" />

@@ -47,7 +47,7 @@ const RetellSetup = () => {
       if (error) throw error;
 
       toast({
-        title: 'Retell AI Configured',
+        title: 'Phone Intake Configured',
         description: `Phone number: ${data.phone_number}`,
       });
 
@@ -61,7 +61,7 @@ const RetellSetup = () => {
       toast({
         variant: 'destructive',
         title: 'Setup Failed',
-        description: err instanceof Error ? err.message : 'Failed to configure Retell AI',
+        description: err instanceof Error ? err.message : 'Failed to configure phone intake',
       });
     } finally {
       setSetting(false);
@@ -84,7 +84,7 @@ const RetellSetup = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Phone className="h-5 w-5" />
-            <p className="text-sm font-medium">Phone Intake (Retell AI)</p>
+            <p className="text-sm font-medium">Phone Intake</p>
           </div>
           {status?.configured && (
             <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-md">
@@ -160,7 +160,7 @@ const RetellSetup = () => {
               ) : (
                 <>
                   <Phone className="h-4 w-4 mr-2" />
-                  Setup Retell AI Agent
+                  Setup Phone Intake
                 </>
               )}
             </Button>

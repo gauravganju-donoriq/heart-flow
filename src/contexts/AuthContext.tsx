@@ -112,11 +112,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     // Log logout before signing out
     if (user) {
-      await (supabase.from as any)('user_activity_log').insert({
-        user_id: user.id,
-        action: 'logout',
-        details: {},
-      }).catch(() => {});
+      try {
+        await supabase.from('user_activity_log').insert({
+          user_id: user.id,
+          action: 'logout',
+          details: {},
+        });
+      } catch {
+        // ignore logging errors
+      }
     }
     await supabase.auth.signOut();
     setUser(null);

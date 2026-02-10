@@ -12,10 +12,10 @@ interface NavItem {
 
 const allAdminNavItems: NavItem[] = [
   { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Team', href: '/admin/team', icon: <UsersRound className="h-4 w-4" />, adminOnly: true },
   { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" />, adminOnly: true },
   { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
   { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" />, adminOnly: true },
+  { label: 'Team', href: '/admin/team', icon: <UsersRound className="h-4 w-4" />, adminOnly: true },
   { label: 'Audit Log', href: '/admin/audit-log', icon: <ScrollText className="h-4 w-4" /> },
   { label: 'Settings', href: '/admin/settings', icon: <Settings className="h-4 w-4" />, adminOnly: true },
 ];

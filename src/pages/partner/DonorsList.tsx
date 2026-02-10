@@ -3,11 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import TableSkeleton from '@/components/TableSkeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LayoutDashboard, FileText, Plus, Phone } from 'lucide-react';
+import { Plus, Phone } from 'lucide-react';
+import { partnerNavItems } from '@/lib/navItems';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -25,10 +27,6 @@ const statusLabels: Record<DonorStatus, string> = {
   draft: 'Draft', submitted: 'Submitted', under_review: 'Under Review', approved: 'Approved', rejected: 'Rejected',
 };
 
-const navItems = [
-  { label: 'Dashboard', href: '/partner', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Donors', href: '/partner/donors', icon: <FileText className="h-4 w-4" /> },
-];
 
 const DonorsList = () => {
   const { partnerId } = useAuth();
@@ -50,7 +48,7 @@ const DonorsList = () => {
   };
 
   return (
-    <DashboardLayout navItems={navItems} title="Atlas">
+    <DashboardLayout navItems={partnerNavItems} title="Atlas">
       <div className="space-y-5 max-w-6xl">
         <div className="flex items-center justify-between">
           <div className="w-44">
@@ -73,7 +71,7 @@ const DonorsList = () => {
 
         <div className="border border-border rounded-lg overflow-hidden">
           {loading ? (
-            <div className="text-center py-12 text-[13px] text-muted-foreground">Loading…</div>
+            <TableSkeleton rows={5} cols={6} />
           ) : donors.length === 0 ? (
             <div className="text-center py-12 text-[13px] text-muted-foreground">No donors found</div>
           ) : (

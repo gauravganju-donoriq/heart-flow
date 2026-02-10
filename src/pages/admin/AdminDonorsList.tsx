@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import TableSkeleton from '@/components/TableSkeleton';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LayoutDashboard, Users, FileText, ScrollText, Plus, Phone, Shield, Settings } from 'lucide-react';
+import { Plus, Phone } from 'lucide-react';
+import { adminNavItems } from '@/lib/navItems';
 import type { Database } from '@/integrations/supabase/types';
 
 type DonorStatus = Database['public']['Enums']['donor_status'];
@@ -45,14 +47,6 @@ const statusLabels: Record<DonorStatus, string> = {
   rejected: 'Rejected',
 };
 
-const navItems = [
-  { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
-  { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
-  { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
-  { label: 'Audit Log', href: '/admin/audit-log', icon: <ScrollText className="h-4 w-4" /> },
-  { label: 'Settings', href: '/admin/settings', icon: <Settings className="h-4 w-4" /> },
-];
 
 const AdminDonorsList = () => {
   const [donors, setDonors] = useState<DonorWithPartner[]>([]);
@@ -106,7 +100,7 @@ const AdminDonorsList = () => {
   };
 
   return (
-    <DashboardLayout navItems={navItems} title="Atlas">
+    <DashboardLayout navItems={adminNavItems} title="Atlas">
       <div className="space-y-5 max-w-6xl">
         {/* Toolbar */}
         <div className="flex items-center justify-between">
@@ -136,7 +130,7 @@ const AdminDonorsList = () => {
         {/* Table */}
         <div className="border border-border rounded-lg overflow-hidden">
           {loading ? (
-            <div className="text-center py-12 text-[13px] text-muted-foreground">Loading…</div>
+            <TableSkeleton rows={5} cols={6} />
           ) : donors.length === 0 ? (
             <div className="text-center py-12 text-[13px] text-muted-foreground">
               No donors found

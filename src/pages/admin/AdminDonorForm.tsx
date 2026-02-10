@@ -15,21 +15,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { LayoutDashboard, Users, FileText, ScrollText, ArrowLeft, Save, Send, Shield, Settings } from 'lucide-react';
+import { ArrowLeft, Save, Send, FileText } from 'lucide-react';
+import { adminNavItems } from '@/lib/navItems';
 
 interface Partner {
   id: string;
   organization_name: string;
 }
-
-const navItems = [
-  { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
-  { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
-  { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
-  { label: 'Audit Log', href: '/admin/audit-log', icon: <ScrollText className="h-4 w-4" /> },
-  { label: 'Settings', href: '/admin/settings', icon: <Settings className="h-4 w-4" /> },
-];
 
 const AdminDonorForm = () => {
   const { id } = useParams();
@@ -233,11 +225,34 @@ const AdminDonorForm = () => {
       result = await supabase.from('donors').insert(donorData).select().single();
     }
 
-    setSaving(false);
     if (result.error) {
+      setSaving(false);
       toast({ variant: 'destructive', title: 'Error', description: result.error.message });
       return;
     }
+
+    // Audit logging
+    if (user) {
+      if (isEdit) {
+        await (supabase.from as any)('audit_logs').insert({
+          donor_id: id!,
+          action: submit ? 'status_change' : 'edit_direct',
+          changed_by: user.id,
+          changed_fields: null,
+          metadata: { source: 'admin_manual' },
+        });
+      } else if (result.data) {
+        await (supabase.from as any)('audit_logs').insert({
+          donor_id: result.data.id,
+          action: 'created',
+          changed_by: user.id,
+          changed_fields: null,
+          metadata: { source: 'admin_manual' },
+        });
+      }
+    }
+
+    setSaving(false);
 
     toast({
       title: submit ? 'Donor Submitted' : 'Donor Saved',
@@ -255,7 +270,7 @@ const AdminDonorForm = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="Atlas">
+      <DashboardLayout navItems={adminNavItems} title="Atlas">
         <div className="flex items-center justify-center py-12">
           <div className="text-muted-foreground">Loading...</div>
         </div>
@@ -264,7 +279,7 @@ const AdminDonorForm = () => {
   }
 
   return (
-    <DashboardLayout navItems={navItems} title="Atlas">
+    <DashboardLayout navItems={adminNavItems} title="Atlas">
       <div className="space-y-5 max-w-3xl">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/admin/donors')}>
@@ -274,9 +289,9 @@ const AdminDonorForm = () => {
         </div>
 
         <Tabs defaultValue="info" className="w-full">
-          <TabsList>
-            <TabsTrigger value="info">Donor Information</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-0 mb-5">
+            <TabsTrigger value="info" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Donor Information</TabsTrigger>
+            <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[13px] px-4 py-2.5">Documents</TabsTrigger>
           </TabsList>
 
           <TabsContent value="info" className="space-y-6">

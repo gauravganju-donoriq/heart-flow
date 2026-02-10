@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { LayoutDashboard, Users, FileText, ScrollText, ArrowLeft, Check, X, Clock, Phone, Shield, Settings } from 'lucide-react';
 import AIScreeningPanel from '@/components/admin/AIScreeningPanel';
 import DonorDetailSkeleton from '@/components/DonorDetailSkeleton';
+import { adminNavItems } from '@/lib/navItems';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -42,16 +43,6 @@ const statusStyles: Record<DonorStatus, string> = {
 const statusLabels: Record<DonorStatus, string> = {
   draft: 'Draft', submitted: 'Submitted', under_review: 'Under Review', approved: 'Approved', rejected: 'Rejected',
 };
-
-const navItems = [
-  { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
-  { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
-  { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
-  { label: 'Audit Log', href: '/admin/audit-log', icon: <ScrollText className="h-4 w-4" /> },
-  { label: 'Settings', href: '/admin/settings', icon: <Settings className="h-4 w-4" /> },
-];
-
 const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <div>
     <dt className="text-[13px] text-muted-foreground">{label}</dt>
@@ -144,7 +135,7 @@ const AdminDonorReview = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="Atlas">
+      <DashboardLayout navItems={adminNavItems} title="Atlas">
         <DonorDetailSkeleton />
       </DashboardLayout>
     );
@@ -157,7 +148,7 @@ const AdminDonorReview = () => {
 
   return (
     <DashboardLayout
-      navItems={navItems}
+      navItems={adminNavItems}
       title="Atlas"
       scrollHeaderContent={
         <div className="flex items-center gap-3 min-w-0">

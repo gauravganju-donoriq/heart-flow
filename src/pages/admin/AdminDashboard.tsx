@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import TableSkeleton from '@/components/TableSkeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LayoutDashboard, Users, FileText, ScrollText, Shield, Settings } from 'lucide-react';
+import { adminNavItems } from '@/lib/navItems';
 import type { Database } from '@/integrations/supabase/types';
 
 type DonorStatus = Database['public']['Enums']['donor_status'];
@@ -14,6 +15,7 @@ type DonorStatus = Database['public']['Enums']['donor_status'];
 interface DonorWithPartner {
   id: string;
   donor_code: string | null;
+  din: string | null;
   first_name: string | null;
   last_name: string | null;
   status: DonorStatus;
@@ -40,14 +42,6 @@ const statusLabels: Record<DonorStatus, string> = {
   rejected: 'Rejected',
 };
 
-const navItems = [
-  { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
-  { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
-  { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
-  { label: 'Audit Log', href: '/admin/audit-log', icon: <ScrollText className="h-4 w-4" /> },
-  { label: 'Settings', href: '/admin/settings', icon: <Settings className="h-4 w-4" /> },
-];
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -71,6 +65,7 @@ const AdminDashboard = () => {
       .select(`
         id,
         donor_code,
+        din,
         first_name,
         last_name,
         status,
@@ -125,7 +120,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <DashboardLayout navItems={navItems} title="Atlas">
+    <DashboardLayout navItems={adminNavItems} title="Atlas">
       <div className="space-y-5">
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -165,7 +160,7 @@ const AdminDashboard = () => {
           </div>
           <div className="border border-border rounded-lg">
             {loading ? (
-              <div className="text-center py-8 text-muted-foreground text-[13px]">Loading...</div>
+              <TableSkeleton rows={3} cols={5} />
             ) : pendingDonors.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-[13px]">
                 No donors pending review
@@ -174,7 +169,7 @@ const AdminDashboard = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Donor Code</TableHead>
+                    <TableHead>DIN</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Partner</TableHead>
                     <TableHead>Status</TableHead>
@@ -188,7 +183,7 @@ const AdminDashboard = () => {
                       className="cursor-pointer hover:bg-muted/30"
                       onClick={() => navigate(`/admin/donors/${donor.id}`)}
                     >
-                      <TableCell className="font-mono text-[13px] py-3.5">{donor.donor_code}</TableCell>
+                      <TableCell className="font-mono text-[13px] py-3.5">{(donor as any).din || donor.donor_code || '—'}</TableCell>
                       <TableCell className="text-[13px] py-3.5">
                         {donor.first_name && donor.last_name
                           ? `${donor.first_name} ${donor.last_name}`

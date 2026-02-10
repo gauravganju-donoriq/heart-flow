@@ -3,11 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import TableSkeleton from '@/components/TableSkeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LayoutDashboard, FileText, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { partnerNavItems } from '@/lib/navItems';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -25,10 +27,6 @@ const statusLabels: Record<DonorStatus, string> = {
   draft: 'Draft', submitted: 'Submitted', under_review: 'Under Review', approved: 'Approved', rejected: 'Rejected',
 };
 
-const navItems = [
-  { label: 'Dashboard', href: '/partner', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Donors', href: '/partner/donors', icon: <FileText className="h-4 w-4" /> },
-];
 
 const PartnerDashboard = () => {
   const { partnerId } = useAuth();
@@ -57,7 +55,7 @@ const PartnerDashboard = () => {
   };
 
   return (
-    <DashboardLayout navItems={navItems} title="Atlas">
+    <DashboardLayout navItems={partnerNavItems} title="Atlas">
       <div className="space-y-5">
         {/* Header */}
         <div className="flex items-center justify-end">
@@ -79,7 +77,7 @@ const PartnerDashboard = () => {
           <p className="text-sm font-medium">Recent Donors</p>
           <div className="border border-border rounded-lg">
             {loading ? (
-              <div className="text-center py-8 text-muted-foreground text-[13px]">Loading...</div>
+              <TableSkeleton rows={3} cols={4} />
             ) : donors.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground text-[13px] mb-4">No donors yet</p>

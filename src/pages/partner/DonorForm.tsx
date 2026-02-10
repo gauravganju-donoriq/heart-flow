@@ -15,12 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { LayoutDashboard, FileText, ArrowLeft, Save, Send } from 'lucide-react';
-
-const navItems = [
-  { label: 'Dashboard', href: '/partner', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Donors', href: '/partner/donors', icon: <FileText className="h-4 w-4" /> },
-];
+import { ArrowLeft, Save, Send, FileText } from 'lucide-react';
+import { partnerNavItems } from '@/lib/navItems';
 
 const DonorForm = () => {
   const { id } = useParams();
@@ -308,7 +304,7 @@ const DonorForm = () => {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={navItems} title="Atlas">
+      <DashboardLayout navItems={partnerNavItems} title="Atlas">
         <div className="flex items-center justify-center py-12">
           <div className="text-muted-foreground">Loading...</div>
         </div>
@@ -317,7 +313,7 @@ const DonorForm = () => {
   }
 
   return (
-    <DashboardLayout navItems={navItems} title="Atlas">
+    <DashboardLayout navItems={partnerNavItems} title="Atlas">
       <div className="space-y-5 max-w-3xl">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/partner/donors')}>

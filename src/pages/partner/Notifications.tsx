@@ -4,16 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, FileText, Bell, Check, Eye } from 'lucide-react';
+import { Check, Eye } from 'lucide-react';
+import { partnerNavItems } from '@/lib/navItems';
 import type { Database } from '@/integrations/supabase/types';
 
 type Notification = Database['public']['Tables']['notifications']['Row'];
-
-const navItems = [
-  { label: 'Dashboard', href: '/partner', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Donors', href: '/partner/donors', icon: <FileText className="h-4 w-4" /> },
-  { label: 'Notifications', href: '/partner/notifications', icon: <Bell className="h-4 w-4" /> },
-];
 
 const Notifications = () => {
   const { user } = useAuth();
@@ -41,7 +36,7 @@ const Notifications = () => {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <DashboardLayout navItems={navItems} title="Atlas">
+    <DashboardLayout navItems={partnerNavItems} title="Atlas">
       <div className="space-y-5 max-w-4xl">
         <div className="flex items-center justify-between">
           <p className="text-[13px] text-muted-foreground">{unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}</p>

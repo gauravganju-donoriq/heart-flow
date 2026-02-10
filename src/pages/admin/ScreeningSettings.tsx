@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { LayoutDashboard, Users, FileText, ScrollText, Shield, Plus, Pencil, Trash2 } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, ScrollText, Shield, Plus, Pencil, Trash2, Settings } from 'lucide-react';
 
 const navItems = [
   { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
@@ -22,6 +22,7 @@ const navItems = [
   { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
   { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
   { label: 'Audit Log', href: '/admin/audit-log', icon: <ScrollText className="h-4 w-4" /> },
+  { label: 'Settings', href: '/admin/settings', icon: <Settings className="h-4 w-4" /> },
 ];
 
 const categories = ['eligibility', 'medical', 'logistics', 'general'] as const;

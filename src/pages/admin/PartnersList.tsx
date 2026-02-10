@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
-import { LayoutDashboard, Users, FileText, ScrollText, Shield, Settings } from 'lucide-react';
 import CreatePartnerDialog from '@/components/admin/CreatePartnerDialog';
 import EditPartnerDialog from '@/components/admin/EditPartnerDialog';
 import PartnersTable from '@/components/admin/PartnersTable';
+import { adminNavItems } from '@/lib/navItems';
 
 interface Partner {
   id: string;
@@ -24,15 +24,6 @@ interface Partner {
     donors: number;
   };
 }
-
-const navItems = [
-  { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
-  { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
-  { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
-  { label: 'Audit Log', href: '/admin/audit-log', icon: <ScrollText className="h-4 w-4" /> },
-  { label: 'Settings', href: '/admin/settings', icon: <Settings className="h-4 w-4" /> },
-];
 
 const PartnersList = () => {
   const [partners, setPartners] = useState<Partner[]>([]);
@@ -91,7 +82,7 @@ const PartnersList = () => {
   };
 
   return (
-    <DashboardLayout navItems={navItems} title="Atlas">
+    <DashboardLayout navItems={adminNavItems} title="Atlas">
       <div className="space-y-5">
         {/* Header */}
         <div className="flex items-center justify-end">

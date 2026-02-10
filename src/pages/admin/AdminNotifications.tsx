@@ -4,19 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, Users, FileText, ScrollText, Check, Eye, Shield, Settings } from 'lucide-react';
+import { Check, Eye } from 'lucide-react';
+import { adminNavItems } from '@/lib/navItems';
 import type { Database } from '@/integrations/supabase/types';
 
 type Notification = Database['public']['Tables']['notifications']['Row'];
-
-const navItems = [
-  { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Partners', href: '/admin/partners', icon: <Users className="h-4 w-4" /> },
-  { label: 'Donors', href: '/admin/donors', icon: <FileText className="h-4 w-4" /> },
-  { label: 'Screening', href: '/admin/screening-settings', icon: <Shield className="h-4 w-4" /> },
-  { label: 'Audit Log', href: '/admin/audit-log', icon: <ScrollText className="h-4 w-4" /> },
-  { label: 'Settings', href: '/admin/settings', icon: <Settings className="h-4 w-4" /> },
-];
 
 const AdminNotifications = () => {
   const { user } = useAuth();
@@ -49,7 +41,7 @@ const AdminNotifications = () => {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <DashboardLayout navItems={navItems} title="Atlas">
+    <DashboardLayout navItems={adminNavItems} title="Atlas">
       <div className="space-y-5 max-w-4xl">
         {/* Toolbar */}
         <div className="flex items-center justify-between">

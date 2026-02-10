@@ -16,8 +16,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { ResponsiveTabsList, type TabItem } from '@/components/ui/responsive-tabs';
 import { useToast } from '@/hooks/use-toast';
-import { LayoutDashboard, FileText, ArrowLeft, Edit, Send, Phone } from 'lucide-react';
+import { ArrowLeft, Edit, Send, Phone } from 'lucide-react';
 import DonorDetailSkeleton from '@/components/DonorDetailSkeleton';
+import { partnerNavItems } from '@/lib/navItems';
 import type { Database } from '@/integrations/supabase/types';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
@@ -34,12 +35,6 @@ const statusStyles: Record<DonorStatus, string> = {
 const statusLabels: Record<DonorStatus, string> = {
   draft: 'Draft', submitted: 'Submitted', under_review: 'Under Review', approved: 'Approved', rejected: 'Rejected',
 };
-
-const navItems = [
-  { label: 'Dashboard', href: '/partner', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Donors', href: '/partner/donors', icon: <FileText className="h-4 w-4" /> },
-];
-
 const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <div>
     <dt className="text-[13px] text-muted-foreground">{label}</dt>
@@ -89,7 +84,7 @@ const DonorDetail = () => {
   };
 
   if (loading) {
-    return (<DashboardLayout navItems={navItems} title="Atlas"><DonorDetailSkeleton /></DashboardLayout>);
+    return (<DashboardLayout navItems={partnerNavItems} title="Atlas"><DonorDetailSkeleton /></DashboardLayout>);
   }
 
   if (!donor) return null;
@@ -99,7 +94,7 @@ const DonorDetail = () => {
 
   return (
     <DashboardLayout
-      navItems={navItems}
+      navItems={partnerNavItems}
       title="Atlas"
       scrollHeaderContent={
         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -345,17 +340,6 @@ const DonorDetail = () => {
           {/* Changes Tab */}
           {!isDraft && (
             <TabsContent value="changes" className="space-y-5 mt-5">
-              {donor.review_notes && (
-                <Card>
-                  <CardHeader><p className="text-sm font-medium">Review Notes</p></CardHeader>
-                  <CardContent>
-                    <p className="text-[13px]">{donor.review_notes}</p>
-                    {donor.reviewed_at && (
-                      <p className="text-[12px] text-muted-foreground mt-2">Reviewed on {new Date(donor.reviewed_at).toLocaleString()}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
               {id && <PartnerPendingUpdates donorId={id} />}
             </TabsContent>
           )}

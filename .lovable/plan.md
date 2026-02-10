@@ -1,122 +1,84 @@
 
 
-## Retell AI Voice Agent -- Parameter Audit and Optimization
+## Add Web-Based Test Call to Admin Settings
 
-### Current Configuration Audit
+### How Retell Web Calls Work
 
-Here is a side-by-side comparison of every tunable parameter with its current value, what's wrong with it, and the recommended change.
+Retell provides a **Web Call API** and a **client-side JS SDK** (`retell-client-js-sdk`) that lets you talk to your agent directly from the browser using WebRTC -- no phone call needed. The flow is:
 
----
+1. **Backend** calls `POST https://api.retellai.com/v2/create-web-call` with the `agent_id` to get an `access_token`
+2. **Frontend** uses `retell-client-js-sdk` to start a WebRTC conversation with that token
+3. The call goes through the same agent, same prompt, same webhook -- identical to a phone call
 
-### 1. Voice Selection
+This means you can test the full Sarah persona, transcript extraction, and donor creation flow without spending phone minutes.
 
-| Parameter | Current | Issue | Recommended |
-|---|---|---|---|
-| `voice_id` | `11labs-Adrian` | Adrian is a male, generic voice. You want a female nurse persona. | `11labs-Myra` or another warm, professional female voice from the Retell dashboard. Myra is a clear, calm American female voice well-suited for medical intake. |
-| `voice_model` | Not set (defaults to basic) | Missing entirely -- defaults to the base ElevenLabs model. | `eleven_turbo_v2_5` -- best balance of quality and low latency (~250ms). Premium quality without the cost of multilingual v2. |
+### Implementation
 
----
+#### 1. New Edge Function: `create-web-call`
 
-### 2. Voice and Speech Settings
+A small edge function that:
+- Authenticates the caller as an admin (same pattern as `setup-retell`)
+- Looks up the existing agent ID (same "HeartStream Donor Intake" lookup)
+- Calls the Retell `create-web-call` API with that agent ID
+- Returns the `access_token` to the frontend
 
-| Parameter | Current | Issue | Recommended |
-|---|---|---|---|
-| `voice_speed` | `0.9` (slower than normal) | User wants faster speech. 0.9 is *below* default. | `1.1` -- slightly faster than natural, professional and brisk without sounding rushed. |
-| `voice_temperature` | `0.5` | Moderate variance. For medical intake, consistency matters more. | `0.3` -- more stable, consistent delivery appropriate for clinical context. |
-| `responsiveness` | `0.8` | Good but not optimal for fast exchanges with trained nurses/coordinators. | `1.0` -- maximum responsiveness. These callers are professionals, not elderly patients. They expect snappy exchanges. |
-| `interruption_sensitivity` | `0.6` | Too sensitive -- agent gets cut off easily by background noise. | `0.5` -- slightly lower to avoid false interruptions in noisy hospital/morgue environments. |
-| `enable_dynamic_voice_speed` | Not set | Missing. Could help with natural pacing. | `true` -- lets the agent speed up or slow down naturally based on context. |
+#### 2. Install `retell-client-js-sdk`
 
----
+Add the npm package which provides the `RetellWebClient` class for browser-based WebRTC calls.
 
-### 3. Backchannel Settings
+#### 3. New Component: `RetellTestCall.tsx`
 
-| Parameter | Current | Issue | Recommended |
-|---|---|---|---|
-| `enable_backchannel` | `true` | Good. | Keep `true`. |
-| `backchannel_frequency` | `0.8` | Too frequent -- sounds like the agent is constantly saying "mhmm". | `0.5` -- more measured, professional. A nurse listens quietly and confirms when appropriate. |
-| `backchannel_words` | `["yeah", "I see", "okay", "got it", "mhmm"]` | "yeah" is too casual for a medical professional. | `["okay", "got it", "mhmm", "understood", "noted"]` -- clinical and professional. |
+A card component on the Admin Settings page (below the existing RetellSetup card) that:
+- Only shows when the agent is configured
+- Has a "Start Test Call" button
+- Requests microphone permission
+- Calls the `create-web-call` edge function to get an access token
+- Uses `RetellWebClient` to start a WebRTC conversation
+- Shows real-time status (connecting, connected, agent speaking/listening)
+- Has an "End Call" button to stop the session
+- Displays a simple transcript of the conversation as it happens (using SDK events)
 
----
+#### 4. Update Admin Settings Page
 
-### 4. Ambient Sound
+Add the `RetellTestCall` component below `RetellSetup` on the settings page, passing the agent status so it only renders when configured.
 
-| Parameter | Current | Issue | Recommended |
-|---|---|---|---|
-| `ambient_sound` | `"call-center"` | Sounds like a sales floor, not a medical office. | `"office"` -- quieter, more appropriate for a clinical intake line. |
-| `ambient_sound_volume` | `0.3` | Fine for call-center but too loud for office. | `0.2` -- subtle background, not distracting. |
+### Technical Details
 
----
+**Edge Function (`supabase/functions/create-web-call/index.ts`):**
+```text
+POST /v2/create-web-call
+Headers: Authorization: Bearer RETELL_API_KEY
+Body: { "agent_id": "<agent_id>" }
+Response: { "access_token": "...", "call_id": "..." }
+```
 
-### 5. Prompt Rewrite
+**Frontend SDK usage:**
+```text
+import { RetellWebClient } from "retell-client-js-sdk";
 
-**Current issues with the prompt:**
-- Opens with a numbered list ("Ask these 5 questions in order: 1. 2. 3...") -- robotic, not conversational
-- Says "What type of call is this" as the first question -- callers already know why they're calling; the agent should infer from context
-- "May I have your name, please?" is generic -- should establish clinical rapport
-- No persona definition -- the agent has no bedside manner
-- Lacks phonetic guidance for medical terms
-- No graceful handling of emotional callers (tissue recovery involves death)
+const client = new RetellWebClient();
+await client.startCall({ accessToken: data.access_token });
 
-**Proposed rewrite -- key changes:**
-- Establish a nurse persona ("You are Sarah, a tissue recovery intake nurse")
-- Remove numbered question format; use natural conversational flow
-- Add empathetic guardrails for sensitive topics
-- Add pronunciation guide for medical terms using Retell's boosted_keywords and the prompt itself
-- Make the opening greeting warmer and more direct
-- Add explicit instruction to never spell out or list question numbers
+// Events:
+client.on("call_started", ...)
+client.on("call_ended", ...)
+client.on("agent_start_talking", ...)
+client.on("agent_stop_talking", ...)
+client.on("update", (update) => {
+  // update.transcript gives real-time transcript
+})
+```
 
----
+**UI layout of the test call card:**
+- Microphone permission prompt (if not granted)
+- "Start Test Call" button with mic icon
+- During call: pulsing indicator, agent speaking/listening status, live transcript
+- "End Call" button
+- After call ends: summary showing call duration and a note that the webhook will process it like a real call
 
-### 6. Begin Message
+**Config:** Add `[functions.create-web-call]` with `verify_jwt = false` to `supabase/config.toml`.
 
-| Current | Recommended |
-|---|---|
-| "Hello, this is the LeMaitre Vascular tissue recovery intake line. I'll help you record donor screening information. First, what type of call is this -- initial screening or an update to an existing donor?" | "Hi, this is Sarah at the LeMaitre tissue recovery intake line. How can I help you today?" |
+### Cost Note
 
-**Why:** Shorter, warmer, lets the caller state their purpose naturally instead of forcing a multiple-choice question upfront.
-
----
-
-### 7. Boosted Keywords
-
-| Current | Recommended Addition |
-|---|---|
-| 15 keywords | Add: `"asystole"`, `"ventilator"`, `"extubation"`, `"hemodilution"`, `"serological"`, `"procurement"`, `"cross-clamp"`, `"ischemia"`, `"allograft"` |
-
-These are terms commonly used by tissue recovery coordinators that the speech-to-text engine may struggle with.
-
----
-
-### 8. LLM Model (not currently configurable via Retell-LLM API but noted)
-
-Retell recommends GPT-4.1 for optimal balance. The current setup uses Retell's built-in LLM which defaults to their recommended model. No change needed here -- Retell handles LLM selection internally.
-
----
-
-### Summary of All Changes
-
-**File: `supabase/functions/setup-retell/index.ts`**
-
-Changes to `AGENT_SETTINGS`:
-- `voice_id`: `11labs-Adrian` to a female voice (e.g., `11labs-Myra`)
-- Add `voice_model`: `eleven_turbo_v2_5`
-- `voice_speed`: `0.9` to `1.1`
-- `voice_temperature`: `0.5` to `0.3`
-- `responsiveness`: `0.8` to `1.0`
-- `interruption_sensitivity`: `0.6` to `0.5`
-- Add `enable_dynamic_voice_speed`: `true`
-- `backchannel_frequency`: `0.8` to `0.5`
-- `backchannel_words`: remove "yeah", add "understood", "noted"
-- `ambient_sound`: `call-center` to `office`
-- `ambient_sound_volume`: `0.3` to `0.2`
-- Expand `boosted_keywords` with additional medical terms
-
-Changes to `SHORTENED_PROMPT`:
-- Full rewrite with nurse persona, natural conversational flow, empathetic guardrails, no numbered lists
-
-Changes to `BEGIN_MESSAGE`:
-- Shorter, warmer greeting that lets the caller lead
-
-After deploying, the "Update Agent Settings" button on the Admin Settings page will push these changes to the live Retell agent.
+Web calls use the same per-minute pricing as phone calls (~$0.20/min with current settings) but do NOT incur the phone number telephony charge, so they're slightly cheaper for testing.
 

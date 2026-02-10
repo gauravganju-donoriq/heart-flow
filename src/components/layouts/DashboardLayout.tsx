@@ -128,7 +128,7 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 lg:ml-60">
         {/* Top bar */}
-        <header className="h-14 border-b bg-background flex items-center px-4 lg:px-8">
+        <header className="h-14 border-b bg-background flex items-center px-4 lg:px-8 sticky top-0 z-30">
           <Button
             variant="ghost"
             size="icon"

@@ -163,9 +163,7 @@ const TeamManagement = () => {
           <InviteUserDialog onSuccess={fetchTeam} />
         </div>
 
-        <Card>
-          <CardHeader><p className="text-sm font-medium">Internal Users</p></CardHeader>
-          <CardContent className="p-0">
+        <div className="border border-border rounded-lg">
             {loading ? (
               <TableSkeleton rows={4} cols={5} />
             ) : members.length === 0 ? (
@@ -240,15 +238,7 @@ const TeamManagement = () => {
                 </TableBody>
               </Table>
             )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><p className="text-sm font-medium">Activity Log</p></CardHeader>
-          <CardContent className="p-0">
-            <AdminActivityLog />
-          </CardContent>
-        </Card>
+        </div>
       </div>
 
       {/* Role Change Dialog */}
